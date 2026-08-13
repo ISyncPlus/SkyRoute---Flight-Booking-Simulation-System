@@ -1,0 +1,802 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Tokens
+   ==========================================================================
+   Every colour is a variable so one class name resolves correctly in both
+   appearances. Light is declared on :root; dark overrides only what changes.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --canvas: #f2f2f7;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --fill: #f2f2f7;
+  --fill-strong: #e6e6eb;
+  --line: rgba(60, 60, 67, 0.12);
+  --line-strong: rgba(60, 60, 67, 0.24);
+
+  --ink: #1c1c1e;
+  --ink-2: #55555c;
+  --ink-3: #8a8a8f;
+
+  --accent: #0070e0;
+  --accent-hover: #005ec2;
+  --accent-soft: #e8f1fd;
+  --accent-ink: #0059b8;
+  --on-accent: #ffffff;
+
+  --positive: #1c8f4a;
+  --positive-soft: #e4f6ea;
+  --positive-ink: #146636;
+
+  --warn: #b26b00;
+  --warn-soft: #fdf1dd;
+  --warn-ink: #8a5200;
+
+  --danger: #d32f2b;
+  --danger-soft: #fdeceb;
+  --danger-ink: #a8201d;
+
+  /* Translucent chrome. A floating layer, not an opaque strip. */
+  --material: rgba(255, 255, 255, 0.72);
+  --material-edge: rgba(255, 255, 255, 0.7);
+
+  /* Ambient light behind the landing hero. Static, never looping: a slowly
+     oscillating full-viewport background is a known discomfort trigger. */
+  --glow-1: rgba(0, 112, 224, 0.18);
+  --glow-2: rgba(112, 88, 255, 0.14);
+  --glow-3: rgba(0, 190, 190, 0.1);
+
+  --shadow-1: 0 1px 2px rgba(17, 24, 39, 0.05), 0 1px 1px rgba(17, 24, 39, 0.03);
+  --shadow-2: 0 1px 2px rgba(17, 24, 39, 0.04), 0 8px 20px -8px rgba(17, 24, 39, 0.14);
+  --shadow-3: 0 2px 4px rgba(17, 24, 39, 0.04), 0 24px 48px -16px rgba(17, 24, 39, 0.2);
+  --shadow-press: inset 0 1px 2px rgba(17, 24, 39, 0.1);
+
+  /* Seat map */
+  --seat-free: #ffffff;
+  --seat-free-line: rgba(60, 60, 67, 0.26);
+  --seat-taken: #e2e2e7;
+  --seat-taken-ink: #a1a1a8;
+
+  /* Motion. Not durations for gestures — this app has none — but the curves
+     and beats every transition below is tuned against. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press: 160ms;
+  --dur-fast: 180ms;
+  --dur-panel: 240ms;
+  --dur-sheet: 300ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --canvas: #000000;
+    --surface: #1c1c1e;
+    --raised: #2c2c2e;
+    --fill: #2c2c2e;
+    --fill-strong: #3a3a3c;
+    --line: rgba(235, 235, 245, 0.14);
+    --line-strong: rgba(235, 235, 245, 0.28);
+
+    --ink: #f5f5f7;
+    --ink-2: #a1a1a8;
+    --ink-3: #7c7c82;
+
+    --accent: #0a84ff;
+    --accent-hover: #3d9dff;
+    --accent-soft: rgba(10, 132, 255, 0.16);
+    --accent-ink: #6cb4ff;
+    --on-accent: #ffffff;
+
+    --positive: #30d158;
+    --positive-soft: rgba(48, 209, 88, 0.16);
+    --positive-ink: #5ddb7c;
+
+    --warn: #ff9f0a;
+    --warn-soft: rgba(255, 159, 10, 0.16);
+    --warn-ink: #ffb340;
+
+    --danger: #ff453a;
+    --danger-soft: rgba(255, 69, 58, 0.16);
+    --danger-ink: #ff6b61;
+
+    --material: rgba(28, 28, 30, 0.7);
+    --material-edge: rgba(255, 255, 255, 0.08);
+
+    --glow-1: rgba(10, 132, 255, 0.26);
+    --glow-2: rgba(124, 92, 255, 0.2);
+    --glow-3: rgba(0, 200, 200, 0.12);
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-2: 0 2px 10px rgba(0, 0, 0, 0.55);
+    --shadow-3: 0 24px 56px -16px rgba(0, 0, 0, 0.75);
+    --shadow-press: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+
+    --seat-free: #2c2c2e;
+    --seat-free-line: rgba(235, 235, 245, 0.24);
+    --seat-taken: #2a2a2c;
+    --seat-taken-ink: #5c5c61;
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Type scales with the user's setting; spacing is in rem so the layout
+       follows the text rather than breaking around it. */
+    font-size: 100%;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    @apply text-body;
+  }
+
+  /* Numbers that sit in columns — fares, times, seat rows — must not jitter. */
+  :where(table, .tabular) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Keyboard focus must always be visible — WCAG 2.4.7. */
+  :focus-visible {
+    outline: 2.5px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 0.35rem;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  ::placeholder {
+    color: var(--ink-3);
+  }
+}
+
+/* ==========================================================================
+   Components
+   ========================================================================== */
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10;
+  }
+
+  .container-wide {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+  }
+
+  /* Vertical rhythm for marketing sections — room to breathe between ideas. */
+  .section {
+    @apply py-16 sm:py-24;
+  }
+
+  /* ---- Surfaces ---------------------------------------------------------
+     Bigger surfaces read as thicker: more radius, more shadow. ---------- */
+
+  .card {
+    @apply rounded-xl border border-line bg-surface p-6 shadow-e1;
+  }
+
+  .card-lg {
+    @apply rounded-2xl border border-line bg-surface p-6 shadow-e2 sm:p-8;
+  }
+
+  /* A card that is also a link target. */
+  .card-glass {
+    @apply rounded-3xl border border-line shadow-e3;
+    background: var(--material);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+  }
+
+  /* Translucent floating layer — content scrolls underneath it. */
+  .material {
+    background: var(--material);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  /* Vibrancy: over a blurred surface, text needs contrast and a touch more
+     weight and tracking rather than a flat grey. */
+  .on-material {
+    @apply font-medium text-ink;
+    letter-spacing: 0.006em;
+  }
+
+  /* ---- Pressables -------------------------------------------------------
+     Feedback lives on pointer-down, never on release. ------------------- */
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-lg px-5 py-3
+           text-callout font-semibold disabled:cursor-not-allowed disabled:opacity-40;
+    transition:
+      transform var(--dur-press) var(--ease-out),
+      background-color var(--dur-press) ease,
+      border-color var(--dur-press) ease,
+      color var(--dur-press) ease,
+      box-shadow var(--dur-press) ease;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-on-accent shadow-e1;
+  }
+
+  .btn-secondary {
+    @apply btn border border-line-strong bg-surface text-ink;
+  }
+
+  .btn-ghost {
+    @apply btn text-accent;
+  }
+
+  .btn-danger {
+    @apply btn border border-danger bg-surface text-danger;
+  }
+
+  /* Hero-scale call to action. */
+  .btn-lg {
+    @apply rounded-xl px-7 py-4 text-headline;
+  }
+
+  /* Any non-button element that should still feel pressed. */
+  .pressable {
+    transition:
+      transform var(--dur-press) var(--ease-out),
+      background-color var(--dur-press) ease,
+      border-color var(--dur-press) ease,
+      box-shadow var(--dur-press) ease;
+  }
+
+  .pressable:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* ---- Forms ---------------------------------------------------------- */
+
+  .label {
+    @apply mb-1.5 block text-footnote font-medium text-ink-2;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-line-strong bg-surface px-4 py-3 text-callout text-ink
+           disabled:bg-fill disabled:text-ink-3;
+    transition:
+      border-color var(--dur-fast) ease,
+      box-shadow var(--dur-fast) ease,
+      background-color var(--dur-fast) ease;
+  }
+
+  .input:focus {
+    @apply border-accent outline-none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
+  }
+
+  select.input {
+    /* Native select on iOS/macOS gets the system chevron; keep the platform
+       control rather than reimplementing a listbox. */
+    @apply appearance-none bg-no-repeat pr-9;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: right 1.15rem center, right 0.85rem center;
+    background-size: 0.3rem 0.3rem, 0.3rem 0.3rem;
+    color: var(--ink);
+  }
+
+  .input-error {
+    @apply border-danger;
+  }
+
+  .input-error:focus {
+    box-shadow: 0 0 0 3.5px var(--danger-soft);
+  }
+
+  .field-error {
+    @apply mt-1.5 text-caption font-medium text-danger;
+  }
+
+  /* ---- Small chrome ---------------------------------------------------- */
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-semibold;
+  }
+
+  .overline {
+    @apply text-overline font-semibold uppercase text-ink-3;
+  }
+
+  /* Segmented control — the platform pattern for a small set of views. */
+  .segmented {
+    @apply inline-flex flex-wrap gap-1 rounded-lg border border-line bg-fill p-1;
+  }
+
+  .segment {
+    @apply rounded-md px-3.5 py-1.5 text-footnote font-medium text-ink-2;
+    transition:
+      transform var(--dur-press) var(--ease-out),
+      background-color var(--dur-fast) ease,
+      color var(--dur-fast) ease,
+      box-shadow var(--dur-fast) ease;
+  }
+
+  .segment:active {
+    transform: scale(0.96);
+  }
+
+  .segment[aria-pressed="true"],
+  .segment[aria-current="page"] {
+    @apply bg-surface text-ink shadow-e1;
+  }
+
+  .table-base {
+    @apply w-full border-collapse text-left text-footnote;
+  }
+
+  .table-base th {
+    @apply border-b border-line bg-fill px-3 py-2.5 text-caption font-semibold uppercase tracking-wide text-ink-3;
+  }
+
+  .table-base td {
+    @apply border-b border-line px-3 py-3 text-ink-2;
+  }
+
+  /* ---- Seat map -------------------------------------------------------- */
+
+  .seat {
+    @apply flex h-9 w-9 items-center justify-center rounded-md border text-micro font-semibold;
+    transition:
+      transform var(--dur-press) var(--ease-out),
+      background-color var(--dur-fast) ease,
+      border-color var(--dur-fast) ease,
+      color var(--dur-fast) ease;
+  }
+
+  .seat-available {
+    border-color: var(--seat-free-line);
+    background: var(--seat-free);
+    @apply cursor-pointer text-ink-2;
+  }
+
+  .seat-available:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  .seat-exit {
+    @apply cursor-pointer;
+    border-color: var(--warn);
+    background: var(--warn-soft);
+    color: var(--warn-ink);
+  }
+
+  .seat-exit:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  .seat-selected {
+    @apply cursor-pointer border-accent bg-accent text-on-accent;
+  }
+
+  .seat-selected:active {
+    transform: scale(0.9);
+  }
+
+  .seat-occupied {
+    border-color: transparent;
+    background: var(--seat-taken);
+    color: var(--seat-taken-ink);
+    @apply cursor-not-allowed;
+  }
+
+  .seat-blocked {
+    border-color: transparent;
+    background: var(--seat-taken);
+    color: var(--seat-taken-ink);
+    @apply cursor-not-allowed line-through;
+  }
+}
+
+/* ==========================================================================
+   Motion
+   ==========================================================================
+   Transitions rather than keyframes wherever a thing can be triggered twice in
+   a second, so a re-trigger retargets from the current value instead of
+   restarting from zero.
+   ========================================================================== */
+
+@layer utilities {
+  /* Hover motion only where there is a real pointer — touch fires a false
+     hover on tap and leaves the element stuck in its hover state. */
+  @media (hover: hover) and (pointer: fine) {
+    .hover-lift {
+      transition:
+        border-color var(--dur-fast) ease,
+        box-shadow var(--dur-fast) ease;
+    }
+
+    .hover-lift:hover {
+      @apply border-line-strong shadow-e2;
+    }
+
+    .hover-fill {
+      transition: background-color var(--dur-fast) ease;
+    }
+
+    .hover-fill:hover {
+      background-color: var(--fill);
+    }
+  }
+
+  /* Entrance for something that would otherwise teleport in. */
+  .enter {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity var(--dur-panel) var(--ease-out),
+      transform var(--dur-panel) var(--ease-out);
+  }
+
+  /* Expanding panel without a JS height measurement. The row track carries
+     the size; the child clips. */
+  .reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    /* Collapsed content must leave the tab order too, or the keyboard walks
+       into fields nobody can see. Visibility flips only once it is closed. */
+    visibility: hidden;
+    transition:
+      grid-template-rows var(--dur-panel) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out),
+      visibility 0s linear var(--dur-panel);
+  }
+
+  .reveal > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .reveal[data-open="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      grid-template-rows var(--dur-panel) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out),
+      visibility 0s;
+  }
+
+  /* A sheet leaves the way it arrived — same path, mirrored. */
+  .sheet {
+    transform-origin: top center;
+    transition:
+      opacity var(--dur-panel) var(--ease-out),
+      transform var(--dur-panel) var(--ease-out),
+      visibility 0s linear var(--dur-panel);
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+    pointer-events: none;
+  }
+
+  .sheet[data-open="true"] {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    transition:
+      opacity var(--dur-panel) var(--ease-out),
+      transform var(--dur-panel) var(--ease-out),
+      visibility 0s;
+  }
+
+  /* Group entrance. Decorative — it must never gate interaction, so the items
+     are present and clickable for the whole animation. */
+  .stagger > * {
+    @apply animate-rise;
+  }
+
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 45ms; }
+  .stagger > *:nth-child(3) { animation-delay: 90ms; }
+  .stagger > *:nth-child(4) { animation-delay: 135ms; }
+  .stagger > *:nth-child(5) { animation-delay: 180ms; }
+  .stagger > *:nth-child(6) { animation-delay: 215ms; }
+  .stagger > *:nth-child(n + 7) { animation-delay: 240ms; }
+
+  /* ---- Landing surface -------------------------------------------------
+     Marketing gets a longer beat than UI: this runs once per visit, and its
+     job is to introduce the product rather than to keep out of the way. ---- */
+
+  /* Ambient light. Painted once and left alone — no loop, nothing drifting. */
+  .hero-glow {
+    position: absolute;
+    inset: -14rem -6rem auto -6rem;
+    height: 48rem;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      radial-gradient(36rem 22rem at 20% 24%, var(--glow-1), transparent 68%),
+      radial-gradient(32rem 20rem at 76% 10%, var(--glow-2), transparent 68%),
+      radial-gradient(28rem 18rem at 52% 44%, var(--glow-3), transparent 70%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 35%, transparent 100%);
+  }
+
+  /* Hero entrance. Each line arrives just behind the one above it. */
+  .hero-in > * {
+    @apply animate-rise-lg;
+  }
+
+  .hero-in > *:nth-child(1) { animation-delay: 40ms; }
+  .hero-in > *:nth-child(2) { animation-delay: 110ms; }
+  .hero-in > *:nth-child(3) { animation-delay: 180ms; }
+  .hero-in > *:nth-child(4) { animation-delay: 250ms; }
+  .hero-in > *:nth-child(5) { animation-delay: 320ms; }
+  .hero-in > *:nth-child(n + 6) { animation-delay: 380ms; }
+
+  /* Scroll reveal, fired once by an IntersectionObserver. Re-animating on
+     every scroll-by is an interface arguing with its reader. */
+  .reveal-up {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 620ms var(--ease-out),
+      transform 620ms var(--ease-out);
+  }
+
+  .reveal-up[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* The route draws itself, then the aircraft flies it. Explanatory motion —
+     it says "this is a flight from A to B" faster than a sentence does. */
+  .route-line {
+    stroke-dasharray: 1;
+    @apply animate-draw-path;
+    /* pathLength="1" on the element makes the dash maths resolution-free. */
+  }
+
+  /* Hidden unless the browser can actually place it on the path, so an
+     unsupporting engine gets no aircraft parked in the corner. */
+  .route-plane {
+    display: none;
+  }
+
+  @supports (offset-path: path("M 0 0 L 1 1")) {
+    .route-plane {
+      display: block;
+      offset-rotate: auto;
+      @apply animate-fly-path;
+    }
+  }
+
+  /* The swap control turns over to show the route reversed, rather than
+     silently rewriting both fields. */
+  .swap-icon {
+    transform: rotate(var(--swap-rot, 0deg));
+    transition: transform var(--dur-sheet) var(--ease-in-out);
+  }
+
+  /* Progressive blur where floating chrome overlaps content, instead of a
+     hard 1px divider under a sticky bar. */
+  .scroll-edge::after {
+    content: "";
+    position: absolute;
+    inset: 100% 0 auto 0;
+    height: 1.25rem;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  }
+}
+
+/* Entry state for `.enter`. Written at the top level rather than nested,
+   because this build has no CSS-nesting plugin. */
+@starting-style {
+  .enter {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* ==========================================================================
+   Appearance and motion preferences
+   ==========================================================================
+   Reduced motion means gentler, not absent: the opacity changes that explain
+   what happened stay, the travel that can cause discomfort goes.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .btn:active:not(:disabled),
+  .pressable:active:not(:disabled),
+  .segment:active,
+  .seat:active {
+    transform: none;
+  }
+
+  .btn:active:not(:disabled),
+  .pressable:active:not(:disabled) {
+    background-color: var(--fill-strong);
+  }
+
+  .sheet,
+  .sheet[data-open="true"] {
+    transform: none;
+  }
+
+  /* The panel still opens and closes — it just stops travelling to get there. */
+  .reveal {
+    transition:
+      opacity var(--dur-fast) ease,
+      visibility 0s linear var(--dur-fast);
+  }
+
+  .reveal[data-open="true"] {
+    transition:
+      opacity var(--dur-fast) ease,
+      visibility 0s;
+  }
+
+  .stagger > * {
+    animation: none;
+  }
+
+  .swap-icon {
+    transform: none;
+    transition: none;
+  }
+
+  /* Landing surface: content still arrives, it just stops travelling. */
+  .hero-in > * {
+    animation-name: fade-only;
+    animation-duration: 260ms;
+  }
+
+  .reveal-up {
+    opacity: 1;
+    transform: none;
+    transition: opacity 260ms ease;
+  }
+
+  /* Show the finished route rather than drawing it, and park the aircraft at
+     the destination instead of flying it across the viewport. */
+  .route-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .route-plane {
+    animation: none;
+    offset-distance: 100%;
+  }
+
+  .hero-glow {
+    opacity: 0.7;
+  }
+
+  /* Keep the cross-fade, drop the travel. */
+  .animate-rise,
+  .animate-step-forward,
+  .animate-step-back,
+  .animate-check-in {
+    animation-name: fade-only;
+    animation-duration: 200ms;
+  }
+
+  .animate-draw-check {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  @keyframes fade-only {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .enter {
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .scroll-edge::after {
+    display: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --line: rgba(60, 60, 67, 0.45);
+    --line-strong: rgba(60, 60, 67, 0.7);
+    --ink-2: #3a3a3f;
+    --ink-3: #55555c;
+    --material: var(--surface);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --line: rgba(235, 235, 245, 0.45);
+      --line-strong: rgba(235, 235, 245, 0.7);
+      --ink-2: #d8d8dd;
+      --ink-3: #b0b0b6;
+    }
+  }
+
+  .card,
+  .card-lg,
+  .badge {
+    border-width: 1.5px;
+  }
+}
+
+/* ==========================================================================
+   Print — the e-ticket is a real deliverable
+   ========================================================================== */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  :root {
+    --canvas: #ffffff;
+    --surface: #ffffff;
+    --raised: #ffffff;
+    --fill: #ffffff;
+    --ink: #000000;
+    --ink-2: #333333;
+    --ink-3: #666666;
+    --line: rgba(0, 0, 0, 0.25);
+    --line-strong: rgba(0, 0, 0, 0.4);
+    --shadow-1: none;
+    --shadow-2: none;
+    --shadow-3: none;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .card,
+  .card-lg {
+    break-inside: avoid;
+  }
+}
