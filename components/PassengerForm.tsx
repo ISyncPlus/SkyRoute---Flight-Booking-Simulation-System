@@ -1,6 +1,7 @@
 "use client";
 
 import { Field } from "./ui";
+import { Icon } from "./icons";
 import { CABIN_NAMES } from "@/lib/format";
 import type { CabinClass, Passenger, PassengerType } from "@/lib/types";
 
@@ -34,12 +35,14 @@ export function PassengerForm({
   return (
     <fieldset className="card-lg">
       <legend className="flex flex-wrap items-center gap-2 px-1 text-footnote font-semibold text-ink">
+        <Icon name="user" className="h-4 w-4 text-ink-3" />
         Passenger {index + 1}
         <span className="badge bg-fill text-ink-2">{TYPE_LABELS[passenger.type]}</span>
         {passenger.type === "infant" ? (
           <span className="badge bg-fill text-ink-3">On an adult&apos;s lap</span>
         ) : seatId ? (
-          <span className="badge bg-accent-soft text-accent-ink">
+          <span className="badge gap-1.5 bg-accent-soft text-accent-ink">
+            <Icon name="seat" className="h-3.5 w-3.5" />
             Seat {seatId} · {CABIN_NAMES[cabin]}
           </span>
         ) : null}

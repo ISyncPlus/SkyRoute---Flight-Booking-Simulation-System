@@ -1,0 +1,5 @@
+{
+  "//": "For the standalone design scripts, passed explicitly: npx tsx --tsconfig tsconfig.designtools.json design/render-icon-sheet.tsx. It has to sit at the project root so it also governs the components/ files the script imports. Next compiles the app with jsx 'preserve' and applies its own transform; a script run outside Next needs the automatic runtime spelled out.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "jsx": "react-jsx" }
+}

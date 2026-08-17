@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, Field, Spinner } from "@/components/ui";
+import { Icon } from "@/components/icons";
 import { findBookingByPnrAndSurname, getFlight, listAirports } from "@/lib/repository";
 import { isValidPnr, PNR_LENGTH } from "@/lib/ids";
 import type { Booking } from "@/lib/types";
@@ -85,6 +86,7 @@ export default function ManageBookingPage() {
         </div>
 
         <button type="submit" className="btn-primary mt-6">
+          <Icon name="search" className="h-4 w-4" />
           Find booking
         </button>
       </form>
@@ -108,9 +110,11 @@ export default function ManageBookingPage() {
           />
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href={`/confirmation/${booking.pnr}`} className="btn-secondary">
+              <Icon name="printer" className="h-4 w-4" />
               View / print e-ticket
             </Link>
             <Link href="/bookings" className="btn-secondary">
+              <Icon name="signIn" className="h-4 w-4" />
               Sign in to cancel this booking
             </Link>
           </div>

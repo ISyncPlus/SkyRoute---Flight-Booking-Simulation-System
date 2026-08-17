@@ -2,6 +2,7 @@
 
 import { formatMoney } from "@/lib/pricing";
 import { CABIN_NAMES, airportLabel, formatDateShort, formatDuration, formatTime } from "@/lib/format";
+import { Icon } from "./icons";
 import type { Airport, CabinClass, FareBreakdown, Flight } from "@/lib/types";
 
 export function FareSummary({
@@ -40,11 +41,9 @@ export function FareSummary({
       <h2 className="overline">Trip summary</h2>
 
       <div className="mt-3 border-b border-line pb-4">
-        <p className="text-headline font-semibold text-ink">
+        <p className="flex items-center gap-1.5 text-headline font-semibold text-ink">
           {airportLabel(origin)}
-          <span aria-hidden="true" className="mx-1.5 text-ink-3">
-            →
-          </span>
+          <Icon name="arrowRight" className="h-4 w-4 text-ink-3" />
           {airportLabel(destination)}
         </p>
         <p className="mt-1.5 text-caption text-ink-3">

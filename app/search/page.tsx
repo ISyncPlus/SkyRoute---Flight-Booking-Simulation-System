@@ -7,6 +7,7 @@ import { useApp } from "@/components/AppProvider";
 import { FlightCard } from "@/components/FlightCard";
 import { SearchForm } from "@/components/SearchForm";
 import { Alert, EmptyState, Spinner } from "@/components/ui";
+import { Icon } from "@/components/icons";
 import { datesWithFlights, searchFlights } from "@/lib/repository";
 import { CABIN_NAMES, formatDate, formatDateShort } from "@/lib/format";
 import { validateSearch } from "@/lib/validation";
@@ -129,13 +130,14 @@ function SearchResults() {
 
   return (
     <div className="container-page">
-      <nav aria-label="Breadcrumb" className="mb-4 text-caption text-ink-3">
+      <nav
+        aria-label="Breadcrumb"
+        className="mb-4 flex items-center gap-1.5 text-caption text-ink-3"
+      >
         <Link href="/" className="hover:text-ink hover:underline">
           Search
         </Link>
-        <span aria-hidden="true" className="mx-1.5">
-          ›
-        </span>
+        <Icon name="chevronRight" className="h-3.5 w-3.5" />
         <span className="font-medium text-ink-2">Results</span>
       </nav>
 
@@ -143,9 +145,7 @@ function SearchResults() {
         <div>
           <h1 className="flex items-center gap-2.5 text-title-1 font-semibold text-ink">
             {criteria.originCode}
-            <span aria-hidden="true" className="text-ink-3">
-              →
-            </span>
+            <Icon name="arrowRight" className="h-6 w-6 text-ink-3" />
             {criteria.destinationCode}
           </h1>
           <p className="mt-1.5 text-footnote text-ink-2">
@@ -160,6 +160,7 @@ function SearchResults() {
           aria-controls="change-search"
           className="btn-secondary shrink-0"
         >
+          <Icon name={editing ? "close" : "search"} className="h-4 w-4" />
           {editing ? "Hide search" : "Change search"}
         </button>
       </div>
@@ -174,6 +175,7 @@ function SearchResults() {
 
       {results.length === 0 ? (
         <EmptyState
+          icon="search"
           title="No flights match this search"
           description={
             alternativeDates.length > 0
@@ -216,7 +218,8 @@ function SearchResults() {
 
             <div className="flex flex-wrap gap-3">
               <div>
-                <label htmlFor="airline" className="label">
+                <label htmlFor="airline" className="label flex items-center gap-1.5">
+                  <Icon name="filter" className="h-3.5 w-3.5" />
                   Airline
                 </label>
                 <select
@@ -235,7 +238,8 @@ function SearchResults() {
               </div>
 
               <div>
-                <label htmlFor="sort" className="label">
+                <label htmlFor="sort" className="label flex items-center gap-1.5">
+                  <Icon name="sort" className="h-3.5 w-3.5" />
                   Sort by
                 </label>
                 <select
@@ -262,6 +266,7 @@ function SearchResults() {
 
           {visible.length === 0 && (
             <EmptyState
+              icon="filter"
               title="No flights from that airline"
               description="Clear the airline filter to see all available departures on this date."
             />

@@ -2,16 +2,30 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppProvider } from "@/components/AppProvider";
 import { Navbar } from "@/components/Navbar";
+import { LogoMono } from "@/components/Brand";
 
+const DESCRIPTION =
+  "A flight booking simulation system built with Next.js, using browser localStorage for persistence.";
+
+/* The favicon, home-screen icon and social card are picked up by file
+   convention from app/icon.svg, app/apple-icon.tsx and app/opengraph-image.tsx,
+   all three cut from the vectors in design/. */
 export const metadata: Metadata = {
   title: "SkyRoute | Flight Booking Simulation System",
-  description:
-    "A flight booking simulation system built with Next.js, using browser localStorage for persistence.",
+  description: DESCRIPTION,
+  applicationName: "SkyRoute",
+  openGraph: {
+    title: "SkyRoute — Flight Booking Simulation System",
+    description: DESCRIPTION,
+    siteName: "SkyRoute",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2f2f7" },
+    { media: "(prefers-color-scheme: light)", color: "#f1f3f2" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
 };
@@ -35,7 +49,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <footer className="no-print border-t border-line py-8">
             <div className="container-page text-center text-caption text-ink-3">
-              <p className="font-medium text-ink-2">SkyRoute Flight Booking Simulation System</p>
+              <p className="flex items-center justify-center gap-2 font-medium text-ink-2">
+                <LogoMono className="h-4 w-4" />
+                SkyRoute Flight Booking Simulation System
+              </p>
               <p className="mx-auto mt-1.5 max-w-lg">
                 An academic project. No real flights, seats or payments are involved, and all
                 schedules and fares are fictional.

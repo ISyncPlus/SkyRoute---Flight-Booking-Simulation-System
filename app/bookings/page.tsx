@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, EmptyState, Segmented, Spinner } from "@/components/ui";
+import { Icon } from "@/components/icons";
 import { cancelBooking, getFlight, listAirports, listBookingsForUser } from "@/lib/repository";
 import { calculateRefund, formatMoney, refundRate } from "@/lib/pricing";
 import { formatDate } from "@/lib/format";
@@ -90,9 +91,11 @@ export default function BookingsPage() {
         </Alert>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/login" className="btn-primary">
+            <Icon name="signIn" className="h-4 w-4" />
             Sign in
           </Link>
           <Link href="/register" className="btn-secondary">
+            <Icon name="plus" className="h-4 w-4" />
             Create an account
           </Link>
         </div>
@@ -137,10 +140,12 @@ export default function BookingsPage() {
       <div className="mt-8">
         {visible.length === 0 ? (
           <EmptyState
+            icon="ticket"
             title={`No ${filter === "all" ? "" : filter} bookings`}
             description="When you complete a booking it will appear here, with your itinerary, seat allocation and the option to cancel."
             action={
               <Link href="/" className="btn-primary">
+                <Icon name="search" className="h-4 w-4" />
                 Search for a flight
               </Link>
             }
@@ -167,6 +172,7 @@ export default function BookingsPage() {
 
                   <div className="no-print mt-4 flex flex-wrap items-center gap-3">
                     <Link href={`/confirmation/${booking.pnr}`} className="btn-secondary">
+                      <Icon name="printer" className="h-4 w-4" />
                       View / print e-ticket
                     </Link>
 
@@ -204,6 +210,7 @@ export default function BookingsPage() {
                           onClick={() => setConfirming(booking.pnr)}
                           className="btn-danger"
                         >
+                          <Icon name="ban" className="h-4 w-4" />
                           Cancel booking
                         </button>
                       ))}
@@ -222,7 +229,10 @@ export default function BookingsPage() {
       </div>
 
       <div className="no-print card mt-12">
-        <h2 className="text-footnote font-semibold text-ink">Cancellation policy</h2>
+        <h2 className="flex items-center gap-2 text-footnote font-semibold text-ink">
+          <Icon name="infoCircle" className="h-4 w-4 text-ink-3" />
+          Cancellation policy
+        </h2>
         <ul className="mt-4 space-y-2 text-footnote text-ink-2">
           <li>7 days or more before departure — 90% of the refundable amount</li>
           <li>3 to 7 days before departure — 70%</li>

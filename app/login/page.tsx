@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { AuthShell } from "@/components/AuthShell";
 import { Alert, Field } from "@/components/ui";
+import { Icon } from "@/components/icons";
 import { DEMO_ADMIN, DEMO_CUSTOMER } from "@/lib/auth";
 
 const POINTS = [
@@ -60,9 +61,11 @@ export default function LoginPage() {
         </Alert>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/bookings" className="btn-primary">
+            <Icon name="ticket" className="h-4 w-4" />
             My bookings
           </Link>
           <Link href="/" className="btn-secondary">
+            <Icon name="search" className="h-4 w-4" />
             Search flights
           </Link>
         </div>
@@ -112,6 +115,10 @@ export default function LoginPage() {
         </Field>
 
         <button type="submit" disabled={busy} className="btn-primary btn-lg w-full">
+          <Icon
+            name={busy ? "spinner" : "signIn"}
+            className={`h-5 w-5 ${busy ? "animate-spin" : ""}`}
+          />
           {busy ? "Signing in…" : "Sign in"}
         </button>
 
@@ -119,9 +126,11 @@ export default function LoginPage() {
           <p className="overline">Demonstration accounts</p>
           <div className="mt-4 flex flex-wrap gap-2.5">
             <button type="button" onClick={() => fill(DEMO_CUSTOMER)} className="btn-secondary">
+              <Icon name="user" className="h-4 w-4" />
               Use customer account
             </button>
             <button type="button" onClick={() => fill(DEMO_ADMIN)} className="btn-secondary">
+              <Icon name="shield" className="h-4 w-4" />
               Use admin account
             </button>
           </div>

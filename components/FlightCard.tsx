@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { formatMoney } from "@/lib/pricing";
 import { airportLabel, CABIN_NAMES, formatDuration, formatTime } from "@/lib/format";
-import { PlaneGlyph } from "./ui";
+import { Icon } from "./icons";
 import type { CabinClass, FlightSearchResult, SearchCriteria } from "@/lib/types";
 
 export function FlightCard({
@@ -58,13 +58,14 @@ export function FlightCard({
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col items-center pt-1.5">
-              <p className="text-caption font-medium text-ink-3">
+              <p className="flex items-center gap-1.5 text-caption font-medium text-ink-3">
+                <Icon name="clock" className="h-3.5 w-3.5" />
                 {formatDuration(flight.durationMinutes)}
               </p>
               <div aria-hidden="true" className="my-2 flex w-full items-center gap-1.5">
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-line-strong" />
                 <span className="h-px flex-1 bg-line" />
-                <PlaneGlyph className="h-3.5 w-3.5 rotate-90 text-ink-3" />
+                <Icon name="plane" className="h-3.5 w-3.5 text-ink-3" />
                 <span className="h-px flex-1 bg-line" />
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-line-strong" />
               </div>
@@ -86,7 +87,12 @@ export function FlightCard({
             <span aria-hidden="true" className="text-ink-3">
               ·
             </span>
-            <span className={isLowAvailability ? "font-semibold text-danger" : "text-ink-2"}>
+            <span
+              className={`inline-flex items-center gap-1.5 ${
+                isLowAvailability ? "font-semibold text-danger" : "text-ink-2"
+              }`}
+            >
+              <Icon name="seat" className="h-3.5 w-3.5" />
               {seatsAvailable} seat{seatsAvailable === 1 ? "" : "s"} left
             </span>
           </div>

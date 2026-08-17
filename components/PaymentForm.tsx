@@ -2,6 +2,7 @@
 
 import { detectCardBrand } from "@/lib/validation";
 import { Alert, Field } from "./ui";
+import { Icon, type IconName } from "./icons";
 import type { Payment } from "@/lib/types";
 
 export interface PaymentDetails {
@@ -50,10 +51,10 @@ export function PaymentForm({
         <legend className="px-1 text-footnote font-semibold text-ink">Payment method</legend>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           {([
-            { value: "card", label: "Debit / credit card" },
-            { value: "transfer", label: "Bank transfer" },
-            { value: "wallet", label: "Wallet" },
-          ] as const).map((option) => (
+            { value: "card", label: "Debit / credit card", icon: "creditCard" },
+            { value: "transfer", label: "Bank transfer", icon: "building" },
+            { value: "wallet", label: "Wallet", icon: "banknote" },
+          ] as const satisfies readonly { value: Payment["method"]; label: string; icon: IconName }[]).map((option) => (
             <label
               key={option.value}
               className={`pressable flex cursor-pointer items-center gap-2.5 rounded-lg border px-4 py-3.5 text-footnote ${
@@ -70,6 +71,7 @@ export function PaymentForm({
                 onChange={() => onChange({ method: option.value })}
                 className="h-4 w-4"
               />
+              <Icon name={option.icon} className="h-4 w-4" />
               {option.label}
             </label>
           ))}
@@ -77,7 +79,10 @@ export function PaymentForm({
       </fieldset>
 
       <fieldset className="card-lg">
-        <legend className="px-1 text-footnote font-semibold text-ink">Card details</legend>
+        <legend className="flex items-center gap-2 px-1 text-footnote font-semibold text-ink">
+          <Icon name="lock" className="h-4 w-4 text-ink-3" />
+          Card details
+        </legend>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">

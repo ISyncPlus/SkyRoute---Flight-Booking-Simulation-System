@@ -4,12 +4,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useApp } from "./AppProvider";
-import { PlaneGlyph } from "./ui";
+import { Icon, type IconName } from "./icons";
+import { LogoMark } from "./Brand";
 
-const LINKS = [
-  { href: "/", label: "Search flights" },
-  { href: "/bookings", label: "My bookings" },
-  { href: "/manage", label: "Manage booking" },
+/* The icons are for the mobile sheet, where each link is a full-width row and
+   the glyph is what the eye lands on first. The desktop bar stays text-only:
+   four labelled icons plus the account controls would crowd it at the width
+   the breakpoint actually starts. */
+const LINKS: { href: string; label: string; icon: IconName }[] = [
+  { href: "/", label: "Search flights", icon: "search" },
+  { href: "/bookings", label: "My bookings", icon: "ticket" },
+  { href: "/manage", label: "Manage booking", icon: "luggage" },
 ];
 
 export function Navbar() {
@@ -38,7 +43,9 @@ export function Navbar() {
     return href === "/admin" ? pathname.startsWith("/admin") : pathname === href;
   }
 
-  const navLinks = isAdmin ? [...LINKS, { href: "/admin", label: "Admin" }] : LINKS;
+  const navLinks = isAdmin
+    ? [...LINKS, { href: "/admin", label: "Admin", icon: "shield" as IconName }]
+    : LINKS;
 
   return (
     <header className="no-print scroll-edge material sticky top-0 z-40 border-b border-line">
@@ -47,12 +54,7 @@ export function Navbar() {
           href="/"
           className="pressable flex items-center gap-2.5 text-title-3 font-semibold text-ink"
         >
-          <span
-            aria-hidden="true"
-            className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-on-accent shadow-e1"
-          >
-            <PlaneGlyph />
-          </span>
+          <LogoMark className="h-8 w-8" />
           SkyRoute
         </Link>
 
@@ -76,19 +78,28 @@ export function Navbar() {
           {!ready ? null : user ? (
             <>
               <span className="on-material flex items-center gap-2 text-footnote">
+                <Icon name="user" className="h-4 w-4 text-ink-3" />
                 {user.fullName.split(" ")[0]}
-                {isAdmin && <span className="badge bg-warn-soft text-warn-ink">Admin</span>}
+                {isAdmin && (
+                  <span className="badge gap-1 bg-warn-soft text-warn-ink">
+                    <Icon name="shield" className="h-3 w-3" />
+                    Admin
+                  </span>
+                )}
               </span>
               <button type="button" onClick={handleSignOut} className="btn-secondary">
+                <Icon name="signOut" className="h-4 w-4" />
                 Sign out
               </button>
             </>
           ) : (
             <>
               <Link href="/login" className="btn-secondary">
+                <Icon name="signIn" className="h-4 w-4" />
                 Sign in
               </Link>
               <Link href="/register" className="btn-primary">
+                <Icon name="plus" className="h-4 w-4" />
                 Create account
               </Link>
             </>
@@ -102,9 +113,7 @@ export function Navbar() {
           aria-expanded={menuOpen}
           aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
         >
-          <span aria-hidden="true" className="text-title-3 leading-none">
-            {menuOpen ? "×" : "≡"}
-          </span>
+          <Icon name={menuOpen ? "close" : "menu"} className="h-5 w-5" />
         </button>
       </nav>
 
@@ -131,10 +140,14 @@ export function Navbar() {
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
                 aria-current={isCurrent(link.href) ? "page" : undefined}
-                className={`pressable block rounded-md px-3 py-2.5 text-callout font-medium ${
+                className={`pressable flex items-center gap-3 rounded-md px-3 py-2.5 text-callout font-medium ${
                   isCurrent(link.href) ? "bg-fill text-ink" : "text-ink"
                 }`}
               >
+                <Icon
+                  name={link.icon}
+                  className={`h-5 w-5 ${isCurrent(link.href) ? "text-accent" : "text-ink-3"}`}
+                />
                 {link.label}
               </Link>
             </li>
@@ -144,14 +157,17 @@ export function Navbar() {
         <div className="mt-3 flex gap-2 border-t border-line pt-3">
           {user ? (
             <button type="button" onClick={handleSignOut} className="btn-secondary w-full">
+              <Icon name="signOut" className="h-4 w-4" />
               Sign out
             </button>
           ) : (
             <>
               <Link href="/login" onClick={() => setMenuOpen(false)} className="btn-secondary w-full">
+                <Icon name="signIn" className="h-4 w-4" />
                 Sign in
               </Link>
               <Link href="/register" onClick={() => setMenuOpen(false)} className="btn-primary w-full">
+                <Icon name="plus" className="h-4 w-4" />
                 Register
               </Link>
             </>

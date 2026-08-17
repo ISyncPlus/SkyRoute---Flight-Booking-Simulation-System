@@ -20,6 +20,7 @@ import { PassengerForm } from "@/components/PassengerForm";
 import { PaymentForm, type PaymentDetails } from "@/components/PaymentForm";
 import { SeatMap } from "@/components/SeatMap";
 import { Alert, Field, Spinner, StepIndicator } from "@/components/ui";
+import { Icon } from "@/components/icons";
 import { airportLabel, CABIN_NAMES, formatDate, formatTime, isInternational } from "@/lib/format";
 import { calculateFare, daysUntil, formatMoney, type FareContext } from "@/lib/pricing";
 import { buildSeatMap, loadFactor, seatsInCabin } from "@/lib/seats";
@@ -289,27 +290,24 @@ function BookingWizard() {
 
   return (
     <div className="container-page">
-      <nav aria-label="Breadcrumb" className="mb-4 text-caption text-ink-3">
+      <nav
+        aria-label="Breadcrumb"
+        className="mb-4 flex items-center gap-1.5 text-caption text-ink-3"
+      >
         <Link href="/" className="hover:text-ink hover:underline">
           Search
         </Link>
-        <span aria-hidden="true" className="mx-1.5">
-          ›
-        </span>
+        <Icon name="chevronRight" className="h-3.5 w-3.5" />
         <button type="button" onClick={() => router.back()} className="hover:text-ink hover:underline">
           Results
         </button>
-        <span aria-hidden="true" className="mx-1.5">
-          ›
-        </span>
+        <Icon name="chevronRight" className="h-3.5 w-3.5" />
         <span className="font-medium text-ink-2">Book</span>
       </nav>
 
-      <h1 className="text-title-1 font-semibold text-ink">
+      <h1 className="flex items-center gap-2.5 text-title-1 font-semibold text-ink">
         {airportLabel(origin)}
-        <span aria-hidden="true" className="mx-2 text-ink-3">
-          →
-        </span>
+        <Icon name="arrowRight" className="h-6 w-6 text-ink-3" />
         {airportLabel(destination)}
       </h1>
       <p className="mb-7 mt-1.5 text-footnote text-ink-2">
@@ -350,6 +348,7 @@ function BookingWizard() {
                     </p>
                   </div>
                   <button type="button" onClick={autoAssignSeats} className="btn-secondary">
+                    <Icon name="sparkles" className="h-4 w-4" />
                     Assign seats for me
                   </button>
                 </div>
@@ -490,17 +489,20 @@ function BookingWizard() {
           <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
             {step > 0 ? (
               <button type="button" onClick={() => goToStep(step - 1)} className="btn-secondary">
-                ← Back
+                <Icon name="arrowLeft" className="h-4 w-4" />
+                Back
               </button>
             ) : (
               <Link href="/" className="btn-secondary">
-                ← Change search
+                <Icon name="arrowLeft" className="h-4 w-4" />
+                Change search
               </Link>
             )}
 
             {step < 2 ? (
               <button type="button" onClick={() => goToStep(step + 1)} className="btn-primary">
-                Continue →
+                Continue
+                <Icon name="arrowRight" className="h-4 w-4" />
               </button>
             ) : (
               <button
@@ -509,6 +511,7 @@ function BookingWizard() {
                 disabled={submitting}
                 className="btn-primary"
               >
+                <Icon name={submitting ? "spinner" : "lock"} className={`h-4 w-4 ${submitting ? "animate-spin" : ""}`} />
                 {submitting ? "Processing payment…" : `Pay ${formatMoney(fare.total, flight.currency)}`}
               </button>
             )}

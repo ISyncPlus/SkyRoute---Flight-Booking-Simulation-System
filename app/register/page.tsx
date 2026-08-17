@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { AuthShell } from "@/components/AuthShell";
 import { Alert, Field } from "@/components/ui";
+import { Icon } from "@/components/icons";
 import { validateRegistration } from "@/lib/validation";
 
 const POINTS = [
@@ -80,6 +81,7 @@ export default function RegisterPage() {
           You are signed in as {user.fullName}.
         </Alert>
         <Link href="/" className="btn-primary mt-6">
+          <Icon name="search" className="h-4 w-4" />
           Search flights
         </Link>
       </div>
@@ -164,6 +166,10 @@ export default function RegisterPage() {
         </Field>
 
         <button type="submit" disabled={busy} className="btn-primary btn-lg w-full">
+          <Icon
+            name={busy ? "spinner" : "plus"}
+            className={`h-5 w-5 ${busy ? "animate-spin" : ""}`}
+          />
           {busy ? "Creating account…" : "Create account"}
         </button>
       </form>

@@ -12,6 +12,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { RouteArc } from "./RouteArc";
+import { Icon } from "./icons";
+import { LogoMark } from "./Brand";
 
 export function AuthShell({
   title,
@@ -35,6 +37,10 @@ export function AuthShell({
             small screens where it would otherwise come before the form. */}
         <aside className="hero-in hidden lg:block">
           <div className="card-glass p-8">
+            <div className="mb-6 flex items-center gap-2.5 text-title-3 font-semibold text-ink">
+              <LogoMark className="h-9 w-9" />
+              SkyRoute
+            </div>
             <RouteArc from="LOS" to="ABV" className="h-auto w-full" />
           </div>
 
@@ -47,9 +53,9 @@ export function AuthShell({
               <div key={point.title} className="flex gap-4">
                 <span
                   aria-hidden="true"
-                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-caption font-bold text-accent-ink"
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink"
                 >
-                  ✓
+                  <Icon name="check" size={14} />
                 </span>
                 <div>
                   <dt className="text-footnote font-semibold text-ink">{point.title}</dt>
@@ -65,9 +71,10 @@ export function AuthShell({
             <div>
               <Link
                 href="/"
-                className="text-footnote font-medium text-ink-3 hover:text-ink hover:underline"
+                className="inline-flex items-center gap-1.5 text-footnote font-medium text-ink-3 hover:text-ink hover:underline"
               >
-                ← Back to SkyRoute
+                <Icon name="arrowLeft" className="h-4 w-4" />
+                Back to SkyRoute
               </Link>
               <h1 className="mt-6 text-display font-semibold text-ink">{title}</h1>
               <p className="mt-4 text-lead text-ink-2">{subtitle}</p>

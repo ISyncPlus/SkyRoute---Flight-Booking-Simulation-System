@@ -11,9 +11,12 @@
 
 const ROUTE = "M 42 152 Q 200 18 358 66";
 
-/** Nose-up airliner, drawn in a 24×24 box so it can be centred on the path. */
-const PLANE =
-  "M21 16.5v-2l-8-4.5V4.2a1.2 1.2 0 0 0-2.4 0V10l-8 4.5v2l8-2.4v4.3l-2.2 1.4v1.5l3.4-1 3.4 1v-1.5L13 18.4v-4.3l8 2.4Z";
+/**
+ * The aircraft from the logo mark: a swept delta, nose along +X, drawn about
+ * the origin so `offset-rotate: auto` can turn it to face along the path.
+ * The same silhouette as design/logo-master.svg and the `plane` icon.
+ */
+const PLANE = "M17 0 L-8 -10 L-1 0 L-8 10 Z";
 
 export function RouteArc({
   from,
@@ -66,10 +69,9 @@ export function RouteArc({
       </text>
 
       <g className="route-plane" style={{ offsetPath: `path("${ROUTE}")` } as React.CSSProperties}>
-        {/* Centred on the origin, then turned to face along the path. */}
-        <g transform="rotate(90) translate(-12,-12)">
-          <path d={PLANE} fill="var(--accent)" />
-        </g>
+        {/* Scaled to the viewBox, then shifted so the aircraft's own centre —
+            not the tail — is what rides the path. */}
+        <path d={PLANE} fill="var(--accent)" transform="translate(-3.6 0) scale(.8)" />
       </g>
     </svg>
   );

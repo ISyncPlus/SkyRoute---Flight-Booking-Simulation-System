@@ -11,6 +11,7 @@
 import { groupByRow, seatsInCabin } from "@/lib/seats";
 import { formatMoney, seatFee } from "@/lib/pricing";
 import { CABIN_NAMES } from "@/lib/format";
+import { Icon } from "./icons";
 import type { CabinClass, Seat } from "@/lib/types";
 
 interface SeatMapProps {
@@ -81,8 +82,9 @@ export function SeatMap({ seats, cabin, selected, maxSelectable, onToggle }: Sea
 
       <div className="overflow-x-auto rounded-2xl border border-line bg-fill p-4 sm:p-5">
         <div className="mx-auto w-fit">
-          <p className="mb-4 text-center text-overline font-semibold uppercase text-ink-3">
-            ▲ Front of aircraft
+          <p className="mb-4 flex items-center justify-center gap-2 text-overline font-semibold uppercase text-ink-3">
+            <Icon name="plane" className="h-4 w-4 -rotate-90" />
+            Front of aircraft
           </p>
 
           {/* Column headings */}

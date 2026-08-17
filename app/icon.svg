@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="SkyRoute">
+  <defs>
+    <linearGradient id="srDiscSm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#19AD9C"/>
+      <stop offset="1" stop-color="#0A564D"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="24" cy="24" r="24" fill="url(#srDiscSm)"/>
+  <path d="M11.8 32.8C16.8 33.4 21.2 30.4 24.8 24.4" fill="none" stroke="#ffffff"
+        stroke-width="3.8" stroke-linecap="round" opacity=".92"/>
+  <circle cx="11.8" cy="32.8" r="3.1" fill="#ffffff"/>
+  <path d="M17 0 L-8 -10 L-1 0 L-8 10 Z" fill="#ffffff"
+        transform="translate(26.3 20.6) rotate(-45) scale(.88)"/>
+</svg>

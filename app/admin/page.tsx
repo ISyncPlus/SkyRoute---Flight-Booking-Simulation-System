@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useApp, useStored } from "@/components/AppProvider";
 import { Alert, Field, Segmented, Spinner, StatusBadge } from "@/components/ui";
+import { Icon, type IconName } from "@/components/icons";
 import {
   cancelBooking,
   createFlight,
@@ -185,6 +186,7 @@ export default function AdminPage() {
           credentials to continue.
         </Alert>
         <Link href="/login" className="btn-primary mt-4">
+          <Icon name="signIn" className="h-4 w-4" />
           Sign in
         </Link>
       </div>
@@ -237,14 +239,15 @@ export default function AdminPage() {
       {tab === "overview" && stats && (
         <section className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "Flights scheduled", value: stats.scheduledFlights.toLocaleString() },
-              { label: "Confirmed bookings", value: stats.confirmedBookings.toLocaleString() },
-              { label: "Passengers carried", value: stats.totalPassengers.toLocaleString() },
-              { label: "Registered users", value: stats.registeredUsers.toLocaleString() },
-            ].map((item) => (
+            {([
+              { label: "Flights scheduled", value: stats.scheduledFlights.toLocaleString(), icon: "plane" },
+              { label: "Confirmed bookings", value: stats.confirmedBookings.toLocaleString(), icon: "ticket" },
+              { label: "Passengers carried", value: stats.totalPassengers.toLocaleString(), icon: "users" },
+              { label: "Registered users", value: stats.registeredUsers.toLocaleString(), icon: "user" },
+            ] as const satisfies readonly { label: string; value: string; icon: IconName }[]).map((item) => (
               <div key={item.label} className="card">
-                <p className="overline">
+                <p className="overline flex items-center gap-1.5">
+                  <Icon name={item.icon} className="h-3.5 w-3.5" />
                   {item.label}
                 </p>
                 <p className="mt-1.5 text-numeral font-semibold text-ink">{item.value}</p>
@@ -254,7 +257,10 @@ export default function AdminPage() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="card">
-              <h2 className="text-title-3 font-semibold text-ink">Revenue</h2>
+              <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
+                <Icon name="banknote" className="h-5 w-5 text-ink-3" />
+                Revenue
+              </h2>
               <dl className="mt-3 space-y-2 text-footnote">
                 <div className="flex justify-between">
                   <dt className="text-ink-2">Gross revenue (confirmed)</dt>
@@ -280,7 +286,10 @@ export default function AdminPage() {
             </div>
 
             <div className="card">
-              <h2 className="text-title-3 font-semibold text-ink">Busiest routes</h2>
+              <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
+                <Icon name="chart" className="h-5 w-5 text-ink-3" />
+                Busiest routes
+              </h2>
               {stats.topRoutes.length === 0 ? (
                 <p className="mt-3 text-footnote text-ink-3">No bookings have been made yet.</p>
               ) : (
@@ -313,7 +322,10 @@ export default function AdminPage() {
       {tab === "flights" && (
         <section className="space-y-6">
           <form onSubmit={handleCreateFlight} noValidate className="card">
-            <h2 className="text-title-3 font-semibold text-ink">Add a flight to the schedule</h2>
+            <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
+              <Icon name="plus" className="h-5 w-5 text-ink-3" />
+              Add a flight to the schedule
+            </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Field label="Flight number" htmlFor="flightNumber" error={flightErrors.flightNumber}>
                 <input
@@ -439,6 +451,7 @@ export default function AdminPage() {
             </div>
 
             <button type="submit" className="btn-primary mt-4">
+              <Icon name="plus" className="h-4 w-4" />
               Add flight
             </button>
           </form>
@@ -503,8 +516,9 @@ export default function AdminPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteFlight(flight)}
-                            className="pressable rounded border border-danger px-2 py-1.5 text-caption font-medium text-danger"
+                            className="pressable inline-flex items-center gap-1 rounded border border-danger px-2 py-1.5 text-caption font-medium text-danger"
                           >
+                            <Icon name="trash" className="h-3.5 w-3.5" />
                             Delete
                           </button>
                         </div>
@@ -594,8 +608,9 @@ export default function AdminPage() {
                             <button
                               type="button"
                               onClick={() => handleCancelBooking(booking)}
-                              className="pressable rounded border border-danger px-2 py-1.5 text-caption font-medium text-danger"
+                              className="pressable inline-flex items-center gap-1 rounded border border-danger px-2 py-1.5 text-caption font-medium text-danger"
                             >
+                              <Icon name="ban" className="h-3.5 w-3.5" />
                               Cancel
                             </button>
                           ) : (
@@ -617,7 +632,8 @@ export default function AdminPage() {
       {/* ---------------- Users ---------------- */}
       {tab === "users" && (
         <section className="card">
-          <h2 className="mb-5 text-title-3 font-semibold text-ink">
+          <h2 className="mb-5 flex items-center gap-2 text-title-3 font-semibold text-ink">
+            <Icon name="users" className="h-5 w-5 text-ink-3" />
             Registered users ({users.length})
           </h2>
           <div className="overflow-x-auto">
@@ -667,7 +683,10 @@ export default function AdminPage() {
       {tab === "system" && (
         <section className="space-y-5">
           <div className="card">
-            <h2 className="text-title-3 font-semibold text-ink">Storage</h2>
+            <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
+              <Icon name="database" className="h-5 w-5 text-ink-3" />
+              Storage
+            </h2>
             <dl className="mt-3 space-y-2 text-footnote">
               <div className="flex justify-between">
                 <dt className="text-ink-2">Approximate size of stored data</dt>
@@ -693,12 +712,16 @@ export default function AdminPage() {
           </div>
 
           <div className="card">
-            <h2 className="text-title-3 font-semibold text-ink">Reset the system</h2>
+            <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
+              <Icon name="alertTriangle" className="h-5 w-5 text-warn" />
+              Reset the system
+            </h2>
             <p className="mt-2 text-footnote text-ink-2">
               Deletes every user, booking and flight from this browser and regenerates the seed
               schedule. Useful before a demonstration. This cannot be undone.
             </p>
             <button type="button" onClick={handleReset} className="btn-danger mt-4">
+              <Icon name="refresh" className="h-4 w-4" />
               Clear all data and reseed
             </button>
           </div>

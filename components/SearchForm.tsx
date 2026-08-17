@@ -13,6 +13,7 @@ import { validateSearch, CABIN_LABELS } from "@/lib/validation";
 import { dateInputValue } from "@/lib/format";
 import type { Airport, CabinClass, SearchCriteria } from "@/lib/types";
 import { Field } from "./ui";
+import { Icon } from "./icons";
 import { useApp } from "./AppProvider";
 
 const DEFAULTS: SearchCriteria = {
@@ -113,10 +114,10 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
           >
             <span
               aria-hidden="true"
-              className="swap-icon text-callout leading-none"
+              className="swap-icon flex"
               style={{ "--swap-rot": `${swaps * 180}deg` } as React.CSSProperties}
             >
-              ⇅
+              <Icon name="swap" className="h-[1.15rem] w-[1.15rem]" />
             </span>
           </button>
         </div>
@@ -219,6 +220,7 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
           allocated a seat.
         </p>
         <button type="submit" className="btn-primary w-full sm:w-auto sm:px-7">
+          <Icon name="search" className="h-[1.15rem] w-[1.15rem]" />
           Search flights
         </button>
       </div>

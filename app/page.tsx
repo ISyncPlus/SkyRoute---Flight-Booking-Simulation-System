@@ -5,24 +5,29 @@ import { SearchForm } from "@/components/SearchForm";
 import { RouteArc } from "@/components/RouteArc";
 import { useApp } from "@/components/AppProvider";
 import { Alert, Reveal } from "@/components/ui";
+import { Icon, type IconName } from "@/components/icons";
 import { DEMO_ADMIN, DEMO_CUSTOMER } from "@/lib/auth";
 
-const FEATURES = [
+const FEATURES: { title: string; body: string; icon: IconName }[] = [
   {
     title: "Search a live schedule",
     body: "Twenty-one days of departures across sixteen airports, filtered by route, date, cabin and party size.",
+    icon: "search",
   },
   {
     title: "Choose your own seat",
     body: "An interactive seat map per aircraft type, with window, aisle, middle and exit-row pricing.",
+    icon: "seat",
   },
   {
     title: "Dynamic fares",
     body: "Prices respond to how far ahead you book and how full the cabin already is, like a real airline.",
+    icon: "trendUp",
   },
   {
     title: "Manage your trips",
     body: "Retrieve a booking by reference, view the itinerary, and cancel with an automatic refund calculation.",
+    icon: "ticket",
   },
 ];
 
@@ -46,16 +51,23 @@ function DemoAccount({
   return (
     <div className="card">
       <p className="flex items-center gap-2 text-footnote font-semibold text-ink">
+        <Icon name={admin ? "shield" : "user"} className="h-4 w-4 text-ink-3" />
         {role}
         {admin && <span className="badge bg-warn-soft text-warn-ink">Admin</span>}
       </p>
       <dl className="mt-4 space-y-2 text-footnote">
         <div className="flex flex-wrap gap-x-2">
-          <dt className="text-ink-3">Email</dt>
+          <dt className="flex items-center gap-1.5 text-ink-3">
+            <Icon name="mail" className="h-3.5 w-3.5" />
+            Email
+          </dt>
           <dd className="font-mono text-ink-2">{email}</dd>
         </div>
         <div className="flex flex-wrap gap-x-2">
-          <dt className="text-ink-3">Password</dt>
+          <dt className="flex items-center gap-1.5 text-ink-3">
+            <Icon name="lock" className="h-3.5 w-3.5" />
+            Password
+          </dt>
           <dd className="font-mono text-ink-2">{password}</dd>
         </div>
       </dl>
@@ -75,7 +87,8 @@ export default function HomePage() {
         <div className="container-wide grid items-center gap-14 pb-16 pt-10 sm:pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pb-24 lg:pt-24">
           <div className="hero-in">
             <p>
-              <span className="badge border border-line bg-surface px-3 py-1.5 text-ink-2 shadow-e1">
+              <span className="badge gap-1.5 border border-line bg-surface px-3 py-1.5 text-ink-2 shadow-e1">
+                <Icon name="sparkles" className="h-3.5 w-3.5 text-accent" />
                 Flight Booking Simulation System
               </span>
             </p>
@@ -94,9 +107,11 @@ export default function HomePage() {
               {user ? (
                 <>
                   <a href="#search" className="btn-primary btn-lg">
+                    <Icon name="search" className="h-5 w-5" />
                     Search flights
                   </a>
                   <Link href="/bookings" className="btn-secondary btn-lg">
+                    <Icon name="ticket" className="h-5 w-5" />
                     My bookings
                   </Link>
                 </>
@@ -104,8 +119,10 @@ export default function HomePage() {
                 <>
                   <Link href="/register" className="btn-primary btn-lg">
                     Create your account
+                    <Icon name="arrowRight" className="h-5 w-5" />
                   </Link>
                   <Link href="/login" className="btn-secondary btn-lg">
+                    <Icon name="signIn" className="h-5 w-5" />
                     Sign in
                   </Link>
                 </>
@@ -175,11 +192,8 @@ export default function HomePage() {
           {FEATURES.map((feature, index) => (
             <Reveal key={feature.title} delay={index * 80}>
               <div className="card h-full">
-                <span
-                  aria-hidden="true"
-                  className="tabular flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-footnote font-bold text-accent-ink"
-                >
-                  {index + 1}
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent-ink">
+                  <Icon name={feature.icon} className="h-5 w-5" />
                 </span>
                 <h3 className="mt-5 text-headline font-semibold text-ink">{feature.title}</h3>
                 <p className="mt-2.5 text-footnote text-ink-2">{feature.body}</p>
@@ -232,8 +246,10 @@ export default function HomePage() {
               <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
                 <Link href="/register" className="btn-primary btn-lg">
                   Create your account
+                  <Icon name="arrowRight" className="h-5 w-5" />
                 </Link>
                 <Link href="/login" className="btn-secondary btn-lg">
+                  <Icon name="signIn" className="h-5 w-5" />
                   Sign in
                 </Link>
               </div>

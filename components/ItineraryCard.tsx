@@ -2,7 +2,9 @@
 
 /** The e-ticket / itinerary view, shared by the confirmation and bookings pages. */
 
-import { PlaneGlyph, StatusBadge } from "./ui";
+import { StatusBadge } from "./ui";
+import { Icon } from "./icons";
+import { LogoMark } from "./Brand";
 import { formatMoney } from "@/lib/pricing";
 import {
   airportLabel,
@@ -28,16 +30,25 @@ export function ItineraryCard({
 }) {
   return (
     <article className="card-lg overflow-hidden p-0">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-line bg-fill px-6 py-5 sm:px-8">
-        <div>
-          <p className="overline">Booking reference</p>
-          <p className="tabular mt-1.5 font-mono text-numeral font-semibold tracking-[0.18em] text-ink">
-            {booking.pnr}
-          </p>
+      {/* The e-ticket is the one thing here that leaves the screen — it gets
+          printed and carried — so it is the one thing that has to identify
+          itself without the surrounding chrome. */}
+      <header className="border-b border-line bg-fill px-6 py-5 sm:px-8">
+        <div className="mb-4 flex items-center gap-2 text-footnote font-semibold text-ink">
+          <LogoMark className="h-6 w-6" />
+          SkyRoute
         </div>
-        <div className="text-right">
-          <StatusBadge status={booking.status} />
-          <p className="mt-2 text-caption text-ink-3">Booked {formatDate(booking.createdAt)}</p>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="overline">Booking reference</p>
+            <p className="tabular mt-1.5 font-mono text-numeral font-semibold tracking-[0.18em] text-ink">
+              {booking.pnr}
+            </p>
+          </div>
+          <div className="text-right">
+            <StatusBadge status={booking.status} />
+            <p className="mt-2 text-caption text-ink-3">Booked {formatDate(booking.createdAt)}</p>
+          </div>
         </div>
       </header>
 
@@ -68,14 +79,17 @@ export function ItineraryCard({
               </p>
               <p className="mt-2 text-callout font-medium text-ink">{airportLabel(origin)}</p>
               <p className="mt-1 text-caption text-ink-3">{origin?.name}</p>
-              <p className="mt-2 text-caption text-ink-3">{formatDate(flight.departureTime)}</p>
+              <p className="mt-2 flex items-center gap-1.5 text-caption text-ink-3">
+                <Icon name="planeTakeoff" className="h-3.5 w-3.5" />
+                {formatDate(flight.departureTime)}
+              </p>
             </div>
 
             <div className="flex flex-row items-center gap-3 sm:flex-col sm:justify-center sm:px-6">
               <p className="text-caption text-ink-3">{formatDuration(flight.durationMinutes)}</p>
               <div aria-hidden="true" className="flex flex-1 items-center gap-1.5 sm:w-24">
                 <span className="h-px flex-1 bg-line-strong" />
-                <PlaneGlyph className="h-3.5 w-3.5 rotate-90 text-ink-3" />
+                <Icon name="plane" className="h-3.5 w-3.5 text-ink-3" />
                 <span className="h-px flex-1 bg-line-strong" />
               </div>
               <p className="text-caption text-ink-3">Direct</p>
@@ -87,12 +101,18 @@ export function ItineraryCard({
               </p>
               <p className="mt-2 text-callout font-medium text-ink">{airportLabel(destination)}</p>
               <p className="mt-1 text-caption text-ink-3">{destination?.name}</p>
-              <p className="mt-2 text-caption text-ink-3">{formatDate(flight.arrivalTime)}</p>
+              <p className="mt-2 flex items-center gap-1.5 text-caption text-ink-3 sm:justify-end">
+                <Icon name="planeLanding" className="h-3.5 w-3.5" />
+                {formatDate(flight.arrivalTime)}
+              </p>
             </div>
           </div>
 
           <div className="mt-7">
-            <h3 className="overline">Passengers</h3>
+            <h3 className="overline flex items-center gap-1.5">
+              <Icon name="users" className="h-3.5 w-3.5" />
+              Passengers
+            </h3>
             <div className="mt-3 overflow-x-auto">
               <table className="table-base">
                 <thead>
@@ -123,14 +143,20 @@ export function ItineraryCard({
 
           <div className="mt-7 grid gap-7 sm:grid-cols-2">
             <div>
-              <h3 className="overline">Contact</h3>
+              <h3 className="overline flex items-center gap-1.5">
+                <Icon name="mail" className="h-3.5 w-3.5" />
+                Contact
+              </h3>
               <p className="mt-3 text-footnote text-ink-2">{booking.contactEmail}</p>
               <p className="text-footnote text-ink-2">{booking.contactPhone}</p>
             </div>
 
             {showFare && (
               <div>
-                <h3 className="overline">Payment</h3>
+                <h3 className="overline flex items-center gap-1.5">
+                  <Icon name="creditCard" className="h-3.5 w-3.5" />
+                  Payment
+                </h3>
                 <dl className="mt-3 space-y-2 text-footnote">
                   <div className="flex justify-between gap-3">
                     <dt className="text-ink-2">Base fare</dt>
@@ -175,17 +201,21 @@ export function ItineraryCard({
           </div>
 
           {booking.status === "cancelled" && (
-            <div className="mt-7 rounded-lg border border-line bg-danger-soft px-5 py-4 text-footnote text-danger-ink">
-              <p className="font-semibold">This booking was cancelled.</p>
-              <p className="mt-1">
-                Cancelled on {booking.cancelledAt ? formatDate(booking.cancelledAt) : "—"}. Refund
-                issued: {formatMoney(booking.refundAmount ?? 0)}.
-              </p>
+            <div className="mt-7 flex gap-3 rounded-lg border border-line bg-danger-soft px-5 py-4 text-footnote text-danger-ink">
+              <Icon name="xCircle" className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
+              <div>
+                <p className="font-semibold">This booking was cancelled.</p>
+                <p className="mt-1">
+                  Cancelled on {booking.cancelledAt ? formatDate(booking.cancelledAt) : "—"}. Refund
+                  issued: {formatMoney(booking.refundAmount ?? 0)}.
+                </p>
+              </div>
             </div>
           )}
         </div>
       ) : (
-        <div className="px-6 py-8 text-footnote text-ink-2 sm:px-8">
+        <div className="flex items-center gap-2.5 px-6 py-8 text-footnote text-ink-2 sm:px-8">
+          <Icon name="alertTriangle" className="h-4 w-4 shrink-0 text-warn" />
           The flight for this booking is no longer in the schedule.
         </div>
       )}

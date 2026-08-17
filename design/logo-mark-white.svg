@@ -1,0 +1,16 @@
+<!--
+  SkyRoute — the mark alone in white, on a transparent ground.
+
+  For when something else supplies the badge: the iOS home-screen tile, where
+  the OS draws and masks the shape itself, and any solid brand-coloured panel.
+
+  Positioned for a full-bleed square rather than for the disc, so it is
+  centred in the tile instead of sitting where the disc used to hold it.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="SkyRoute">
+  <path d="M10.5 34C16 34.6 21 31.2 25 24.6" fill="none" stroke="#ffffff"
+        stroke-width="3.4" stroke-linecap="round" opacity=".82"/>
+  <circle cx="10.5" cy="34" r="3.1" fill="#ffffff"/>
+  <path d="M17 0 L-8 -10 L-1 0 L-8 10 Z" fill="#ffffff"
+        transform="translate(26.6 20.4) rotate(-45) scale(.9)"/>
+</svg>

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, Spinner } from "@/components/ui";
+import { Icon } from "@/components/icons";
 import { findBookingByPnr, getFlight, listAirports } from "@/lib/repository";
 import type { Airport, Booking, Flight } from "@/lib/types";
 
@@ -63,6 +64,7 @@ export default function ConfirmationPage() {
           No booking exists with the reference <strong>{pnr}</strong>.
         </Alert>
         <Link href="/" className="btn-primary mt-6">
+          <Icon name="search" className="h-4 w-4" />
           Search for a flight
         </Link>
       </div>
@@ -88,12 +90,15 @@ export default function ConfirmationPage() {
 
       <div className="no-print mt-8 flex flex-wrap gap-3">
         <button type="button" onClick={() => window.print()} className="btn-primary">
+          <Icon name="printer" className="h-4 w-4" />
           Print / save as PDF
         </button>
         <Link href="/bookings" className="btn-secondary">
+          <Icon name="ticket" className="h-4 w-4" />
           View all my bookings
         </Link>
         <Link href="/" className="btn-secondary">
+          <Icon name="plane" className="h-4 w-4" />
           Book another flight
         </Link>
       </div>

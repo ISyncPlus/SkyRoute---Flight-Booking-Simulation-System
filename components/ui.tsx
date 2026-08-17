@@ -3,6 +3,7 @@
 /** Small presentational building blocks shared across pages. */
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Icon, type IconName } from "./icons";
 
 /**
  * Reveals its children once, when they first scroll into view.
@@ -59,20 +60,13 @@ export function Reveal({
   );
 }
 
-/** Nose-up airliner. Rotate it where the route runs left to right. */
-export function PlaneGlyph({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-      <path d="M21 16.5v-2l-8-4.5V4.2a1.2 1.2 0 0 0-2.4 0V10l-8 4.5v2l8-2.4v4.3l-2.2 1.4v1.5l3.4-1 3.4 1v-1.5L13 18.4v-4.3l8 2.4Z" />
-    </svg>
-  );
-}
-
+/* The icon carries the tone as well as the wording does — and carries it for
+   the reader who cannot see the colour. */
 const ALERT_TONES = {
-  info: { box: "bg-accent-soft text-accent-ink", chip: "bg-accent text-on-accent", mark: "i" },
-  success: { box: "bg-positive-soft text-positive-ink", chip: "bg-positive text-on-accent", mark: "✓" },
-  warning: { box: "bg-warn-soft text-warn-ink", chip: "bg-warn text-on-accent", mark: "!" },
-  error: { box: "bg-danger-soft text-danger-ink", chip: "bg-danger text-on-accent", mark: "!" },
+  info: { box: "bg-accent-soft text-accent-ink", tint: "text-accent", icon: "infoCircle" },
+  success: { box: "bg-positive-soft text-positive-ink", tint: "text-positive", icon: "checkCircle" },
+  warning: { box: "bg-warn-soft text-warn-ink", tint: "text-warn", icon: "alertTriangle" },
+  error: { box: "bg-danger-soft text-danger-ink", tint: "text-danger", icon: "xCircle" },
 } as const;
 
 export function Alert({
@@ -84,19 +78,14 @@ export function Alert({
   title?: string;
   children: ReactNode;
 }) {
-  const { box, chip, mark } = ALERT_TONES[tone];
+  const { box, tint, icon } = ALERT_TONES[tone];
 
   return (
     <div
       role={tone === "error" ? "alert" : "status"}
       className={`enter flex gap-3 rounded-lg border border-line px-4 py-3.5 text-callout ${box}`}
     >
-      <span
-        aria-hidden="true"
-        className={`mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-caption font-bold ${chip}`}
-      >
-        {mark}
-      </span>
+      <Icon name={icon} className={`mt-0.5 h-5 w-5 shrink-0 ${tint}`} />
       <div className="min-w-0">
         {title && <p className="font-semibold">{title}</p>}
         <div className={title ? "mt-0.5" : ""}>{children}</div>
@@ -108,26 +97,26 @@ export function Alert({
 export function Spinner({ label = "Loading" }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-3 py-20 text-callout text-ink-2" role="status">
-      <span
-        aria-hidden="true"
-        className="h-5 w-5 animate-spin rounded-full border-2 border-line-strong border-t-accent"
-      />
+      <Icon name="spinner" className="h-5 w-5 animate-spin text-accent" />
       {label}
     </div>
   );
 }
 
 export function EmptyState({
+  icon,
   title,
   description,
   action,
 }: {
+  icon?: IconName;
   title: string;
   description: string;
   action?: ReactNode;
 }) {
   return (
     <div className="card-lg px-6 py-16 text-center">
+      {icon && <Icon name={icon} className="mx-auto mb-5 h-10 w-10 text-ink-3" />}
       <p className="text-title-3 font-semibold text-ink">{title}</p>
       <p className="mx-auto mt-2 max-w-md text-callout text-ink-2">{description}</p>
       {action && <div className="mt-6 flex justify-center">{action}</div>}
@@ -223,7 +212,7 @@ export function StepIndicator({
               >
                 {state === "done" ? (
                   <span key="done" className="animate-check-in">
-                    ✓
+                    <Icon name="check" size={14} />
                   </span>
                 ) : (
                   <span key="todo">{index + 1}</span>

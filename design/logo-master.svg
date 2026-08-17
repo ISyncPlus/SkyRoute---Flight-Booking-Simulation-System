@@ -1,0 +1,37 @@
+<!--
+  SkyRoute — the mark at full size. 28 px and above.
+
+  Three elements, which are the three nouns of the product: a waypoint you
+  leave from, a route, and the aircraft that flies it.
+
+  The disc is the deliberate part. Almost every app icon is a rounded square,
+  so a circle is what makes this one findable in a dock or a tab strip — and a
+  disc reads as a globe, which is the right shape for a great-circle route.
+
+  Everything sits inside r = 19 of the centre, well within the r = 23 disc.
+  The aircraft used to break the edge; that looks intentional at 88 px and
+  looks broken at 16, so it was brought in.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="SkyRoute">
+  <defs>
+    <linearGradient id="srDisc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#19AD9C"/>
+      <stop offset="1" stop-color="#0A564D"/>
+    </linearGradient>
+    <!-- Vertical white fade, for depth. Invisible below about 32 px, which is
+         why logo-small.svg drops it. -->
+    <linearGradient id="srSheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".20"/>
+      <stop offset=".6" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="24" cy="24" r="23" fill="url(#srDisc)"/>
+  <circle cx="24" cy="24" r="23" fill="url(#srSheen)"/>
+
+  <path d="M11.5 33C16.5 33.6 21 30.6 24.6 24.6" fill="none" stroke="#ffffff"
+        stroke-width="3.2" stroke-linecap="round" opacity=".8"/>
+  <circle cx="11.5" cy="33" r="3" fill="#ffffff"/>
+  <path d="M17 0 L-8 -10 L-1 0 L-8 10 Z" fill="#ffffff"
+        transform="translate(26 21) rotate(-45) scale(.82)"/>
+</svg>
