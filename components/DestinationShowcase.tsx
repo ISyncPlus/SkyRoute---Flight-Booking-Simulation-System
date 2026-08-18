@@ -158,21 +158,21 @@ export function DestinationShowcase() {
                   </p>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
-                  <div>
-                    <span className="block text-micro uppercase tracking-wide text-ink-3">
+                <div className="mt-6 flex items-end justify-between gap-3 border-t border-line/70 pt-4">
+                  <div className="flex flex-col justify-end">
+                    <span className="text-micro font-medium uppercase tracking-wider text-ink-3">
                       From
                     </span>
-                    <span className="font-mono text-headline font-semibold text-ink">
+                    <span className="font-mono text-callout sm:text-headline font-semibold text-ink leading-none mt-1">
                       {dest.startingFare}
                     </span>
                   </div>
                   <Link
                     href={`/search?from=${dest.originCode}&to=${dest.destCode}&date=${tomorrow}&cabin=economy&adults=1`}
-                    className="btn-primary px-3.5 py-2 text-caption shadow-none"
+                    className="btn-primary shrink-0 px-3.5 py-2 text-caption shadow-none inline-flex items-center gap-1.5"
                     aria-label={`Search flights from ${dest.originCity} to ${dest.destCity}`}
                   >
-                    Fly route
+                    <span>Fly route</span>
                     <Icon name="arrowRight" className="h-3.5 w-3.5" />
                   </Link>
                 </div>
