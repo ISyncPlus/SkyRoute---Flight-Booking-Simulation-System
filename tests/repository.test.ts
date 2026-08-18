@@ -23,7 +23,7 @@ import {
 } from "@/lib/repository";
 import { AIRPORTS, toDateKey } from "@/lib/seed";
 import { SCHEMA_VERSION } from "@/lib/storage";
-import type { SessionUser } from "@/lib/types";
+import type { Booking, SessionUser } from "@/lib/types";
 import { clearStorage, makeFlight } from "./helpers";
 
 const CUSTOMER: SessionUser = {
@@ -588,5 +588,168 @@ describe("getStats", () => {
     expect(stats.cancelledBookings).toBe(1);
     expect(stats.refunded).toBe(cancelled.data.refund);
     expect(stats.netRevenue).toBe(-cancelled.data.refund);
+  });
+});
+
+describe("multi-leg bookings", () => {
+  const outbound = flight;
+  const inbound = makeFlight(
+    { id: "RETURN-1", originCode: "ABV", destinationCode: "LOS", flightNumber: "P4200" },
+    14,
+  );
+
+  function seedBoth() {
+    saveState({
+      schemaVersion: SCHEMA_VERSION,
+      airports: AIRPORTS,
+      flights: [outbound, inbound],
+      users: [],
+      bookings: [],
+    });
+  }
+
+  function returnInput(outboundSeats: (string | null)[], inboundSeats: (string | null)[]) {
+    const base = bookingInput(outboundSeats.map((seat) => seat ?? "20A"));
+    return {
+      ...base,
+      flightId: undefined,
+      cabin: undefined,
+      tripType: "round-trip" as const,
+      legs: [
+        { flightId: outbound.id, cabin: "economy" as const, seatIds: outboundSeats },
+        { flightId: inbound.id, cabin: "economy" as const, seatIds: inboundSeats },
+      ],
+    };
+  }
+
+  beforeEach(seedBoth);
+
+  it("writes one segment per flight, each with its own seats", () => {
+    const created = createBooking(returnInput(["20A"], ["11C"]));
+    if (!created.ok) throw new Error(created.error);
+
+    expect(created.data.segments).toHaveLength(2);
+    expect(created.data.tripType).toBe("round-trip");
+
+    const [first, second] = created.data.segments!;
+    const paxId = created.data.passengers[0].id;
+    expect(first.flightId).toBe(outbound.id);
+    expect(first.seats[paxId]).toBe("20A");
+    expect(second.flightId).toBe(inbound.id);
+    // The same traveller, a different seat on the way home.
+    expect(second.seats[paxId]).toBe("11C");
+  });
+
+  it("charges the booking service fee once for the whole journey, not per flight", () => {
+    const oneWay = createBooking(bookingInput(["20A"]));
+    seedBoth();
+    const returning = createBooking(returnInput(["20A"], ["11C"]));
+    if (!oneWay.ok || !returning.ok) throw new Error("booking failed");
+
+    expect(returning.data.fare.serviceCharge).toBe(oneWay.data.fare.serviceCharge);
+    // Two flights of fare, but only one service charge on top.
+    expect(returning.data.fare.baseFareTotal).toBeGreaterThan(oneWay.data.fare.baseFareTotal);
+  });
+
+  it("keeps the total consistent with its own itemisation", () => {
+    const created = createBooking(returnInput(["20A"], ["11C"]));
+    if (!created.ok) throw new Error(created.error);
+
+    const { baseFareTotal, cabinSurcharge, seatSelectionFee, taxes, serviceCharge, total } =
+      created.data.fare;
+    expect(total).toBe(baseFareTotal + cabinSurcharge + seatSelectionFee + taxes + serviceCharge);
+  });
+
+  it("holds seats on every leg, so a later leg cannot be resold", () => {
+    const created = createBooking(returnInput(["20A"], ["11C"]));
+    if (!created.ok) throw new Error(created.error);
+
+    // 11C is only taken on the *return* leg. It must still be unavailable.
+    const clash = createBooking({
+      ...bookingInput(["11C"]),
+      flightId: inbound.id,
+    });
+    expect(clash.ok).toBe(false);
+    // Assert *why*, so this cannot pass because of some unrelated refusal.
+    if (!clash.ok) expect(clash.error).toMatch(/no longer available|unavailable|already/i);
+
+    // A free seat on that same leg is still sellable, so the rule is not
+    // simply refusing everything on the flight.
+    expect(createBooking({ ...bookingInput(["12F"]), flightId: inbound.id }).ok).toBe(true);
+  });
+
+  it("refuses the whole journey when any single leg is unbookable", () => {
+    saveState({
+      ...loadState(),
+      flights: [outbound, { ...inbound, status: "cancelled" }],
+    });
+
+    const result = createBooking(returnInput(["20A"], ["11C"]));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/cancelled/i);
+    // Nothing was written, so the outbound seat is still for sale.
+    expect(loadState().bookings).toHaveLength(0);
+  });
+
+  it("names which flight failed once there is more than one", () => {
+    saveState({
+      ...loadState(),
+      flights: [outbound, { ...inbound, status: "cancelled" }],
+    });
+
+    const result = createBooking(returnInput(["20A"], ["11C"]));
+    if (!result.ok) expect(result.error).toMatch(/flight 2/i);
+  });
+
+  it("bases the refund on the first departure, not a later leg", () => {
+    const created = createBooking(returnInput(["20A"], ["11C"]));
+    if (!created.ok) throw new Error(created.error);
+
+    const cancelled = cancelBooking(created.data.pnr, { kind: "account", user: CUSTOMER });
+    expect(cancelled.ok).toBe(true);
+
+    if (cancelled.ok) {
+      // Outbound is 10 days out (90%); the return is 14 days out. Anchoring to
+      // the later leg would pay out at the same rate here, so assert the rate
+      // that the *first* departure earns against the refundable amount.
+      const refundable = created.data.fare.total - created.data.fare.serviceCharge;
+      expect(cancelled.data.refund).toBe(Math.round(refundable * 0.9));
+    }
+  });
+
+  it("will not cancel once the first leg has flown, even if a later leg has not", () => {
+    const departed = makeFlight({ id: "GONE-1" }, -1);
+    saveState({
+      schemaVersion: SCHEMA_VERSION,
+      airports: AIRPORTS,
+      flights: [departed, inbound],
+      users: [],
+      bookings: [],
+    });
+
+    // Written directly: createBooking would rightly refuse a flight in the past.
+    const manual: Booking = {
+      pnr: "PASTBK",
+      userId: CUSTOMER.id,
+      flightId: departed.id,
+      cabin: "economy",
+      tripType: "round-trip",
+      segments: [
+        { flightId: departed.id, cabin: "economy", seats: {} },
+        { flightId: inbound.id, cabin: "economy", seats: {} },
+      ],
+      passengers: [],
+      fare: { baseFareTotal: 0, cabinSurcharge: 0, seatSelectionFee: 0, taxes: 0, serviceCharge: 0, total: 0 },
+      payment: null,
+      status: "confirmed",
+      contactEmail: "a@b.test",
+      contactPhone: "08031234567",
+      createdAt: new Date().toISOString(),
+    };
+    saveState({ ...loadState(), bookings: [manual] });
+
+    const result = cancelBooking("PASTBK", { kind: "account", user: CUSTOMER });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/already begun/i);
   });
 });

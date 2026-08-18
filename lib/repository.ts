@@ -43,6 +43,7 @@ import type {
   TripType,
   User,
 } from "./types";
+import { bookingSegments } from "./types";
 import { maskCardNumber, sanitiseText } from "./validation";
 
 export const KEYS = {
