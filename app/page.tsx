@@ -99,19 +99,19 @@ export default function HomePage() {
       <section className="relative isolate overflow-hidden">
         <div aria-hidden="true" className="hero-glow" />
         
-        {/* Dynamic Light/Dark LightRays Effect */}
+        {/* Dynamic Light/Dark LightRays Effect in Middle */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-80 transition-opacity duration-700"
         >
           <LightRays
-            raysOrigin="top-right"
+            raysOrigin="top-center"
             raysColor={resolvedTheme === "dark" ? "#2fc4ae" : "#0d6b5e"}
             raysSpeed={1.5}
-            lightSpread={2.2}
-            rayLength={3.2}
+            lightSpread={2.5}
+            rayLength={3.5}
             pulsating={false}
-            fadeDistance={1.8}
+            fadeDistance={1.6}
             saturation={1.3}
             followMouse={true}
             mouseInfluence={0.15}
@@ -229,27 +229,26 @@ export default function HomePage() {
             </dl>
           </div>
 
-          {/* Right: Rich Photorealistic Aircraft Media Card with Interactive Shader Lens Blur */}
-          <div className="card-glass relative overflow-hidden p-0 shadow-e3 group">
+          {/* Right: Rich Photorealistic Aircraft Media Card with Route Overlay */}
+          <div className="card-glass relative overflow-hidden p-0 shadow-e3">
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-fill">
-
               <Image
                 src="/images/hero-aircraft.jpg"
                 alt="SkyRoute Boeing 787 Dreamliner cruising above sunset clouds"
                 fill
                 sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-cover relative z-10 transition-transform duration-700 group-hover:scale-105"
+                className="object-cover"
                 priority
               />
-              <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
               
-              <div className="absolute left-4 top-4 z-20">
+              <div className="absolute left-4 top-4">
                 <span className="badge bg-black/50 text-white backdrop-blur-md border border-white/20">
                   Boeing 787-9 Dreamliner
                 </span>
               </div>
 
-              <div className="absolute bottom-6 left-4 right-4 z-20 text-white">
+              <div className="absolute bottom-4 left-4 right-4 text-white">
                 <p className="text-micro font-mono uppercase tracking-wider text-white/80">
                   FLAGSHIP FLIGHT · LOS ⇄ LHR
                 </p>
@@ -257,13 +256,10 @@ export default function HomePage() {
                   Cruising altitude 38,000 ft · Speed 903 km/h
                 </p>
               </div>
-
-              {/* Feathered blurred fade into lower panel */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-gradient-to-b from-transparent via-surface/40 to-surface backdrop-blur-md" />
             </div>
 
-            {/* Route Arc Sub-panel with Soft Frosted Glass Blend */}
-            <div className="relative -mt-6 z-20 rounded-t-2xl border-t border-line/20 bg-surface/85 p-5 backdrop-blur-2xl sm:p-6 shadow-inner">
+            {/* Route Arc Sub-panel */}
+            <div className="p-5 sm:p-6 bg-surface/75 backdrop-blur-md border-t border-line/30">
               <RouteArc from="LOS" to="ABV" className="h-auto w-full" />
               <div className="mt-4 flex flex-col gap-2 sm:flex-row items-center justify-between text-footnote text-ink-2">
                 <span className="flex items-center gap-1.5 font-mono text-ink">
