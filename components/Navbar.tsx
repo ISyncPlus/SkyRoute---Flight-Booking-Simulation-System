@@ -91,7 +91,12 @@ export function Navbar() {
   function handleLogoClick(event: React.MouseEvent<HTMLAnchorElement>) {
     if (pathname === "/") {
       event.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const win = window as unknown as { lenis?: { scrollTo: (target: number | string, options?: object) => void } };
+      if (win.lenis) {
+        win.lenis.scrollTo(0, { duration: 1.25 });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     }
   }
 

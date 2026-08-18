@@ -161,6 +161,31 @@ export interface Booking {
   refundAmount?: number;
 }
 
+/**
+ * Every flight on a booking, in flown order — the one place that knows how to
+ * read either shape.
+ *
+ * `segments` is authoritative when present. Bookings written before multi-leg
+ * journeys existed (and any single-flight booking that never needed the richer
+ * shape) carry `flightId`/`cabin` with the seat on the passenger instead, and
+ * are widened here into a one-segment journey. Callers get a plain array and
+ * never have to know which era a booking came from — without this, every
+ * consumer grows its own fallback and they drift apart.
+ */
+export function bookingSegments(booking: Booking): BookingSegment[] {
+  if (booking.segments?.length) return booking.segments;
+
+  return [
+    {
+      flightId: booking.flightId,
+      cabin: booking.cabin,
+      seats: Object.fromEntries(
+        booking.passengers.map((passenger) => [passenger.id, passenger.seatId]),
+      ),
+    },
+  ];
+}
+
 /** A registered account. Passwords are never stored in plain text. */
 export interface User {
   id: string;
@@ -181,11 +206,24 @@ export interface SessionUser {
   role: UserRole;
 }
 
+/** One origin/destination/date row of a search. */
+export interface SearchLeg {
+  originCode: string;
+  destinationCode: string;
+  departureDate: string; // YYYY-MM-DD
+}
+
 /** Search criteria supplied on the home page. */
 export interface SearchCriteria {
   originCode: string;
   destinationCode: string;
   departureDate: string; // YYYY-MM-DD
+  /** Defaults to one-way when absent, which is how every older link behaves. */
+  tripType?: TripType;
+  /** Set only for a round trip. */
+  returnDate?: string; // YYYY-MM-DD
+  /** Set only for multi-city: the second and subsequent legs. */
+  extraLegs?: SearchLeg[];
   cabin: CabinClass;
   adults: number;
   children: number;

@@ -430,7 +430,11 @@
     transform: scale(0.96);
   }
 
+  /* `aria-pressed` for a toggle, `aria-checked` where the segments are a
+     radiogroup and exactly one is always chosen (trip type), `aria-current`
+     where they are navigation. Same look, three correct semantics. */
   .segment[aria-pressed="true"],
+  .segment[aria-checked="true"],
   .segment[aria-current="page"] {
     @apply bg-surface text-ink shadow-e1;
   }
@@ -894,4 +898,29 @@
   .card-lg {
     break-inside: avoid;
   }
+}
+
+/* ==========================================================================
+   Lenis Smooth Scrolling (Award-Winning Momentum Architecture)
+   ========================================================================== */
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }

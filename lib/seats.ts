@@ -8,6 +8,7 @@
  */
 
 import { EXIT_ROWS } from "./seed";
+import { bookingSegments } from "./types";
 import type { Booking, CabinClass, Flight, Seat } from "./types";
 
 /** Build the complete seat map for a flight, marking booked seats as occupied. */
@@ -57,15 +58,25 @@ function isAisleColumn(columns: string[], index: number): boolean {
   return (isEndOfGroup && !isLast) || (isStartOfGroup && !isFirst);
 }
 
-/** Seat IDs already taken on a flight by confirmed bookings. */
+/**
+ * Seat IDs already taken on a flight by confirmed bookings.
+ *
+ * Scans every segment of every booking, not just the first: the same flight
+ * can be the outbound of one journey and the return of another, and a seat
+ * sold on either must not be offered twice.
+ */
 export function getOccupiedSeatIds(flightId: string, bookings: Booking[]): Set<string> {
   const occupied = new Set<string>();
   bookings
-    .filter((booking) => booking.flightId === flightId && booking.status === "confirmed")
+    .filter((booking) => booking.status === "confirmed")
     .forEach((booking) => {
-      booking.passengers.forEach((passenger) => {
-        if (passenger.seatId) occupied.add(passenger.seatId);
-      });
+      bookingSegments(booking)
+        .filter((segment) => segment.flightId === flightId)
+        .forEach((segment) => {
+          Object.values(segment.seats).forEach((seatId) => {
+            if (seatId) occupied.add(seatId);
+          });
+        });
     });
   return occupied;
 }

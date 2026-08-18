@@ -11,7 +11,8 @@ import { useEffect, useMemo, useState } from "react";
 import { listAirports } from "@/lib/repository";
 import { validateSearch, CABIN_LABELS } from "@/lib/validation";
 import { dateInputValue } from "@/lib/format";
-import type { Airport, CabinClass, SearchCriteria } from "@/lib/types";
+import type { Airport, CabinClass, SearchCriteria, SearchLeg, TripType } from "@/lib/types";
+import { TRIP_TYPE_LABELS } from "@/lib/types";
 import { Field } from "./ui";
 import { Icon } from "./icons";
 import { useApp } from "./AppProvider";
@@ -20,20 +21,40 @@ const DEFAULTS: SearchCriteria = {
   originCode: "LOS",
   destinationCode: "ABV",
   departureDate: "",
+  tripType: "round-trip",
   cabin: "economy",
   adults: 1,
   children: 0,
   infants: 0,
 };
 
+const TRIP_TYPES: TripType[] = ["round-trip", "one-way", "multi-city"];
+
+/** Multi-city is capped so the form cannot grow past what one screen holds. */
+const MAX_LEGS = 5;
+
+/** Offset a YYYY-MM-DD date, clamped to the end of the published schedule. */
+function addDays(date: string, days: number): string {
+  const start = date ? new Date(`${date}T00:00:00`) : new Date();
+  start.setDate(start.getDate() + days);
+  const shifted = start.toISOString().slice(0, 10);
+  const latest = dateInputValue(20);
+  return shifted > latest ? latest : shifted;
+}
+
 export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
   const router = useRouter();
   const { ready } = useApp();
   const [airports, setAirports] = useState<Airport[]>([]);
-  const [criteria, setCriteria] = useState<SearchCriteria>({
-    ...DEFAULTS,
-    departureDate: dateInputValue(1),
-    ...initial,
+  const [criteria, setCriteria] = useState<SearchCriteria>(() => {
+    const base: SearchCriteria = { ...DEFAULTS, departureDate: dateInputValue(1), ...initial };
+    // The form opens on Round trip, so it has to open with a return date in
+    // it too — seeding only on click left the default state showing an empty
+    // field the traveller had not done anything to empty.
+    if ((base.tripType ?? "one-way") === "round-trip" && !base.returnDate) {
+      base.returnDate = dateInputValue(8);
+    }
+    return base;
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   /** Drives the swap control's rotation — each press turns it over again. */
@@ -57,6 +78,79 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
     });
   }
 
+  const tripType: TripType = criteria.tripType ?? "one-way";
+  const extraLegs = criteria.extraLegs ?? [];
+
+  /**
+   * Switching trip type only ever *adds* the fields that type needs; the ones
+   * it does not need are left in state rather than cleared, so flicking
+   * between Round trip and One way does not throw away a return date the
+   * traveller already picked.
+   */
+  function changeTripType(next: TripType) {
+    setCriteria((current) => {
+      const base = { ...current, tripType: next };
+      if (next === "round-trip" && !base.returnDate) {
+        base.returnDate = addDays(base.departureDate, 7);
+      }
+      if (next === "multi-city" && !base.extraLegs?.length) {
+        base.extraLegs = [
+          {
+            originCode: base.destinationCode,
+            destinationCode: base.originCode,
+            departureDate: addDays(base.departureDate, 3),
+          },
+        ];
+      }
+      return base;
+    });
+    setErrors({});
+  }
+
+  function updateLeg<K extends keyof SearchLeg>(index: number, key: K, value: SearchLeg[K]) {
+    setCriteria((current) => ({
+      ...current,
+      extraLegs: (current.extraLegs ?? []).map((leg, position) =>
+        position === index ? { ...leg, [key]: value } : leg,
+      ),
+    }));
+  }
+
+  function addLeg() {
+    setCriteria((current) => {
+      const legs = current.extraLegs ?? [];
+      const last = legs[legs.length - 1];
+      // A new leg starts where the previous one landed, and heads back to
+      // where that leg set off from. Using the *first* origin instead sent
+      // the third flight from Lagos to Lagos.
+      const originCode = last?.destinationCode ?? current.destinationCode;
+      const preferred = last?.originCode ?? current.originCode;
+      const destinationCode =
+        preferred !== originCode
+          ? preferred
+          : (sortedAirports.find((airport) => airport.code !== originCode)?.code ?? originCode);
+
+      return {
+        ...current,
+        extraLegs: [
+          ...legs,
+          {
+            originCode,
+            destinationCode,
+            departureDate: addDays(last?.departureDate ?? current.departureDate, 3),
+          },
+        ],
+      };
+    });
+  }
+
+  function removeLeg(index: number) {
+    setCriteria((current) => ({
+      ...current,
+      extraLegs: (current.extraLegs ?? []).filter((_, position) => position !== index),
+    }));
+  }
+
   function swapAirports() {
     setCriteria((current) => ({
       ...current,
@@ -70,8 +164,25 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const result = validateSearch(criteria);
-    if (!result.valid) {
-      setErrors(result.errors);
+    const extra: Record<string, string> = { ...result.errors };
+
+    if (tripType === "round-trip") {
+      if (!criteria.returnDate) extra.returnDate = "Choose a return date.";
+      else if (criteria.returnDate < criteria.departureDate) {
+        extra.returnDate = "The return cannot be before the departure.";
+      }
+    }
+
+    if (tripType === "multi-city") {
+      extraLegs.forEach((leg, index) => {
+        if (leg.originCode === leg.destinationCode) {
+          extra.extraLegs = `Flight ${index + 2} departs and arrives at the same airport.`;
+        }
+      });
+    }
+
+    if (Object.keys(extra).length > 0) {
+      setErrors(extra);
       return;
     }
 
@@ -79,16 +190,48 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
       from: criteria.originCode,
       to: criteria.destinationCode,
       date: criteria.departureDate,
+      trip: tripType,
       cabin: criteria.cabin,
       adults: String(criteria.adults),
       children: String(criteria.children),
       infants: String(criteria.infants),
     });
+    if (tripType === "round-trip" && criteria.returnDate) {
+      params.set("return", criteria.returnDate);
+    }
+    if (tripType === "multi-city" && extraLegs.length > 0) {
+      // `LOS-ABV-2026-08-20` per leg, comma separated — readable in a shared URL.
+      params.set(
+        "legs",
+        extraLegs
+          .map((leg) => `${leg.originCode}-${leg.destinationCode}-${leg.departureDate}`)
+          .join(","),
+      );
+    }
     router.push(`/search?${params.toString()}`);
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="card-lg">
+      <div
+        role="radiogroup"
+        aria-label="Trip type"
+        className="segmented mb-6 inline-flex max-w-full overflow-x-auto"
+      >
+        {TRIP_TYPES.map((type) => (
+          <button
+            key={type}
+            type="button"
+            role="radio"
+            aria-checked={tripType === type}
+            onClick={() => changeTripType(type)}
+            className="segment whitespace-nowrap"
+          >
+            {TRIP_TYPE_LABELS[type]}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr]">
         <Field label="From" htmlFor="originCode" error={errors.originCode}>
           <select
@@ -138,8 +281,83 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
         </Field>
       </div>
 
+      {tripType === "multi-city" && (
+        <div className="mt-4 space-y-3">
+          {extraLegs.map((leg, index) => (
+            <div
+              key={index}
+              className="grid gap-3 rounded-xl border border-line bg-fill p-4 md:grid-cols-[1fr_1fr_1fr_auto]"
+            >
+              <Field label={`Flight ${index + 2} from`} htmlFor={`leg-${index}-from`}>
+                <select
+                  id={`leg-${index}-from`}
+                  className="input"
+                  value={leg.originCode}
+                  onChange={(event) => updateLeg(index, "originCode", event.target.value)}
+                >
+                  {sortedAirports.map((airport) => (
+                    <option key={airport.code} value={airport.code}>
+                      {airport.city} ({airport.code})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="To" htmlFor={`leg-${index}-to`}>
+                <select
+                  id={`leg-${index}-to`}
+                  className="input"
+                  value={leg.destinationCode}
+                  onChange={(event) => updateLeg(index, "destinationCode", event.target.value)}
+                >
+                  {sortedAirports.map((airport) => (
+                    <option key={airport.code} value={airport.code}>
+                      {airport.city} ({airport.code})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Date" htmlFor={`leg-${index}-date`}>
+                <input
+                  id={`leg-${index}-date`}
+                  type="date"
+                  className="input"
+                  value={leg.departureDate}
+                  min={dateInputValue(0)}
+                  max={dateInputValue(20)}
+                  onChange={(event) => updateLeg(index, "departureDate", event.target.value)}
+                />
+              </Field>
+
+              <div className="flex md:items-end md:pb-0.5">
+                <button
+                  type="button"
+                  onClick={() => removeLeg(index)}
+                  aria-label={`Remove flight ${index + 2}`}
+                  className="pressable hover-fill flex h-10 w-10 items-center justify-center rounded-full border border-line-strong bg-surface text-ink-2"
+                >
+                  <Icon name="trash" className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {extraLegs.length + 1 < MAX_LEGS && (
+            <button type="button" onClick={addLeg} className="btn-secondary">
+              <Icon name="plus" className="h-4 w-4" />
+              Add another flight
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="Departure date" htmlFor="departureDate" error={errors.departureDate}>
+        <Field
+          label={tripType === "multi-city" ? "Flight 1 date" : "Departure date"}
+          htmlFor="departureDate"
+          error={errors.departureDate}
+        >
           <input
             id="departureDate"
             type="date"
@@ -150,6 +368,21 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
             onChange={(event) => update("departureDate", event.target.value)}
           />
         </Field>
+
+        {tripType === "round-trip" && (
+          <Field label="Return date" htmlFor="returnDate" error={errors.returnDate}>
+            <input
+              id="returnDate"
+              type="date"
+              className={`input ${errors.returnDate ? "input-error" : ""}`}
+              value={criteria.returnDate ?? ""}
+              /* Cannot come back before setting off. */
+              min={criteria.departureDate || dateInputValue(0)}
+              max={dateInputValue(20)}
+              onChange={(event) => update("returnDate", event.target.value)}
+            />
+          </Field>
+        )}
 
         <Field label="Cabin class" htmlFor="cabin">
           <select

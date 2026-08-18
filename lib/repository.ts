@@ -17,7 +17,14 @@
 
 import { createUserRecord, DEMO_ADMIN, DEMO_CUSTOMER, toSessionUser, verifyPassword } from "./auth";
 import { generateId, generateTransactionReference, generateUniquePnr, isValidPnr } from "./ids";
-import { calculateFare, calculateRefund, daysUntil, headlineFare, type FareContext } from "./pricing";
+import {
+  calculateFare,
+  calculateRefund,
+  combineFares,
+  daysUntil,
+  headlineFare,
+  type FareContext,
+} from "./pricing";
 import { buildSeatMap, countAvailable, countTotal, loadFactor, validateSeatSelection } from "./seats";
 import { AIRPORTS, findAirport, generateSchedule, SCHEDULE_HORIZON_DAYS, toDateKey } from "./seed";
 import { readItem, removeItem, SCHEMA_VERSION, writeItem } from "./storage";
@@ -25,6 +32,7 @@ import type {
   Airport,
   Booking,
   CabinClass,
+  FareBreakdown,
   Flight,
   FlightSearchResult,
   Passenger,
@@ -32,6 +40,7 @@ import type {
   PersistedState,
   SearchCriteria,
   SessionUser,
+  TripType,
   User,
 } from "./types";
 import { maskCardNumber, sanitiseText } from "./validation";
@@ -308,9 +317,28 @@ export function getSeatMap(flightId: string) {
 /* Booking                                                             */
 /* ------------------------------------------------------------------ */
 
-export interface CreateBookingInput {
+/** One flight of a journey, as the booking wizard hands it over. */
+export interface CreateBookingLeg {
   flightId: string;
   cabin: CabinClass;
+  /**
+   * Seat per passenger, positionally matching `passengers`. `null` where the
+   * passenger is an infant or simply has no seat on this leg — a traveller
+   * can sit in 12A outbound and 3C on the way home.
+   */
+  seatIds: (string | null)[];
+}
+
+export interface CreateBookingInput {
+  /**
+   * A one-flight booking may still pass `flightId`/`cabin` with the seat on
+   * each passenger; `legs` supersedes both when present. Keeping the old shape
+   * working means every existing caller and test stays valid.
+   */
+  flightId?: string;
+  cabin?: CabinClass;
+  legs?: CreateBookingLeg[];
+  tripType?: TripType;
   /** `null` books as a guest — see {@link Booking.userId}. */
   userId: string | null;
   contactEmail: string;
@@ -333,37 +361,82 @@ export interface CreateBookingInput {
  */
 export function createBooking(input: CreateBookingInput, now: Date = new Date()): Result<Booking> {
   const state = loadState();
-  const flight = state.flights.find((candidate) => candidate.id === input.flightId);
 
-  if (!flight) return { ok: false, error: "That flight could not be found. It may have been removed." };
-  if (flight.status === "cancelled") return { ok: false, error: "This flight has been cancelled and cannot be booked." };
-  if (new Date(flight.departureTime).getTime() <= now.getTime()) {
-    return { ok: false, error: "This flight has already departed." };
-  }
   if (input.passengers.length === 0) return { ok: false, error: "At least one passenger is required." };
-  if (!availableCabins(flight).includes(input.cabin)) {
-    return { ok: false, error: "The selected cabin is not available on this aircraft." };
+
+  /* One shape from here down. A caller that passed the old single-flight
+     fields is widened into a one-leg journey, so nothing below has to ask
+     which shape it was given. */
+  const legs: CreateBookingLeg[] = input.legs?.length
+    ? input.legs
+    : [
+        {
+          flightId: input.flightId ?? "",
+          cabin: (input.cabin ?? "economy") as CabinClass,
+          seatIds: input.passengers.map((passenger) => passenger.seatId ?? null),
+        },
+      ];
+
+  /* Everything is validated for *every* leg before anything is written. A
+     journey is sold whole: confirming the outbound and then discovering the
+     return is full would leave the customer stranded mid-itinerary with a
+     booking they did not ask for. */
+  const priced: { flight: Flight; leg: CreateBookingLeg; fare: FareBreakdown }[] = [];
+
+  for (const [index, leg] of legs.entries()) {
+    const flight = state.flights.find((candidate) => candidate.id === leg.flightId);
+    // Only name the flight when there is more than one, so a one-way booking
+    // keeps the plain wording its tests and its UI already expect.
+    const where = legs.length > 1 ? ` on flight ${index + 1}` : "";
+
+    if (!flight) {
+      return { ok: false, error: `That flight could not be found${where}. It may have been removed.` };
+    }
+    if (flight.status === "cancelled") {
+      return { ok: false, error: `This flight has been cancelled and cannot be booked${where}.` };
+    }
+    if (new Date(flight.departureTime).getTime() <= now.getTime()) {
+      return { ok: false, error: `This flight has already departed${where}.` };
+    }
+    if (!availableCabins(flight).includes(leg.cabin)) {
+      return { ok: false, error: `The selected cabin is not available on this aircraft${where}.` };
+    }
+
+    // Re-check seats: another tab may have taken them while this user was paying.
+    const requestedSeats = leg.seatIds.filter((seatId): seatId is string => Boolean(seatId));
+    const seatCheck = validateSeatSelection(flight, state.bookings, requestedSeats, leg.cabin);
+    if (!seatCheck.valid) {
+      return {
+        ok: false,
+        error: seatCheck.message ?? `One or more selected seats are unavailable${where}.`,
+      };
+    }
+
+    const seatMap = buildSeatMap(flight, state.bookings);
+    const context: FareContext = {
+      baseFare: flight.baseFare,
+      cabin: leg.cabin,
+      daysToDeparture: daysUntil(flight.departureTime, now),
+      load: loadFactor(seatMap, leg.cabin),
+    };
+
+    priced.push({
+      flight,
+      leg,
+      fare: calculateFare(
+        context,
+        input.passengers.map((passenger, position) => ({
+          type: passenger.type,
+          seatId: leg.seatIds[position] ?? null,
+        })),
+        seatMap,
+      ),
+    });
   }
 
-  // Re-check seats: another tab may have taken them while this user was paying.
-  const requestedSeats = input.passengers
-    .map((passenger) => passenger.seatId)
-    .filter((seatId): seatId is string => Boolean(seatId));
-
-  const seatCheck = validateSeatSelection(flight, state.bookings, requestedSeats, input.cabin);
-  if (!seatCheck.valid) {
-    return { ok: false, error: seatCheck.message ?? "One or more selected seats are unavailable." };
-  }
-
-  const seatMap = buildSeatMap(flight, state.bookings);
-  const context: FareContext = {
-    baseFare: flight.baseFare,
-    cabin: input.cabin,
-    daysToDeparture: daysUntil(flight.departureTime, now),
-    load: loadFactor(seatMap, input.cabin),
-  };
-
-  const fare = calculateFare(context, input.passengers, seatMap);
+  const flight = priced[0].flight;
+  // Charges the booking service fee once, not once per flight.
+  const fare = combineFares(priced.map((entry) => entry.fare));
 
   // Payment authorisation according to method.
   const paymentSucceeded = !input.payment.forceFailure;
@@ -410,18 +483,33 @@ export function createBooking(input: CreateBookingInput, now: Date = new Date())
 
   const pnr = generateUniquePnr(state.bookings.map((booking) => booking.pnr));
 
+  const passengers: Passenger[] = input.passengers.map((passenger, position) => ({
+    ...passenger,
+    id: generateId("pax"),
+    firstName: sanitiseText(passenger.firstName, 50),
+    lastName: sanitiseText(passenger.lastName, 50),
+    passportNumber: sanitiseText(passenger.passportNumber, 20).toUpperCase(),
+    /* Only meaningful on a single-flight booking. Across several flights a
+       passenger holds a different seat on each, so the segment is the only
+       honest place to record it and this is left null rather than naming one
+       leg's seat as if it applied to the whole journey. */
+    seatId: legs.length === 1 ? (legs[0].seatIds[position] ?? null) : null,
+  }));
+
   const booking: Booking = {
     pnr,
     userId: input.userId,
     flightId: flight.id,
-    cabin: input.cabin,
-    passengers: input.passengers.map((passenger) => ({
-      ...passenger,
-      id: generateId("pax"),
-      firstName: sanitiseText(passenger.firstName, 50),
-      lastName: sanitiseText(passenger.lastName, 50),
-      passportNumber: sanitiseText(passenger.passportNumber, 20).toUpperCase(),
+    cabin: legs[0].cabin,
+    tripType: input.tripType ?? (legs.length > 1 ? "multi-city" : "one-way"),
+    segments: priced.map(({ leg }) => ({
+      flightId: leg.flightId,
+      cabin: leg.cabin,
+      seats: Object.fromEntries(
+        passengers.map((passenger, position) => [passenger.id, leg.seatIds[position] ?? null]),
+      ),
     })),
+    passengers,
     fare,
     payment,
     status: "confirmed",
@@ -521,14 +609,31 @@ export function cancelBooking(
   }
   if (booking.status === "cancelled") return { ok: false, error: "This booking has already been cancelled." };
 
-  const flight = state.flights.find((candidate) => candidate.id === booking.flightId);
-  if (!flight) return { ok: false, error: "The flight for this booking no longer exists." };
+  /* A journey is cancelled as a whole, so the rule is anchored to its *first*
+     departure. Anchoring to a later leg would let someone cancel a return
+     trip after already flying the outbound and still collect the early-notice
+     refund rate on the entire fare. */
+  const flights = bookingSegments(booking)
+    .map((segment) => state.flights.find((candidate) => candidate.id === segment.flightId))
+    .filter((candidate): candidate is Flight => Boolean(candidate));
 
-  if (new Date(flight.departureTime).getTime() <= now.getTime()) {
-    return { ok: false, error: "This flight has already departed and can no longer be cancelled." };
+  if (flights.length === 0) return { ok: false, error: "The flight for this booking no longer exists." };
+
+  const firstDeparture = flights
+    .map((candidate) => candidate.departureTime)
+    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())[0];
+
+  if (new Date(firstDeparture).getTime() <= now.getTime()) {
+    return {
+      ok: false,
+      error:
+        flights.length > 1
+          ? "This journey has already begun and can no longer be cancelled."
+          : "This flight has already departed and can no longer be cancelled.",
+    };
   }
 
-  const refund = calculateRefund(booking.fare, flight.departureTime, now);
+  const refund = calculateRefund(booking.fare, firstDeparture, now);
 
   const cancelled: Booking = {
     ...booking,

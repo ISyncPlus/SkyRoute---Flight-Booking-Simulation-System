@@ -99,6 +99,27 @@ describe("occupancy helpers", () => {
     expect(getOccupiedSeatIds(flight.id, bookings)).toEqual(new Set(["20A", "20B", "21C"]));
   });
 
+  /* The same flight is the outbound of one journey and the return of another.
+     A seat sold on a later segment must not be offered to the next customer. */
+  it("counts seats taken on any segment, not just the first", () => {
+    const outbound = makeBooking(flight.id, ["20A"]);
+    const returning = {
+      ...makeBooking("OTHER-FLIGHT", ["1A"]),
+      tripType: "round-trip" as const,
+      segments: [
+        { flightId: "OTHER-FLIGHT", cabin: "economy" as const, seats: { p0: "1A" } },
+        { flightId: flight.id, cabin: "economy" as const, seats: { p0: "20B" } },
+      ],
+    };
+
+    expect(getOccupiedSeatIds(flight.id, [outbound, returning])).toEqual(new Set(["20A", "20B"]));
+  });
+
+  it("ignores seats held by a cancelled booking", () => {
+    const cancelled = { ...makeBooking(flight.id, ["20A"]), status: "cancelled" as const };
+    expect(getOccupiedSeatIds(flight.id, [cancelled])).toEqual(new Set());
+  });
+
   it("counts seats within one cabin only", () => {
     const seats = buildSeatMap(flight, []);
     const economy = seatsInCabin(seats, "economy");

@@ -149,6 +149,36 @@ export function calculateFare(
 }
 
 /**
+ * Combine the per-flight quotes of a multi-leg journey into the single fare
+ * the customer actually pays.
+ *
+ * Two things this must not do naively. The booking service charge is levied
+ * once per booking, not once per flight, so summing whole quotes would charge
+ * a return trip twice for it. And tax is recomputed from the combined taxable
+ * base rather than summed from each leg's already-rounded figure, so the total
+ * cannot drift a naira away from `taxable * VAT_RATE`.
+ */
+export function combineFares(fares: FareBreakdown[]): FareBreakdown {
+  if (fares.length === 1) return fares[0];
+
+  const baseFareTotal = fares.reduce((sum, fare) => sum + fare.baseFareTotal, 0);
+  const cabinSurcharge = fares.reduce((sum, fare) => sum + fare.cabinSurcharge, 0);
+  const seatSelectionFee = fares.reduce((sum, fare) => sum + fare.seatSelectionFee, 0);
+
+  const taxable = baseFareTotal + cabinSurcharge + seatSelectionFee;
+  const taxes = Math.round(taxable * VAT_RATE);
+
+  return {
+    baseFareTotal,
+    cabinSurcharge,
+    seatSelectionFee,
+    taxes,
+    serviceCharge: SERVICE_CHARGE,
+    total: taxable + taxes + SERVICE_CHARGE,
+  };
+}
+
+/**
  * Cancellation policy. The service charge is never refunded; the remainder is
  * refunded on a sliding scale determined by how close to departure the
  * cancellation is made.
