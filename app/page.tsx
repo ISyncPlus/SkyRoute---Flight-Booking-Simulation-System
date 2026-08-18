@@ -2,13 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { SearchForm } from "@/components/SearchForm";
 import { RouteArc } from "@/components/RouteArc";
+import Orb from "@/components/Orb";
 import { useApp } from "@/components/AppProvider";
 import { Alert, Reveal } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
 import FoldText from "@/components/FoldText";
 import { SideRays } from "@/components/SideRays";
+import ShaderLensBlur from "@/components/ui/shader-lens-blur";
 import { LiveTicker } from "@/components/LiveTicker";
 import { DestinationShowcase } from "@/components/DestinationShowcase";
 import { CabinShowcase } from "@/components/CabinShowcase";
@@ -88,6 +91,14 @@ function DemoAccount({
 
 export default function HomePage() {
   const { storageAvailable, user, isGuest } = useApp();
+  const { resolvedTheme } = useTheme();
+
+  /* The orb shades itself against whatever it is sitting on, so it has to be
+     told. Literal values because the shader parses a hex string and cannot
+     resolve a CSS variable; these mirror `--canvas` in globals.css.
+     `resolvedTheme`, not `theme` — the latter is "system" until someone picks,
+     which would leave the orb lit for light mode on a dark screen. */
+  const orbBackground = resolvedTheme === "dark" ? "#000000" : "#f1f3f2";
 
   return (
     <div>
@@ -228,26 +239,31 @@ export default function HomePage() {
             </dl>
           </div>
 
-          {/* Right: Rich Photorealistic Aircraft Media Card with Route Overlay */}
-          <div className="card-glass relative overflow-hidden p-0 shadow-e3">
+          {/* Right: Rich Photorealistic Aircraft Media Card with Interactive Shader Lens Blur */}
+          <div className="card-glass relative overflow-hidden p-0 shadow-e3 group">
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-fill">
+              {/* Interactive Three.js WebGL Shader Lens Blur Background Layer */}
+              <div className="absolute inset-0 z-0 opacity-40 mix-blend-screen transition-opacity duration-700 group-hover:opacity-75">
+                <ShaderLensBlur />
+              </div>
+
               <Image
                 src="/images/hero-aircraft.jpg"
                 alt="SkyRoute Boeing 787 Dreamliner cruising above sunset clouds"
                 fill
                 sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-cover"
+                className="object-cover relative z-10 transition-transform duration-700 group-hover:scale-105"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               
-              <div className="absolute left-4 top-4">
+              <div className="absolute left-4 top-4 z-20">
                 <span className="badge bg-black/50 text-white backdrop-blur-md border border-white/20">
                   Boeing 787-9 Dreamliner
                 </span>
               </div>
 
-              <div className="absolute bottom-4 left-4 right-4 text-white">
+              <div className="absolute bottom-6 left-4 right-4 z-20 text-white">
                 <p className="text-micro font-mono uppercase tracking-wider text-white/80">
                   FLAGSHIP FLIGHT · LOS ⇄ LHR
                 </p>
@@ -255,10 +271,13 @@ export default function HomePage() {
                   Cruising altitude 38,000 ft · Speed 903 km/h
                 </p>
               </div>
+
+              {/* Feathered blurred fade into lower panel */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-gradient-to-b from-transparent via-surface/40 to-surface backdrop-blur-md" />
             </div>
 
-            {/* Route Arc Sub-panel */}
-            <div className="p-5 sm:p-6 bg-surface/70 backdrop-blur-md">
+            {/* Route Arc Sub-panel with Soft Frosted Glass Blend */}
+            <div className="relative -mt-6 z-20 rounded-t-2xl border-t border-line/20 bg-surface/85 p-5 backdrop-blur-2xl sm:p-6 shadow-inner">
               <RouteArc from="LOS" to="ABV" className="h-auto w-full" />
               <div className="mt-4 flex flex-col gap-2 sm:flex-row items-center justify-between text-footnote text-ink-2">
                 <span className="flex items-center gap-1.5 font-mono text-ink">

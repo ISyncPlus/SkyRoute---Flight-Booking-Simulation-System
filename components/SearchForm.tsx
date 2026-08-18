@@ -213,23 +213,25 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="card-lg">
-      <div
-        role="radiogroup"
-        aria-label="Trip type"
-        className="segmented mb-6 inline-flex max-w-full overflow-x-auto"
-      >
-        {TRIP_TYPES.map((type) => (
-          <button
-            key={type}
-            type="button"
-            role="radio"
-            aria-checked={tripType === type}
-            onClick={() => changeTripType(type)}
-            className="segment whitespace-nowrap"
-          >
-            {TRIP_TYPE_LABELS[type]}
-          </button>
-        ))}
+      <div className="mb-6 flex justify-center sm:justify-start">
+        <div
+          role="radiogroup"
+          aria-label="Trip type"
+          className="segmented inline-flex max-w-full overflow-x-auto"
+        >
+          {TRIP_TYPES.map((type) => (
+            <button
+              key={type}
+              type="button"
+              role="radio"
+              aria-checked={tripType === type}
+              onClick={() => changeTripType(type)}
+              className="segment whitespace-nowrap"
+            >
+              {TRIP_TYPE_LABELS[type]}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr]">
