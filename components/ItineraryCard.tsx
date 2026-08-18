@@ -13,7 +13,16 @@ import {
   formatDuration,
   formatTime,
 } from "@/lib/format";
-import type { Airport, Booking, Flight } from "@/lib/types";
+import type { Airport, Booking, CabinClass, Flight } from "@/lib/types";
+import { bookingSegments } from "@/lib/types";
+
+interface SegmentView {
+  flight: Flight | undefined;
+  origin: Airport | undefined;
+  destination: Airport | undefined;
+  cabin: CabinClass;
+  seats: Record<string, string | null>;
+}
 
 export function ItineraryCard({
   booking,
@@ -21,13 +30,45 @@ export function ItineraryCard({
   origin,
   destination,
   showFare = true,
+  allFlights,
+  airports,
 }: {
   booking: Booking;
   flight: Flight | undefined;
   origin: Airport | undefined;
   destination: Airport | undefined;
   showFare?: boolean;
+  /* Supplied by callers that can resolve the whole journey. Without them the
+     card still renders, but only the first flight — which is right for the
+     single-flight bookings that were the only kind until now. */
+  allFlights?: Flight[];
+  airports?: Airport[];
 }) {
+  const segments = bookingSegments(booking);
+
+  const views: SegmentView[] =
+    allFlights && airports
+      ? segments.map((segment) => {
+          const resolved = allFlights.find((entry) => entry.id === segment.flightId);
+          return {
+            flight: resolved,
+            origin: airports.find((airport) => airport.code === resolved?.originCode),
+            destination: airports.find((airport) => airport.code === resolved?.destinationCode),
+            cabin: segment.cabin,
+            seats: segment.seats,
+          };
+        })
+      : [
+          {
+            flight,
+            origin,
+            destination,
+            cabin: booking.cabin,
+            seats: segments[0]?.seats ?? {},
+          },
+        ];
+
+  const multiLeg = views.length > 1;
   return (
     <article className="card-lg overflow-hidden p-0">
       {/* The e-ticket is the one thing here that leaves the screen — it gets
@@ -52,8 +93,26 @@ export function ItineraryCard({
         </div>
       </header>
 
-      {flight ? (
+      {views[0]?.flight ? (
         <div className="px-5 py-6 sm:px-8 sm:py-7">
+          {views.map((view, legIndex) => {
+            const { flight, origin, destination, cabin, seats } = view;
+            if (!flight) return null;
+            const legSeats = booking.passengers
+              .map((passenger) => seats[passenger.id])
+              .filter((seat): seat is string => Boolean(seat));
+
+            return (
+            <section
+              key={`${flight.id}-${legIndex}`}
+              className={legIndex > 0 ? "mt-8 border-t border-line pt-7" : undefined}
+            >
+              {multiLeg && (
+                <p className="overline mb-3 flex items-center gap-1.5 text-accent-ink">
+                  <Icon name="plane" className="h-3.5 w-3.5" />
+                  Flight {legIndex + 1} of {views.length}
+                </p>
+              )}
           <div className="flex flex-wrap items-center gap-2 text-footnote">
             <span className="flex h-7 items-center rounded bg-fill px-2 text-micro font-bold text-ink-2">
               {flight.airlineCode}
@@ -68,7 +127,7 @@ export function ItineraryCard({
             </span>
             <span className="text-ink-2">{flight.aircraft}</span>
             <span className="badge ml-auto bg-accent-soft text-accent-ink">
-              {CABIN_NAMES[booking.cabin]}
+              {CABIN_NAMES[cabin]}
             </span>
           </div>
 
@@ -108,6 +167,16 @@ export function ItineraryCard({
             </div>
           </div>
 
+              {multiLeg && legSeats.length > 0 && (
+                <p className="mt-3 text-caption text-ink-2">
+                  Seats on this flight:{" "}
+                  <span className="font-semibold text-ink">{legSeats.join(", ")}</span>
+                </p>
+              )}
+            </section>
+            );
+          })}
+
           <div className="mt-7">
             <h3 className="overline flex items-center gap-1.5">
               <Icon name="users" className="h-3.5 w-3.5" />
@@ -131,7 +200,17 @@ export function ItineraryCard({
                       </td>
                       <td className="capitalize">{passenger.type}</td>
                       <td className="font-mono font-semibold text-ink">
-                        {passenger.seatId ?? <span className="font-sans text-ink-3">Lap infant</span>}
+                        {/* Across several flights one passenger holds a
+                            different seat on each, so the row lists them in
+                            flight order rather than naming a single seat. */}
+                        {(() => {
+                          const perLeg = views.map((view) => view.seats[passenger.id] ?? null);
+                          const held = perLeg.filter((seat): seat is string => Boolean(seat));
+                          if (held.length === 0) {
+                            return <span className="font-sans text-ink-3">Lap infant</span>;
+                          }
+                          return perLeg.map((seat, index) => seat ?? "—").join(" · ");
+                        })()}
                       </td>
                       <td className="font-mono text-caption">{passenger.passportNumber || "—"}</td>
                     </tr>

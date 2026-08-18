@@ -11,7 +11,9 @@ import { Icon } from "@/components/icons";
 import { datesWithFlights, searchFlights } from "@/lib/repository";
 import { CABIN_NAMES, formatDate, formatDateShort } from "@/lib/format";
 import { validateSearch } from "@/lib/validation";
-import type { CabinClass, FlightSearchResult, SearchCriteria } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import type { CabinClass, FlightSearchResult, SearchCriteria, SearchLeg, TripType } from "@/lib/types";
+import { TRIP_TYPE_LABELS } from "@/lib/types";
 
 type SortKey = "departure" | "price" | "duration" | "arrival";
 
@@ -27,19 +29,66 @@ const STAGGER_WINDOW_MS = 700;
 
 function SearchResults() {
   const params = useSearchParams();
+  const router = useRouter();
   const { ready, revision } = useApp();
+
+  const tripType = (params.get("trip") as TripType | null) ?? "one-way";
+
+  /**
+   * The journey flattened into the legs the traveller has to fill, whatever
+   * kind of trip it is. A one-way search is simply a journey of one, so the
+   * selection machinery below has no special case for it.
+   */
+  const legs = useMemo<SearchLeg[]>(() => {
+    const from = (params.get("from") ?? "").toUpperCase();
+    const to = (params.get("to") ?? "").toUpperCase();
+    const date = params.get("date") ?? "";
+    const first: SearchLeg = { originCode: from, destinationCode: to, departureDate: date };
+
+    if (tripType === "round-trip") {
+      const back = params.get("return") ?? "";
+      // Without a return date there is no second leg to choose, so it stays a
+      // one-leg journey rather than rendering an unfillable step.
+      return back
+        ? [first, { originCode: to, destinationCode: from, departureDate: back }]
+        : [first];
+    }
+
+    if (tripType === "multi-city") {
+      const encoded = params.get("legs") ?? "";
+      const extra = encoded
+        .split(",")
+        .map((chunk) => chunk.trim())
+        .filter(Boolean)
+        .map((chunk) => {
+          // `LOS-ABV-2026-08-20` — split off the two codes, the rest is the date.
+          const [originCode, destinationCode, ...rest] = chunk.split("-");
+          return { originCode, destinationCode, departureDate: rest.join("-") };
+        })
+        .filter((leg) => leg.originCode && leg.destinationCode && leg.departureDate);
+      return [first, ...extra];
+    }
+
+    return [first];
+  }, [params, tripType]);
+
+  /** One chosen flight id per leg; `null` until that leg is filled. */
+  const [picked, setPicked] = useState<(string | null)[]>([]);
+  const [activeLeg, setActiveLeg] = useState(0);
+  const multiLeg = legs.length > 1;
 
   const criteria = useMemo<SearchCriteria>(
     () => ({
-      originCode: (params.get("from") ?? "").toUpperCase(),
-      destinationCode: (params.get("to") ?? "").toUpperCase(),
-      departureDate: params.get("date") ?? "",
+      // Results are always for whichever leg is being filled right now.
+      originCode: legs[activeLeg]?.originCode ?? "",
+      destinationCode: legs[activeLeg]?.destinationCode ?? "",
+      departureDate: legs[activeLeg]?.departureDate ?? "",
       cabin: (params.get("cabin") ?? "economy") as CabinClass,
       adults: Math.max(1, Number(params.get("adults") ?? 1) || 1),
       children: Math.max(0, Number(params.get("children") ?? 0) || 0),
       infants: Math.max(0, Number(params.get("infants") ?? 0) || 0),
     }),
-    [params],
+    [params, legs, activeLeg],
   );
 
   const [results, setResults] = useState<FlightSearchResult[]>([]);
@@ -73,6 +122,41 @@ function SearchResults() {
       ),
     );
   }, [ready, criteria, validation.valid, revision]);
+
+  // Reset the picks whenever the journey itself changes, so a new search never
+  // inherits a flight chosen for a different route.
+  useEffect(() => {
+    setPicked(legs.map(() => null));
+    setActiveLeg(0);
+  }, [legs]);
+
+  /**
+   * Record a choice for the leg being filled. If a later leg is still empty we
+   * move to it; once every leg has a flight we hand the whole journey to the
+   * wizard as a comma-joined path, which is the shape `/book/[flightId]`
+   * already understands.
+   */
+  function chooseFlight(flightId: string) {
+    const next = legs.map((_, index) => (index === activeLeg ? flightId : (picked[index] ?? null)));
+    setPicked(next);
+
+    const unfilled = next.findIndex((entry) => entry === null);
+    if (unfilled !== -1) {
+      setActiveLeg(unfilled);
+      window.scrollTo({ top: 0 });
+      return;
+    }
+
+    const forward = new URLSearchParams({
+      trip: tripType,
+      cabin: criteria.cabin,
+      adults: String(criteria.adults),
+      children: String(criteria.children),
+      infants: String(criteria.infants),
+    });
+    const path = next.map((id) => encodeURIComponent(id as string)).join(",");
+    router.push(`/book/${path}?${forward.toString()}`);
+  }
 
   const airlines = useMemo(
     () => [...new Set(results.map((result) => result.flight.airline))].sort(),
@@ -141,8 +225,57 @@ function SearchResults() {
         <span className="font-medium text-ink-2">Results</span>
       </nav>
 
+      {multiLeg && (
+        /* Which flight of the journey is being chosen, and which are already
+           settled. Filled legs stay clickable so a choice can be revisited
+           without starting the search again. */
+        <div className="card-lg mb-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="overline text-ink-3">{TRIP_TYPE_LABELS[tripType]}</p>
+            <p className="text-caption text-ink-3">
+              {picked.filter(Boolean).length} of {legs.length} flights chosen
+            </p>
+          </div>
+          <ol className="mt-3 flex flex-wrap gap-2">
+            {legs.map((leg, index) => {
+              const done = Boolean(picked[index]);
+              const current = index === activeLeg;
+              return (
+                <li key={`${leg.originCode}-${leg.destinationCode}-${index}`}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveLeg(index)}
+                    aria-current={current ? "step" : undefined}
+                    className={`pressable flex items-center gap-2 rounded-lg border px-3 py-2 text-footnote font-medium ${
+                      current
+                        ? "border-accent bg-accent-soft text-accent-ink"
+                        : done
+                          ? "border-line bg-fill text-ink-2"
+                          : "border-line bg-surface text-ink-3"
+                    }`}
+                  >
+                    {done && <Icon name="checkCircle" className="h-4 w-4 text-positive" />}
+                    <span>
+                      {leg.originCode} → {leg.destinationCode}
+                    </span>
+                    <span className="text-caption font-normal text-ink-3">
+                      {formatDateShort(`${leg.departureDate}T00:00:00`)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
+
       <div className="card-lg mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          {multiLeg && (
+            <p className="mb-1 text-caption font-medium text-accent-ink">
+              Choosing flight {activeLeg + 1} of {legs.length}
+            </p>
+          )}
           <h1 className="flex items-center gap-2.5 text-title-1 font-semibold text-ink">
             {criteria.originCode}
             <Icon name="arrowRight" className="h-6 w-6 text-ink-3" />
@@ -260,7 +393,16 @@ function SearchResults() {
 
           <div className={`space-y-4 ${entering ? "stagger" : ""}`}>
             {visible.map((result) => (
-              <FlightCard key={result.flight.id} result={result} criteria={criteria} />
+              <FlightCard
+                  key={result.flight.id}
+                  result={result}
+                  criteria={criteria}
+                  onSelect={multiLeg ? chooseFlight : undefined}
+                  selected={multiLeg && picked[activeLeg] === result.flight.id}
+                  ctaLabel={
+                    multiLeg && activeLeg < legs.length - 1 ? "Select and continue" : "Select flight"
+                  }
+                />
             ))}
           </div>
 

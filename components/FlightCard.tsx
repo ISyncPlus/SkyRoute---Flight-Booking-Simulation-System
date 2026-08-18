@@ -9,9 +9,18 @@ import type { CabinClass, FlightSearchResult, SearchCriteria } from "@/lib/types
 export function FlightCard({
   result,
   criteria,
+  /* Multi-leg searches choose a flight per leg before anything is booked, so
+     the card reports the choice upward instead of navigating. Left undefined
+     (a one-way search) it stays a plain link straight into the wizard. */
+  onSelect,
+  ctaLabel = "Select flight",
+  selected = false,
 }: {
   result: FlightSearchResult;
   criteria: SearchCriteria;
+  onSelect?: (flightId: string) => void;
+  ctaLabel?: string;
+  selected?: boolean;
 }) {
   const { flight, origin, destination, seatsAvailable, pricePerAdult, estimatedTotal } = result;
   const cabin: CabinClass = flight.cabins.some((c) => c.cabin === criteria.cabin)
@@ -108,12 +117,26 @@ export function FlightCard({
             {totalPassengers === 1 ? "" : "s"}
           </p>
           <p className="text-caption text-ink-3">incl. taxes &amp; charges</p>
-          <Link
-            href={`/book/${encodeURIComponent(flight.id)}?${params.toString()}`}
-            className="btn-primary mt-3 w-full text-center justify-center"
-          >
-            Select flight
-          </Link>
+          {onSelect ? (
+            <button
+              type="button"
+              onClick={() => onSelect(flight.id)}
+              aria-pressed={selected}
+              className={`mt-3 w-full justify-center text-center ${
+                selected ? "btn-secondary" : "btn-primary"
+              }`}
+            >
+              {selected && <Icon name="check" className="h-4 w-4" />}
+              {selected ? "Selected" : ctaLabel}
+            </button>
+          ) : (
+            <Link
+              href={`/book/${encodeURIComponent(flight.id)}?${params.toString()}`}
+              className="btn-primary mt-3 w-full text-center justify-center"
+            >
+              {ctaLabel}
+            </Link>
+          )}
         </div>
       </div>
     </article>

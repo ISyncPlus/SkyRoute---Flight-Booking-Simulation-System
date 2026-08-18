@@ -167,6 +167,8 @@ export default function BookingsPage() {
                     destination={airports.find(
                       (airport) => airport.code === flight?.destinationCode,
                     )}
+                    allFlights={allFlights}
+                    airports={airports}
                   />
 
                   <div className="no-print mt-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">

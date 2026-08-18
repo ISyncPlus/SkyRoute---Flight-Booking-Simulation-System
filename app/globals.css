@@ -15,20 +15,20 @@
   /* Neutrals carry a trace of the accent's hue rather than sitting on pure
      grey. It is below the threshold anyone would name as "green", but it is
      what stops the chrome reading as stock iOS. */
-  --canvas: #f1f3f2;
+  --canvas: #e8edeb;
   /* Not pure white. The canvas already carries a trace of the accent's hue,
      and a #ffffff card sitting on it read as a different, colder material —
      the tint is what makes surface and canvas look like one family. */
-  --surface: #fafcfb;
+  --surface: #f5f8f7;
   /* Channel form of --surface, purely for Tailwind's bg-surface/NN opacity
      modifiers — see the comment on `surface` in tailwind.config.ts. Keep this
      in step with --surface by hand; it can't be derived from it in plain CSS. */
-  --surface-rgb: 250 252 251;
+  --surface-rgb: 245 248 247;
   /* Raised sits above surface, so it stays the lightest thing on the page —
      but still tinted, so nothing in the stack is flat white. */
-  --raised: #fdfefe;
-  --fill: #eceff0;
-  --fill-strong: #dfe4e3;
+  --raised: #fafcfb;
+  --fill: #dfe6e4;
+  --fill-strong: #cfd9d6;
   --line: rgba(38, 60, 57, 0.13);
   --line-strong: rgba(38, 60, 57, 0.26);
 
@@ -63,7 +63,7 @@
   --danger-ink: #9d2125;
 
   /* Translucent chrome. A floating layer, not an opaque strip. */
-  --material: rgba(250, 252, 251, 0.76);
+  --material: rgba(245, 248, 247, 0.78);
   --material-edge: rgba(255, 255, 255, 0.7);
 
   /* Ambient light behind the landing hero. Static, never looping: a slowly
@@ -78,9 +78,9 @@
   --shadow-press: inset 0 1px 2px rgba(17, 24, 39, 0.1);
 
   /* Seat map */
-  --seat-free: #fafcfb;
+  --seat-free: #f5f8f7;
   --seat-free-line: rgba(38, 60, 57, 0.28);
-  --seat-taken: #dfe4e3;
+  --seat-taken: #cfd9d6;
   --seat-taken-ink: #99a3a1;
 
   /* Motion. Not durations for gestures — this app has none — but the curves

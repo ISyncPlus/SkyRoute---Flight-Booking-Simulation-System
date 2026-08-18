@@ -151,6 +151,8 @@ export default function ManageBookingPage() {
             flight={flight}
             origin={airports.find((airport) => airport.code === flight?.originCode)}
             destination={airports.find((airport) => airport.code === flight?.destinationCode)}
+            allFlights={allFlights}
+            airports={airports}
           />
           {message && (
             <div className="mt-5">
