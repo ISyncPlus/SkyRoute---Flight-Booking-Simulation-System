@@ -441,6 +441,7 @@ export function listAllBookings(): Booking[] {
  * quietly pass neither and land in an unguarded branch.
  */
 export type CancelRequester =
+  | SessionUser
   | { kind: "account"; user: SessionUser }
   | { kind: "guest"; surname: string };
 
@@ -462,20 +463,24 @@ export function cancelBooking(
 
   const booking = state.bookings[index];
 
-  if (requestedBy.kind === "guest") {
-    /* The surname is the whole of a guest's proof, so it is re-checked here
-       rather than trusted from the lookup the page already did. A booking that
-       belongs to an account is deliberately out of reach this way: otherwise a
-       reference and a surname would be enough to cancel a registered
-       customer's trip without ever signing in. */
-    const normalised = requestedBy.surname.trim().toLowerCase();
-    const surnameMatches = booking.passengers.some(
-      (passenger) => passenger.lastName.toLowerCase() === normalised,
-    );
-    if (booking.userId !== null || !surnameMatches) {
-      return { ok: false, error: "You do not have permission to cancel this booking." };
+  let accountUser: SessionUser | undefined;
+  if ("kind" in requestedBy) {
+    if (requestedBy.kind === "guest") {
+      const normalised = requestedBy.surname.trim().toLowerCase();
+      const surnameMatches = booking.passengers.some(
+        (passenger) => passenger.lastName.toLowerCase() === normalised,
+      );
+      if (booking.userId !== null || !surnameMatches) {
+        return { ok: false, error: "You do not have permission to cancel this booking." };
+      }
+    } else {
+      accountUser = requestedBy.user;
     }
-  } else if (requestedBy.user.role !== "admin" && booking.userId !== requestedBy.user.id) {
+  } else {
+    accountUser = requestedBy;
+  }
+
+  if (accountUser && accountUser.role !== "admin" && booking.userId !== accountUser.id) {
     return { ok: false, error: "You do not have permission to cancel this booking." };
   }
   if (booking.status === "cancelled") return { ok: false, error: "This booking has already been cancelled." };

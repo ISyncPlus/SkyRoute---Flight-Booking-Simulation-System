@@ -62,6 +62,8 @@ function BookingWizard() {
   const requestedCabin = (query.get("cabin") ?? "economy") as CabinClass;
 
   const [step, setStep] = useState(0);
+  /** Set when a signed-out visitor chooses to book without an account. */
+  const [asGuest, setAsGuest] = useState(false);
   /** Which way the wizard is travelling, so the step can enter from that side. */
   const [goingBack, setGoingBack] = useState(false);
   const [seats, setSeats] = useState<Seat[]>([]);
@@ -187,7 +189,7 @@ function BookingWizard() {
   }
 
   function handleConfirm() {
-    if (!flight || !user) return;
+    if (!flight) return;
 
     const paymentCheck = validatePayment(payment);
     setPaymentErrors(paymentCheck.errors);
@@ -211,7 +213,9 @@ function BookingWizard() {
     const result = createBooking({
       flightId: flight.id,
       cabin,
-      userId: user.id,
+      // No account behind the booking when it was made as a guest; it will be
+      // reachable only by its reference and surname.
+      userId: user?.id ?? null,
       contactEmail,
       contactPhone,
       passengers: withSeats,
@@ -262,24 +266,42 @@ function BookingWizard() {
     );
   }
 
-  if (!user) {
+  if (!user && !asGuest) {
     return (
       <div className="container-page max-w-xl">
-        <Alert tone="info" title="Sign in to continue">
-          A booking must be attached to an account so that you can retrieve and manage it later.
-        </Alert>
-        <div className="card-lg mt-5">
-          <p className="text-callout text-ink-2">
+        <div className="card-lg">
+          <h1 className="text-title-2 font-semibold text-ink">How would you like to book?</h1>
+          <p className="mt-2 text-callout text-ink-2">
             You selected {flight.airline} {flight.flightNumber}, {airportLabel(origin)} to{" "}
             {airportLabel(destination)} on {formatDate(flight.departureTime)}.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
+
+          <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/login" className="btn-primary">
+              <Icon name="signIn" className="h-4 w-4" />
               Sign in
             </Link>
             <Link href="/register" className="btn-secondary">
+              <Icon name="plus" className="h-4 w-4" />
               Create an account
             </Link>
+          </div>
+          <p className="mt-3 text-caption text-ink-3">
+            An account keeps every trip you book in one place, ready to view or cancel.
+          </p>
+
+          {/* The guest route is deliberately quieter than the two buttons above
+              — offered without hesitation, but not the recommended path, since
+              a guest has only their reference to find the trip again. */}
+          <div className="mt-6 border-t border-line pt-6">
+            <button type="button" onClick={() => setAsGuest(true)} className="btn-secondary">
+              <Icon name="user" className="h-4 w-4" />
+              Continue as a guest
+            </button>
+            <p className="mt-3 text-caption text-ink-3">
+              No account needed. You will get a booking reference — keep it, as it and the
+              passenger surname are the only way back to this trip.
+            </p>
           </div>
         </div>
       </div>

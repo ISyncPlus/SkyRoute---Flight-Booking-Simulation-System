@@ -383,7 +383,7 @@ describe("cancelBooking", () => {
     const created = createBooking(bookingInput(["20A"]));
     if (!created.ok) throw new Error("booking failed");
 
-    const result = cancelBooking(created.data.pnr, CUSTOMER);
+    const result = cancelBooking(created.data.pnr, { kind: "account", user: CUSTOMER });
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.booking.status).toBe("cancelled");
@@ -395,7 +395,7 @@ describe("cancelBooking", () => {
   it("returns the seat to the pool after cancellation", () => {
     const created = createBooking(bookingInput(["20A"]));
     if (!created.ok) throw new Error("booking failed");
-    cancelBooking(created.data.pnr, CUSTOMER);
+    cancelBooking(created.data.pnr, { kind: "account", user: CUSTOMER });
 
     // The same seat can now be sold again.
     expect(createBooking(bookingInput(["20A"])).ok).toBe(true);
@@ -405,7 +405,7 @@ describe("cancelBooking", () => {
     const created = createBooking(bookingInput(["20A"]));
     if (!created.ok) throw new Error("booking failed");
 
-    const result = cancelBooking(created.data.pnr, OTHER_CUSTOMER);
+    const result = cancelBooking(created.data.pnr, { kind: "account", user: OTHER_CUSTOMER });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/permission/i);
   });
@@ -414,21 +414,21 @@ describe("cancelBooking", () => {
     const created = createBooking(bookingInput(["20A"]));
     if (!created.ok) throw new Error("booking failed");
 
-    expect(cancelBooking(created.data.pnr, ADMIN).ok).toBe(true);
+    expect(cancelBooking(created.data.pnr, { kind: "account", user: ADMIN }).ok).toBe(true);
   });
 
   it("refuses to cancel the same booking twice", () => {
     const created = createBooking(bookingInput(["20A"]));
     if (!created.ok) throw new Error("booking failed");
 
-    cancelBooking(created.data.pnr, CUSTOMER);
-    const second = cancelBooking(created.data.pnr, CUSTOMER);
+    cancelBooking(created.data.pnr, { kind: "account", user: CUSTOMER });
+    const second = cancelBooking(created.data.pnr, { kind: "account", user: CUSTOMER });
     expect(second.ok).toBe(false);
     if (!second.ok) expect(second.error).toMatch(/already been cancelled/i);
   });
 
   it("refuses an unknown PNR", () => {
-    expect(cancelBooking("ZZZZZZ", CUSTOMER).ok).toBe(false);
+    expect(cancelBooking("ZZZZZZ", { kind: "account", user: CUSTOMER }).ok).toBe(false);
   });
 });
 
@@ -508,7 +508,7 @@ describe("getStats", () => {
     const created = createBooking(bookingInput(["20A"]));
     if (!created.ok) throw new Error("booking failed");
 
-    const cancelled = cancelBooking(created.data.pnr, ADMIN);
+    const cancelled = cancelBooking(created.data.pnr, { kind: "account", user: ADMIN });
     if (!cancelled.ok) throw new Error("cancellation failed");
 
     const stats = getStats();

@@ -52,7 +52,7 @@ export default function BookingsPage() {
 
   function handleCancel(pnr: string) {
     if (!user) return;
-    const result = cancelBooking(pnr, user);
+    const result = cancelBooking(pnr, { kind: "account", user });
 
     if (!result.ok) {
       setMessage({ tone: "error", text: result.error });

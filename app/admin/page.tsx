@@ -156,7 +156,7 @@ export default function AdminPage() {
 
   function handleCancelBooking(booking: Booking) {
     if (!user) return;
-    const result = cancelBooking(booking.pnr, user);
+    const result = cancelBooking(booking.pnr, { kind: "account", user });
     if (!result.ok) notify("error", result.error);
     else {
       notify("success", `Booking ${booking.pnr} cancelled. Refund: ${formatMoney(result.data.refund)}.`);
