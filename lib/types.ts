@@ -142,13 +142,14 @@ export interface Booking {
    * on the manage page — it will never appear in anybody's "my bookings".
    */
   userId: string | null;
-  tripType: TripType;
+  flightId: string;
+  cabin: CabinClass;
+  tripType?: TripType;
   /**
    * Every flight on the journey, in the order they are flown. A one-way
    * booking has one; a return has two; multi-city has as many as were built.
-   * Never empty.
    */
-  segments: BookingSegment[];
+  segments?: BookingSegment[];
   passengers: Passenger[];
   fare: FareBreakdown;
   payment: Payment | null;
