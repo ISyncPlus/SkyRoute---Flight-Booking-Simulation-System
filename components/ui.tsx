@@ -161,14 +161,14 @@ export function Segmented<T extends string>({
   label: string;
 }) {
   return (
-    <div role="group" aria-label={label} className="segmented">
+    <div role="group" aria-label={label} className="segmented max-w-full overflow-x-auto">
       {items.map((item) => (
         <button
           key={item.key}
           type="button"
           onClick={() => onChange(item.key)}
           aria-pressed={value === item.key}
-          className="segment"
+          className="segment whitespace-nowrap"
         >
           {item.label}
           {item.count !== undefined && (

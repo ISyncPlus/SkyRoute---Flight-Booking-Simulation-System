@@ -124,12 +124,12 @@ export default function LoginPage() {
 
         <div className="border-t border-line pt-6">
           <p className="overline">Demonstration accounts</p>
-          <div className="mt-4 flex flex-wrap gap-2.5">
-            <button type="button" onClick={() => fill(DEMO_CUSTOMER)} className="btn-secondary">
+          <div className="mt-4 flex flex-col sm:flex-row gap-2.5">
+            <button type="button" onClick={() => fill(DEMO_CUSTOMER)} className="btn-secondary w-full sm:w-auto text-center justify-center">
               <Icon name="user" className="h-4 w-4" />
               Use customer account
             </button>
-            <button type="button" onClick={() => fill(DEMO_ADMIN)} className="btn-secondary">
+            <button type="button" onClick={() => fill(DEMO_ADMIN)} className="btn-secondary w-full sm:w-auto text-center justify-center">
               <Icon name="shield" className="h-4 w-4" />
               Use admin account
             </button>

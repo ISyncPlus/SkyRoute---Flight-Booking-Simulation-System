@@ -305,9 +305,9 @@ function BookingWizard() {
         <span className="font-medium text-ink-2">Book</span>
       </nav>
 
-      <h1 className="flex items-center gap-2.5 text-title-1 font-semibold text-ink">
+      <h1 className="flex flex-wrap items-center gap-2.5 text-title-2 sm:text-title-1 font-semibold text-ink">
         {airportLabel(origin)}
-        <Icon name="arrowRight" className="h-6 w-6 text-ink-3" />
+        <Icon name="arrowRight" className="h-5 w-5 sm:h-6 sm:w-6 text-ink-3" />
         {airportLabel(destination)}
       </h1>
       <p className="mb-7 mt-1.5 text-footnote text-ink-2">
@@ -335,7 +335,7 @@ function BookingWizard() {
           >
             {step === 0 && (
               <section aria-labelledby="seats-heading" className="card-lg">
-                <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+                <div className="mb-5 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div>
                     <h2 id="seats-heading" className="text-title-3 font-semibold text-ink">
                       Choose {seatsNeeded} seat{seatsNeeded === 1 ? "" : "s"}
@@ -347,7 +347,7 @@ function BookingWizard() {
                         ` · ${infants} infant${infants === 1 ? "" : "s"} travelling on a lap`}
                     </p>
                   </div>
-                  <button type="button" onClick={autoAssignSeats} className="btn-secondary">
+                  <button type="button" onClick={autoAssignSeats} className="btn-secondary w-full sm:w-auto text-center justify-center">
                     <Icon name="sparkles" className="h-4 w-4" />
                     Assign seats for me
                   </button>
@@ -439,8 +439,8 @@ function BookingWizard() {
             )}
 
             {step === 2 && (
-              <section aria-labelledby="payment-heading">
-                <h2 id="payment-heading" className="mb-5 text-title-3 font-semibold text-ink">
+              <section aria-labelledby="payment-heading" className="space-y-5">
+                <h2 id="payment-heading" className="text-title-3 font-semibold text-ink">
                   Payment
                 </h2>
                 <PaymentForm
@@ -486,21 +486,21 @@ function BookingWizard() {
             )}
           </div>
 
-          <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+          <div className="mt-7 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
             {step > 0 ? (
-              <button type="button" onClick={() => goToStep(step - 1)} className="btn-secondary">
+              <button type="button" onClick={() => goToStep(step - 1)} className="btn-secondary w-full sm:w-auto text-center justify-center">
                 <Icon name="arrowLeft" className="h-4 w-4" />
                 Back
               </button>
             ) : (
-              <Link href="/" className="btn-secondary">
+              <Link href="/" className="btn-secondary w-full sm:w-auto text-center justify-center">
                 <Icon name="arrowLeft" className="h-4 w-4" />
                 Change search
               </Link>
             )}
 
             {step < 2 ? (
-              <button type="button" onClick={() => goToStep(step + 1)} className="btn-primary">
+              <button type="button" onClick={() => goToStep(step + 1)} className="btn-primary w-full sm:w-auto text-center justify-center">
                 Continue
                 <Icon name="arrowRight" className="h-4 w-4" />
               </button>
@@ -509,7 +509,7 @@ function BookingWizard() {
                 type="button"
                 onClick={handleConfirm}
                 disabled={submitting}
-                className="btn-primary"
+                className="btn-primary w-full sm:w-auto text-center justify-center"
               >
                 <Icon name={submitting ? "spinner" : "lock"} className={`h-4 w-4 ${submitting ? "animate-spin" : ""}`} />
                 {submitting ? "Processing payment…" : `Pay ${formatMoney(fare.total, flight.currency)}`}

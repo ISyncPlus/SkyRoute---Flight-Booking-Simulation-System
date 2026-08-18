@@ -59,11 +59,11 @@ export default function ConfirmationPage() {
 
   if (!booking) {
     return (
-      <div className="container-page max-w-2xl">
+      <div className="container-page max-w-2xl text-center sm:text-left">
         <Alert tone="error" title="Booking not found">
           No booking exists with the reference <strong>{pnr}</strong>.
         </Alert>
-        <Link href="/" className="btn-primary mt-6">
+        <Link href="/" className="btn-primary mt-6 w-full sm:w-auto text-center justify-center">
           <Icon name="search" className="h-4 w-4" />
           Search for a flight
         </Link>
@@ -88,16 +88,16 @@ export default function ConfirmationPage() {
         destination={airports.find((airport) => airport.code === flight?.destinationCode)}
       />
 
-      <div className="no-print mt-8 flex flex-wrap gap-3">
-        <button type="button" onClick={() => window.print()} className="btn-primary">
+      <div className="no-print mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
+        <button type="button" onClick={() => window.print()} className="btn-primary w-full sm:w-auto text-center justify-center">
           <Icon name="printer" className="h-4 w-4" />
           Print / save as PDF
         </button>
-        <Link href="/bookings" className="btn-secondary">
+        <Link href="/bookings" className="btn-secondary w-full sm:w-auto text-center justify-center">
           <Icon name="ticket" className="h-4 w-4" />
           View all my bookings
         </Link>
-        <Link href="/" className="btn-secondary">
+        <Link href="/" className="btn-secondary w-full sm:w-auto text-center justify-center">
           <Icon name="plane" className="h-4 w-4" />
           Book another flight
         </Link>

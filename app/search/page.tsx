@@ -158,7 +158,7 @@ function SearchResults() {
           onClick={() => setEditing((open) => !open)}
           aria-expanded={editing}
           aria-controls="change-search"
-          className="btn-secondary shrink-0"
+          className="btn-secondary shrink-0 w-full sm:w-auto text-center justify-center"
         >
           <Icon name={editing ? "close" : "search"} className="h-4 w-4" />
           {editing ? "Hide search" : "Change search"}
@@ -216,15 +216,15 @@ function SearchResults() {
               {visible.length} flight{visible.length === 1 ? "" : "s"} found
             </p>
 
-            <div className="flex flex-wrap gap-3">
-              <div>
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+              <div className="w-full sm:w-auto">
                 <label htmlFor="airline" className="label flex items-center gap-1.5">
                   <Icon name="filter" className="h-3.5 w-3.5" />
                   Airline
                 </label>
                 <select
                   id="airline"
-                  className="input py-2"
+                  className="input py-2 w-full"
                   value={airlineFilter}
                   onChange={(event) => setAirlineFilter(event.target.value)}
                 >
@@ -237,14 +237,14 @@ function SearchResults() {
                 </select>
               </div>
 
-              <div>
+              <div className="w-full sm:w-auto">
                 <label htmlFor="sort" className="label flex items-center gap-1.5">
                   <Icon name="sort" className="h-3.5 w-3.5" />
                   Sort by
                 </label>
                 <select
                   id="sort"
-                  className="input py-2"
+                  className="input py-2 w-full"
                   value={sort}
                   onChange={(event) => setSort(event.target.value as SortKey)}
                 >

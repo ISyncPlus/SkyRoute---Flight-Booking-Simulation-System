@@ -170,8 +170,8 @@ export default function BookingsPage() {
                     )}
                   />
 
-                  <div className="no-print mt-4 flex flex-wrap items-center gap-3">
-                    <Link href={`/confirmation/${booking.pnr}`} className="btn-secondary">
+                  <div className="no-print mt-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
+                    <Link href={`/confirmation/${booking.pnr}`} className="btn-secondary w-full sm:w-auto text-center justify-center">
                       <Icon name="printer" className="h-4 w-4" />
                       View / print e-ticket
                     </Link>
@@ -181,34 +181,36 @@ export default function BookingsPage() {
                         // Confirming a cancellation states the cost before it
                         // asks — a confirmation that carries no new information
                         // is just a speed bump.
-                        <div className="enter flex flex-wrap items-center gap-4 rounded-xl border border-line bg-danger-soft px-5 py-4">
-                          <p className="text-footnote text-danger-ink">
+                        <div className="enter flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 rounded-xl border border-line bg-danger-soft px-5 py-4 w-full">
+                          <p className="text-footnote text-danger-ink w-full">
                             Cancel {booking.pnr}? You would be refunded{" "}
                             <strong>{formatMoney(refund)}</strong> of{" "}
                             {formatMoney(booking.fare.total)} (
                             {Math.round(refundRate(hoursToDeparture) * 100)}% of the refundable
                             amount).
                           </p>
-                          <button
-                            type="button"
-                            onClick={() => handleCancel(booking.pnr)}
-                            className="btn-danger"
-                          >
-                            Yes, cancel it
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setConfirming(null)}
-                            className="btn-secondary"
-                          >
-                            Keep booking
-                          </button>
+                          <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
+                            <button
+                              type="button"
+                              onClick={() => handleCancel(booking.pnr)}
+                              className="btn-danger w-full sm:w-auto text-center justify-center"
+                            >
+                              Yes, cancel it
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirming(null)}
+                              className="btn-secondary w-full sm:w-auto text-center justify-center"
+                            >
+                              Keep booking
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <button
                           type="button"
                           onClick={() => setConfirming(booking.pnr)}
-                          className="btn-danger"
+                          className="btn-danger w-full sm:w-auto text-center justify-center"
                         >
                           <Icon name="ban" className="h-4 w-4" />
                           Cancel booking
@@ -234,10 +236,10 @@ export default function BookingsPage() {
           Cancellation policy
         </h2>
         <ul className="mt-4 space-y-2 text-footnote text-ink-2">
-          <li>7 days or more before departure — 90% of the refundable amount</li>
-          <li>3 to 7 days before departure — 70%</li>
-          <li>24 to 72 hours before departure — 50%</li>
-          <li>Within 24 hours of departure — no refund</li>
+          <li>7 days or more before departure: 90% of the refundable amount</li>
+          <li>3 to 7 days before departure: 70%</li>
+          <li>24 to 72 hours before departure: 50%</li>
+          <li>Within 24 hours of departure: no refund</li>
         </ul>
         <p className="mt-4 text-caption text-ink-3">
           The booking service charge of {formatMoney(2500)} is never refundable.

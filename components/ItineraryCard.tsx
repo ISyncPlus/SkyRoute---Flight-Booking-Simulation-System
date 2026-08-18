@@ -33,27 +33,27 @@ export function ItineraryCard({
       {/* The e-ticket is the one thing here that leaves the screen — it gets
           printed and carried — so it is the one thing that has to identify
           itself without the surrounding chrome. */}
-      <header className="border-b border-line bg-fill px-6 py-5 sm:px-8">
+      <header className="border-b border-line bg-fill px-5 py-5 sm:px-8">
         <div className="mb-4 flex items-center gap-2 text-footnote font-semibold text-ink">
           <LogoMark className="h-6 w-6" />
           SkyRoute
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="overline">Booking reference</p>
-            <p className="tabular mt-1.5 font-mono text-numeral font-semibold tracking-[0.18em] text-ink">
+            <p className="tabular mt-1.5 font-mono text-title-2 sm:text-numeral font-semibold tracking-[0.16em] sm:tracking-[0.18em] text-ink">
               {booking.pnr}
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-left sm:text-right">
             <StatusBadge status={booking.status} />
-            <p className="mt-2 text-caption text-ink-3">Booked {formatDate(booking.createdAt)}</p>
+            <p className="mt-1.5 sm:mt-2 text-caption text-ink-3">Booked {formatDate(booking.createdAt)}</p>
           </div>
         </div>
       </header>
 
       {flight ? (
-        <div className="px-6 py-7 sm:px-8">
+        <div className="px-5 py-6 sm:px-8 sm:py-7">
           <div className="flex flex-wrap items-center gap-2 text-footnote">
             <span className="flex h-7 items-center rounded bg-fill px-2 text-micro font-bold text-ink-2">
               {flight.airlineCode}
@@ -72,12 +72,12 @@ export function ItineraryCard({
             </span>
           </div>
 
-          <div className="mt-6 grid gap-6 rounded-xl border border-line p-6 sm:grid-cols-[1fr_auto_1fr]">
+          <div className="mt-6 grid gap-6 rounded-xl border border-line p-5 sm:p-6 sm:grid-cols-[1fr_auto_1fr]">
             <div>
-              <p className="tabular text-numeral font-semibold text-ink">
+              <p className="tabular text-title-2 sm:text-numeral font-semibold text-ink">
                 {formatTime(flight.departureTime)}
               </p>
-              <p className="mt-2 text-callout font-medium text-ink">{airportLabel(origin)}</p>
+              <p className="mt-1.5 sm:mt-2 text-callout font-medium text-ink">{airportLabel(origin)}</p>
               <p className="mt-1 text-caption text-ink-3">{origin?.name}</p>
               <p className="mt-2 flex items-center gap-1.5 text-caption text-ink-3">
                 <Icon name="planeTakeoff" className="h-3.5 w-3.5" />
@@ -96,7 +96,7 @@ export function ItineraryCard({
             </div>
 
             <div className="sm:text-right">
-              <p className="tabular text-numeral font-semibold text-ink">
+              <p className="tabular text-title-2 sm:text-numeral font-semibold text-ink">
                 {formatTime(flight.arrivalTime)}
               </p>
               <p className="mt-2 text-callout font-medium text-ink">{airportLabel(destination)}</p>

@@ -85,7 +85,7 @@ export default function ManageBookingPage() {
           </Field>
         </div>
 
-        <button type="submit" className="btn-primary mt-6">
+        <button type="submit" className="btn-primary mt-6 w-full sm:w-auto text-center justify-center">
           <Icon name="search" className="h-4 w-4" />
           Find booking
         </button>
@@ -94,8 +94,8 @@ export default function ManageBookingPage() {
       {notFound && (
         <div className="mt-6">
           <Alert tone="error" title="No matching booking">
-            We could not find a booking with that reference and surname. Check both and try again —
-            the surname must match a passenger on the booking exactly.
+            We could not find a booking with that reference and surname. Check both and try again.
+            The surname must match a passenger on the booking exactly.
           </Alert>
         </div>
       )}
@@ -108,12 +108,12 @@ export default function ManageBookingPage() {
             origin={airports.find((airport) => airport.code === flight?.originCode)}
             destination={airports.find((airport) => airport.code === flight?.destinationCode)}
           />
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href={`/confirmation/${booking.pnr}`} className="btn-secondary">
+          <div className="mt-5 flex flex-col sm:flex-row flex-wrap gap-3">
+            <Link href={`/confirmation/${booking.pnr}`} className="btn-secondary w-full sm:w-auto text-center justify-center">
               <Icon name="printer" className="h-4 w-4" />
               View / print e-ticket
             </Link>
-            <Link href="/bookings" className="btn-secondary">
+            <Link href="/bookings" className="btn-secondary w-full sm:w-auto text-center justify-center">
               <Icon name="signIn" className="h-4 w-4" />
               Sign in to cancel this booking
             </Link>

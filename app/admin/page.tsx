@@ -450,20 +450,20 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <button type="submit" className="btn-primary mt-4">
+            <button type="submit" className="btn-primary mt-4 w-full sm:w-auto text-center justify-center">
               <Icon name="plus" className="h-4 w-4" />
               Add flight
             </button>
           </form>
 
           <div className="card">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h2 className="text-title-3 font-semibold text-ink">
                 Schedule ({visibleFlights.length} of {flights.length})
               </h2>
               <input
                 type="search"
-                className="input max-w-xs py-2"
+                className="input w-full sm:max-w-xs py-2"
                 placeholder="Filter by number, airline or route"
                 value={flightSearch}
                 onChange={(event) => setFlightSearch(event.target.value)}
@@ -541,13 +541,13 @@ export default function AdminPage() {
       {/* ---------------- Bookings ---------------- */}
       {tab === "bookings" && (
         <section className="card">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="text-title-3 font-semibold text-ink">
               All bookings ({visibleBookings.length})
             </h2>
             <input
               type="search"
-              className="input max-w-xs py-2"
+              className="input w-full sm:max-w-xs py-2"
               placeholder="Search PNR, name or email"
               value={bookingSearch}
               onChange={(event) => setBookingSearch(event.target.value)}
@@ -720,7 +720,7 @@ export default function AdminPage() {
               Deletes every user, booking and flight from this browser and regenerates the seed
               schedule. Useful before a demonstration. This cannot be undone.
             </p>
-            <button type="button" onClick={handleReset} className="btn-danger mt-4">
+            <button type="button" onClick={handleReset} className="btn-danger mt-4 w-full sm:w-auto text-center justify-center">
               <Icon name="refresh" className="h-4 w-4" />
               Clear all data and reseed
             </button>

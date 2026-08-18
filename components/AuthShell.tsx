@@ -14,6 +14,7 @@ import type { ReactNode } from "react";
 import { RouteArc } from "./RouteArc";
 import { Icon } from "./icons";
 import { LogoMark } from "./Brand";
+import { SideRays } from "./SideRays";
 
 export function AuthShell({
   title,
@@ -31,6 +32,25 @@ export function AuthShell({
   return (
     <div className="relative isolate overflow-hidden">
       <div aria-hidden="true" className="hero-glow" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-70 transition-opacity duration-700"
+      >
+        <SideRays
+          origin="top-left"
+          speed={1.5}
+          spread={2.0}
+          lightRayColor1="#0d6b5e"
+          lightRayColor2="#0284c7"
+          lightIntensity={1.1}
+          lightOpacity={0.35}
+          darkRayColor1="#2fc4ae"
+          darkRayColor2="#38bdf8"
+          darkIntensity={1.6}
+          darkOpacity={0.75}
+          className="h-full w-full"
+        />
+      </div>
 
       <div className="container-wide grid items-center gap-12 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:py-16">
         {/* Brand panel — decorative, so it is out of the reading order on the

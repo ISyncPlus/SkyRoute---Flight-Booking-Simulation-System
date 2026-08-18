@@ -1,3 +1,4 @@
+@import "tw-animate-css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -83,62 +84,68 @@
   --dur-sheet: 300ms;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
+/*
+ * Driven by the `.dark` class next-themes puts on <html> (see ThemeProvider
+ * in app/layout.tsx), not by prefers-color-scheme: next-themes resolves the
+ * system preference into that same class on first paint (no flash, and no
+ * flicker on Safari/no-JS since @media(dark) previously fell through). A
+ * theme the user explicitly picked would otherwise be fought by the OS-level
+ * media query still matching underneath.
+ */
+:root.dark {
+  color-scheme: dark;
 
-    /* True black canvas is kept — it is right on an OLED panel and it is what
-       the surfaces above it are judged against. The surfaces themselves carry
-       the accent's hue, which is where the warmth shows. */
-    --canvas: #000000;
-    --surface: #171d1c;
-    --raised: #222a29;
-    --fill: #222a29;
-    --fill-strong: #2f3937;
-    --line: rgba(226, 240, 237, 0.14);
-    --line-strong: rgba(226, 240, 237, 0.28);
+  /* True black canvas is kept — it is right on an OLED panel and it is what
+     the surfaces above it are judged against. The surfaces themselves carry
+     the accent's hue, which is where the warmth shows. */
+  --canvas: #000000;
+  --surface: #171d1c;
+  --raised: #222a29;
+  --fill: #222a29;
+  --fill-strong: #2f3937;
+  --line: rgba(226, 240, 237, 0.14);
+  --line-strong: rgba(226, 240, 237, 0.28);
 
-    --ink: #f2f6f5;
-    --ink-2: #9daaa7;
-    --ink-3: #78847f;
+  --ink: #f2f6f5;
+  --ink-2: #9daaa7;
+  --ink-3: #78847f;
 
-    /* Lifted well above the light-mode value: a colour that reads as "deep"
-       on white reads as "muddy" on black. */
-    --accent: #2fc4ae;
-    --accent-hover: #57d6c3;
-    --accent-soft: rgba(47, 196, 174, 0.16);
-    --accent-ink: #6fdcca;
-    --on-accent: #04231f;
+  /* Lifted well above the light-mode value: a colour that reads as "deep"
+     on white reads as "muddy" on black. */
+  --accent: #2fc4ae;
+  --accent-hover: #57d6c3;
+  --accent-soft: rgba(47, 196, 174, 0.16);
+  --accent-ink: #6fdcca;
+  --on-accent: #04231f;
 
-    --positive: #7bc44a;
-    --positive-soft: rgba(123, 196, 74, 0.16);
-    --positive-ink: #9ad470;
+  --positive: #7bc44a;
+  --positive-soft: rgba(123, 196, 74, 0.16);
+  --positive-ink: #9ad470;
 
-    --warn: #ff9f0a;
-    --warn-soft: rgba(255, 159, 10, 0.16);
-    --warn-ink: #ffb340;
+  --warn: #ff9f0a;
+  --warn-soft: rgba(255, 159, 10, 0.16);
+  --warn-ink: #ffb340;
 
-    --danger: #ff453a;
-    --danger-soft: rgba(255, 69, 58, 0.16);
-    --danger-ink: #ff6b61;
+  --danger: #ff453a;
+  --danger-soft: rgba(255, 69, 58, 0.16);
+  --danger-ink: #ff6b61;
 
-    --material: rgba(23, 29, 28, 0.7);
-    --material-edge: rgba(226, 240, 237, 0.08);
+  --material: rgba(23, 29, 28, 0.7);
+  --material-edge: rgba(226, 240, 237, 0.08);
 
-    --glow-1: rgba(25, 173, 156, 0.24);
-    --glow-2: rgba(47, 196, 174, 0.18);
-    --glow-3: rgba(90, 160, 130, 0.12);
+  --glow-1: rgba(25, 173, 156, 0.24);
+  --glow-2: rgba(47, 196, 174, 0.18);
+  --glow-3: rgba(90, 160, 130, 0.12);
 
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --shadow-2: 0 2px 10px rgba(0, 0, 0, 0.55);
-    --shadow-3: 0 24px 56px -16px rgba(0, 0, 0, 0.75);
-    --shadow-press: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-2: 0 2px 10px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 24px 56px -16px rgba(0, 0, 0, 0.75);
+  --shadow-press: inset 0 1px 2px rgba(0, 0, 0, 0.5);
 
-    --seat-free: #222a29;
-    --seat-free-line: rgba(226, 240, 237, 0.24);
-    --seat-taken: #1d2423;
-    --seat-taken-ink: #5a6663;
-  }
+  --seat-free: #222a29;
+  --seat-free-line: rgba(226, 240, 237, 0.24);
+  --seat-taken: #1d2423;
+  --seat-taken-ink: #5a6663;
 }
 
 /* ==========================================================================
@@ -151,6 +158,12 @@
     /* Type scales with the user's setting; spacing is in rem so the layout
        follows the text rather than breaking around it. */
     font-size: 100%;
+    /* Belt-and-suspenders for html's own background: on elastic/rubber-band
+       overscroll (Safari, iOS) the canvas above/below the body's box is
+       visible for an instant, and without this it was showing through as the
+       browser's default background instead of ours. */
+    background-color: var(--canvas);
+    @apply font-sans;
   }
 
   body {
@@ -159,7 +172,6 @@
     font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    @apply text-body;
   }
 
   /* Numbers that sit in columns — fares, times, seat rows — must not jitter. */
@@ -233,6 +245,49 @@
   .on-material {
     @apply font-medium text-ink;
     letter-spacing: 0.006em;
+  }
+
+  /* ---- Navigation rail --------------------------------------------------
+     Edge to edge and flush while the page sits at the top; once it scrolls,
+     the bar contracts and lifts away from the edge into a floating pill.
+     That change is the signal — content is now passing *underneath* the bar
+     rather than beginning below it, and the glass says so by blurring what
+     it covers.
+
+     It lifts with a transform rather than a margin so the sticky header's
+     own box never changes height: a margin here would shove the whole page
+     down 12px at the exact moment the class flips.
+
+     The side and top borders are present but transparent at rest, so the
+     detached state only has to animate `border-color`. Growing a border
+     from 0 to 1px would shift the bar's contents by a pixel instead. */
+  .nav-rail {
+    @apply relative mx-auto w-full;
+    max-width: 100%;
+    border: 1px solid transparent;
+    border-bottom-color: var(--line);
+    border-radius: 0;
+    transform: translateY(0);
+    transition:
+      width var(--dur-sheet) var(--ease-drawer),
+      max-width var(--dur-sheet) var(--ease-drawer),
+      border-radius var(--dur-sheet) var(--ease-drawer),
+      transform var(--dur-sheet) var(--ease-drawer),
+      border-color var(--dur-panel) ease,
+      box-shadow var(--dur-panel) ease;
+  }
+
+  .nav-rail[data-scrolled="true"] {
+    width: calc(100% - 1.5rem);
+    max-width: 64rem;
+    border-color: var(--line);
+    border-radius: 9999px;
+    transform: translateY(0.75rem);
+    /* A brighter rim along the top edge is what reads as glass rather than
+       as a translucent panel — it is the highlight a real bevel catches. */
+    box-shadow: var(--shadow-3), inset 0 1px 0 var(--material-edge);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    backdrop-filter: blur(32px) saturate(200%);
   }
 
   /* ---- Pressables -------------------------------------------------------
@@ -661,6 +716,14 @@
     background-color: var(--fill-strong);
   }
 
+  /* The bar still detaches and contracts — it just stops travelling to get
+     there. Only the colour and shadow are left to cross-fade. */
+  .nav-rail {
+    transition:
+      border-color var(--dur-panel) ease,
+      box-shadow var(--dur-panel) ease;
+  }
+
   .sheet,
   .sheet[data-open="true"] {
     transform: none;
@@ -747,6 +810,12 @@
 @media (prefers-reduced-transparency: reduce) {
   .material {
     background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* The detached bar keeps its shape — it just stops being see-through. */
+  .nav-rail[data-scrolled="true"] {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }

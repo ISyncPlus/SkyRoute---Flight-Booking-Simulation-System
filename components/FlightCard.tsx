@@ -49,20 +49,20 @@ export function FlightCard({
             )}
           </div>
 
-          <div className="flex items-start gap-3 sm:gap-5">
+          <div className="flex items-start justify-between gap-2 sm:gap-5">
             <div className="shrink-0">
-              <p className="tabular text-numeral font-semibold text-ink">
+              <p className="tabular text-title-2 sm:text-numeral font-semibold text-ink">
                 {formatTime(flight.departureTime)}
               </p>
-              <p className="mt-1.5 text-caption font-medium text-ink-2">{airportLabel(origin)}</p>
+              <p className="mt-1 sm:mt-1.5 text-caption font-medium text-ink-2">{airportLabel(origin)}</p>
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col items-center pt-1.5">
+            <div className="flex min-w-0 flex-1 flex-col items-center pt-1 sm:pt-1.5 px-1 sm:px-3">
               <p className="flex items-center gap-1.5 text-caption font-medium text-ink-3">
                 <Icon name="clock" className="h-3.5 w-3.5" />
                 {formatDuration(flight.durationMinutes)}
               </p>
-              <div aria-hidden="true" className="my-2 flex w-full items-center gap-1.5">
+              <div aria-hidden="true" className="my-1.5 sm:my-2 flex w-full items-center gap-1.5">
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-line-strong" />
                 <span className="h-px flex-1 bg-line" />
                 <Icon name="plane" className="h-3.5 w-3.5 text-ink-3" />
@@ -73,10 +73,10 @@ export function FlightCard({
             </div>
 
             <div className="shrink-0 text-right">
-              <p className="tabular text-numeral font-semibold text-ink">
+              <p className="tabular text-title-2 sm:text-numeral font-semibold text-ink">
                 {formatTime(flight.arrivalTime)}
               </p>
-              <p className="mt-1.5 text-caption font-medium text-ink-2">
+              <p className="mt-1 sm:mt-1.5 text-caption font-medium text-ink-2">
                 {airportLabel(destination)}
               </p>
             </div>
@@ -98,7 +98,7 @@ export function FlightCard({
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col justify-center gap-1 border-t border-line bg-fill p-6 sm:p-7 lg:w-64 lg:border-l lg:border-t-0">
+        <div className="flex shrink-0 flex-col justify-center gap-1 border-t border-line bg-fill p-5 sm:p-7 lg:w-64 lg:border-l lg:border-t-0">
           <p className="text-caption text-ink-3">From, per adult</p>
           <p className="tabular text-numeral-sm font-semibold text-ink">
             {formatMoney(pricePerAdult, flight.currency)}
@@ -110,7 +110,7 @@ export function FlightCard({
           <p className="text-caption text-ink-3">incl. taxes &amp; charges</p>
           <Link
             href={`/book/${encodeURIComponent(flight.id)}?${params.toString()}`}
-            className="btn-primary mt-3 w-full"
+            className="btn-primary mt-3 w-full text-center justify-center"
           >
             Select flight
           </Link>

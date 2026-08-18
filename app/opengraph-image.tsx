@@ -10,7 +10,7 @@ import { ImageResponse } from "next/og";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "SkyRoute — Flight Booking Simulation System";
+export const alt = "SkyRoute - Flight Booking Simulation System";
 
 /** The full disc mark — design/logo-master.svg. */
 const MARK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="168" height="168">

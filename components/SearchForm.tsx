@@ -99,7 +99,7 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
           >
             {sortedAirports.map((airport) => (
               <option key={airport.code} value={airport.code}>
-                {airport.city} ({airport.code}) — {airport.name}
+                {airport.city} ({airport.code}) - {airport.name}
               </option>
             ))}
           </select>
@@ -131,7 +131,7 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
           >
             {sortedAirports.map((airport) => (
               <option key={airport.code} value={airport.code}>
-                {airport.city} ({airport.code}) — {airport.name}
+                {airport.city} ({airport.code}) - {airport.name}
               </option>
             ))}
           </select>

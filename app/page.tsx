@@ -6,6 +6,8 @@ import { RouteArc } from "@/components/RouteArc";
 import { useApp } from "@/components/AppProvider";
 import { Alert, Reveal } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
+import FoldText from "@/components/FoldText";
+import { SideRays } from "@/components/SideRays";
 import { DEMO_ADMIN, DEMO_CUSTOMER } from "@/lib/auth";
 
 const FEATURES: { title: string; body: string; icon: IconName }[] = [
@@ -83,6 +85,29 @@ export default function HomePage() {
       {/* ---------------- Hero ---------------- */}
       <section className="relative isolate overflow-hidden">
         <div aria-hidden="true" className="hero-glow" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-80 transition-opacity duration-700"
+        >
+          <SideRays
+            origin="top-right"
+            speed={1.8}
+            spread={2.2}
+            saturation={1.4}
+            blend={0.7}
+            lightRayColor1="#0d6b5e"
+            lightRayColor2="#0284c7"
+            lightIntensity={1.2}
+            lightOpacity={0.4}
+            lightFalloff={2.2}
+            darkRayColor1="#2fc4ae"
+            darkRayColor2="#38bdf8"
+            darkIntensity={1.8}
+            darkOpacity={0.8}
+            darkFalloff={1.8}
+            className="h-full w-full"
+          />
+        </div>
 
         <div className="container-wide grid items-center gap-14 pb-16 pt-10 sm:pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pb-24 lg:pt-24">
           <div className="hero-in">
@@ -94,7 +119,14 @@ export default function HomePage() {
             </p>
 
             <h1 className="mt-7 max-w-[16ch] text-hero font-semibold text-ink">
-              The whole booking journey, end to end.
+              <FoldText
+                text="The whole booking journey, end to end."
+                splitBy="word"
+                hinge="top"
+                fontSize="clamp(2.75rem, 1.9rem + 3.6vw, 5rem)"
+                fontWeight={600}
+                color="var(--ink)"
+              />
             </h1>
 
             <p className="mt-7 max-w-xl text-lead text-ink-2">
@@ -106,22 +138,22 @@ export default function HomePage() {
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               {user ? (
                 <>
-                  <a href="#search" className="btn-primary btn-lg">
+                  <a href="#search" className="btn-primary btn-lg w-full sm:w-auto text-center justify-center">
                     <Icon name="search" className="h-5 w-5" />
                     Search flights
                   </a>
-                  <Link href="/bookings" className="btn-secondary btn-lg">
+                  <Link href="/bookings" className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center">
                     <Icon name="ticket" className="h-5 w-5" />
                     My bookings
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link href="/register" className="btn-primary btn-lg">
+                  <Link href="/register" className="btn-primary btn-lg w-full sm:w-auto text-center justify-center">
                     Create your account
                     <Icon name="arrowRight" className="h-5 w-5" />
                   </Link>
-                  <Link href="/login" className="btn-secondary btn-lg">
+                  <Link href="/login" className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center">
                     <Icon name="signIn" className="h-5 w-5" />
                     Sign in
                   </Link>
@@ -129,12 +161,12 @@ export default function HomePage() {
               )}
             </div>
 
-            <dl className="mt-12 flex flex-wrap gap-x-12 gap-y-6 border-t border-line pt-8">
+            <dl className="mt-12 grid grid-cols-3 gap-4 border-t border-line pt-8 sm:flex sm:flex-wrap sm:gap-x-12">
               {STATS.map((stat) => (
-                <div key={stat.label}>
+                <div key={stat.label} className="text-center sm:text-left">
                   <dt className="sr-only">{stat.label}</dt>
                   <dd>
-                    <span className="tabular block text-title-1 font-semibold text-ink">
+                    <span className="tabular block text-title-2 sm:text-title-1 font-semibold text-ink">
                       {stat.value}
                     </span>
                     <span className="mt-1 block text-caption text-ink-3">{stat.label}</span>
@@ -144,10 +176,10 @@ export default function HomePage() {
             </dl>
           </div>
 
-          <div className="card-glass p-6 sm:p-10">
+          <div className="card-glass p-5 sm:p-10">
             <RouteArc from="LOS" to="ABV" className="h-auto w-full" />
-            <p className="mt-6 text-center text-footnote text-ink-2">
-              Lagos to Abuja, direct — one of hundreds of departures in the schedule.
+            <p className="mt-5 sm:mt-6 text-center text-footnote text-ink-2">
+              Lagos to Abuja, direct, one of hundreds of departures in the schedule.
             </p>
           </div>
         </div>
@@ -159,7 +191,7 @@ export default function HomePage() {
           <div className="mb-8">
             <Alert tone="error" title="Browser storage is unavailable">
               This application stores its data in your browser&apos;s localStorage. It appears to be
-              disabled or full — this often happens in private browsing mode. Please open the site in
+              disabled or full. This often happens in private browsing mode. Please open the site in
               a normal window to continue.
             </Alert>
           </div>
@@ -170,7 +202,7 @@ export default function HomePage() {
             Where would you like to fly?
           </h2>
           <p className="mt-4 max-w-xl text-lead text-ink-2">
-            Pick a route and a date. You can browse the whole schedule without an account — you only
+            Pick a route and a date. You can browse the whole schedule without an account. You only
             need one to hold a seat.
           </p>
         </Reveal>
@@ -235,7 +267,7 @@ export default function HomePage() {
           </div>
 
           <Reveal delay={120}>
-            <div className="card-glass mt-12 flex flex-col items-start gap-6 p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
+            <div className="card-glass mt-12 flex flex-col items-start gap-6 p-6 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h3 className="text-title-2 font-semibold text-ink">Ready to hold a seat?</h3>
                 <p className="mt-2.5 max-w-lg text-callout text-ink-2">
@@ -243,12 +275,12 @@ export default function HomePage() {
                   stored in localStorage and sent nowhere.
                 </p>
               </div>
-              <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-                <Link href="/register" className="btn-primary btn-lg">
+              <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row">
+                <Link href="/register" className="btn-primary btn-lg w-full sm:w-auto text-center justify-center">
                   Create your account
                   <Icon name="arrowRight" className="h-5 w-5" />
                 </Link>
-                <Link href="/login" className="btn-secondary btn-lg">
+                <Link href="/login" className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center">
                   <Icon name="signIn" className="h-5 w-5" />
                   Sign in
                 </Link>
