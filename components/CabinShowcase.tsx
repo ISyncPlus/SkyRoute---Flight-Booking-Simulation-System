@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Icon } from "./icons";
+import { Icon, type IconName } from "./icons";
 import { Reveal } from "./ui";
 
 interface CabinTier {
@@ -12,7 +12,7 @@ interface CabinTier {
   headline: string;
   description: string;
   image: string;
-  features: { icon: "seat" | "sparkles" | "baggage" | "food" | "wifi" | "shield"; label: string }[];
+  features: { icon: IconName; label: string }[];
   specs: { label: string; value: string }[];
 }
 
@@ -29,7 +29,7 @@ const CABIN_TIERS: CabinTier[] = [
       { icon: "seat", label: "Full 180° lie-flat bed with memory foam mattress" },
       { icon: "sparkles", label: "32-inch 4K cinematic entertainment screen" },
       { icon: "food", label: "On-demand fine dining & sommelier cellar" },
-      { icon: "luggage", label: "3 × 32kg checked baggage + priority handling" },
+      { icon: "luggage", label: "3 ｘ 32kg checked baggage + priority handling" },
       { icon: "wifi", label: "Unlimited high-speed in-flight satellite connectivity" },
       { icon: "shield", label: "Dedicated lounge access and fast-track security" },
     ],
@@ -52,7 +52,7 @@ const CABIN_TIERS: CabinTier[] = [
       { icon: "seat", label: "Lie-flat seating with adjustable privacy partition" },
       { icon: "sparkles", label: "18-inch touch display with active noise cancellation" },
       { icon: "food", label: "Multi-course gourmet meal with artisanal snacks" },
-      { icon: "baggage", label: "2 × 32kg checked bags + carry-on cabin bag" },
+      { icon: "luggage", label: "2 × 32kg checked bags + carry-on cabin bag" },
       { icon: "wifi", label: "Complimentary messaging and streaming Wi-Fi" },
       { icon: "shield", label: "Priority boarding and premium bag tags" },
     ],
@@ -75,7 +75,7 @@ const CABIN_TIERS: CabinTier[] = [
       { icon: "seat", label: "Ergonomic slimline seats with generous legroom" },
       { icon: "sparkles", label: "13.3-inch HD touch screen with 1,000+ hours of media" },
       { icon: "food", label: "Complimentary hot meals and beverage service" },
-      { icon: "baggage", label: "2 × 23kg standard checked baggage" },
+      { icon: "luggage", label: "2 × 23kg standard checked baggage" },
       { icon: "wifi", label: "High-speed in-flight Wi-Fi packages available" },
       { icon: "shield", label: "Dedicated overhead bin storage space" },
     ],

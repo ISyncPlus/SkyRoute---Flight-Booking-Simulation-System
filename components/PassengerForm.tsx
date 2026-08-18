@@ -33,22 +33,27 @@ export function PassengerForm({
   const prefix = `pax-${index}`;
 
   return (
-    <fieldset className="card-lg">
-      <legend className="flex flex-wrap items-center gap-2 px-1 text-footnote font-semibold text-ink">
-        <Icon name="user" className="h-4 w-4 text-ink-3" />
-        Passenger {index + 1}
-        <span className="badge bg-fill text-ink-2">{TYPE_LABELS[passenger.type]}</span>
+    <div className="card-lg">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="flex items-center gap-1.5 text-footnote font-semibold text-ink">
+            <Icon name="user" className="h-4 w-4 text-ink-3" />
+            Passenger {index + 1}
+          </span>
+          <span className="badge bg-fill text-ink-2">{TYPE_LABELS[passenger.type]}</span>
+        </div>
+
         {passenger.type === "infant" ? (
           <span className="badge bg-fill text-ink-3">On an adult&apos;s lap</span>
         ) : seatId ? (
-          <span className="badge gap-1.5 bg-accent-soft text-accent-ink">
+          <span className="badge gap-1.5 bg-accent-soft text-accent-ink font-semibold">
             <Icon name="seat" className="h-3.5 w-3.5" />
             Seat {seatId} · {CABIN_NAMES[cabin]}
           </span>
         ) : null}
-      </legend>
+      </div>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Field label="Title" htmlFor={`${prefix}-title`}>
           <select
             id={`${prefix}-title`}
@@ -130,6 +135,7 @@ export function PassengerForm({
           </Field>
         )}
       </div>
-    </fieldset>
+    </div>
   );
 }
+

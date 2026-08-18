@@ -4,7 +4,7 @@ import nextTypescript from "eslint-config-next/typescript";
 /* Flat config, required from ESLint 9 on. `eslint-config-next` ships these
    two entry points as ready-made flat-config arrays, so they spread straight
    in where `.eslintrc.json` used to "extend" them by name. */
-export default [
+const config = [
   ...coreWebVitals,
   ...nextTypescript,
   {
@@ -17,3 +17,5 @@ export default [
     ignores: ["node_modules/", ".next/", "out/", "coverage/"],
   },
 ];
+
+export default config;
