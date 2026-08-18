@@ -109,16 +109,16 @@ export function CabinShowcase() {
 
       {/* Segmented Tier Switcher */}
       <Reveal delay={60} className="mt-10 flex justify-center px-4">
-        <div className="segmented grid w-full max-w-md grid-cols-2 gap-1.5 p-1.5 shadow-sm sm:inline-flex sm:w-auto sm:flex-row sm:gap-1">
+        <div className="segmented grid w-full max-w-sm grid-cols-2 gap-1.5 p-1.5 shadow-sm sm:inline-flex sm:w-auto sm:max-w-none sm:flex-row sm:flex-nowrap sm:gap-1">
           {CABIN_TIERS.map((tier, idx) => (
             <button
               key={tier.id}
               type="button"
               onClick={() => setSelectedCabin(tier.id)}
               aria-pressed={selectedCabin === tier.id}
-              className={`segment px-3.5 py-2.5 text-callout font-medium text-center transition-all ${
+              className={`segment whitespace-nowrap px-3.5 py-2.5 text-callout font-medium text-center transition-all ${
                 idx === 2
-                  ? "col-span-2 justify-self-center w-auto px-6 sm:col-auto sm:justify-self-auto sm:w-auto sm:px-5"
+                  ? "col-span-2 justify-self-center w-full sm:col-auto sm:justify-self-auto sm:w-auto sm:px-5"
                   : "w-full sm:w-auto sm:px-5"
               }`}
             >

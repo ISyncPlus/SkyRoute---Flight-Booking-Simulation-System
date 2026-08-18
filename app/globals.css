@@ -266,9 +266,9 @@
   .nav-rail {
     @apply relative mx-auto w-full;
     --nav-p: 0;
-    /* At p=1 this resolves to 64rem on a wide viewport, and to a 1.5rem inset
+    /* At p=1 this resolves to 74rem on a wide viewport, and to a 1.5rem inset
        on anything narrower — so the pill never touches the screen edges. */
-    width: calc(100% - var(--nav-p) * max(1.5rem, 100% - 64rem));
+    width: calc(100% - var(--nav-p) * max(1.5rem, 100% - 74rem));
     max-width: 100%;
     border: 1px solid transparent;
     border-bottom-color: var(--line);

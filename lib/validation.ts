@@ -7,7 +7,7 @@
  * editing localStorage by hand and reloading.
  */
 
-import type { CabinClass, PassengerType, SearchCriteria } from "./types";
+import type { CabinClass, PassengerType, Payment, SearchCriteria } from "./types";
 
 export interface ValidationResult {
   valid: boolean;
@@ -221,12 +221,20 @@ export function isValidExpiry(expiry: string, now: Date = new Date()): boolean {
 
 /** Payment form rules. */
 export function validatePayment(input: {
+  /** Defaults to `card` so older callers keep their behaviour. */
+  method?: Payment["method"];
   cardHolder: string;
   cardNumber: string;
   expiry: string;
   cvv: string;
 }, now: Date = new Date()): ValidationResult {
   const errors: Record<string, string> = {};
+
+  /* Only a card is authorised by what the payer types. A transfer is confirmed
+     against the reference on the receiving account, and a wallet against the
+     wallet's own balance — demanding a card number for either is what made
+     those two methods impossible to complete. */
+  if ((input.method ?? "card") !== "card") return { valid: true, errors };
 
   if (!input.cardHolder?.trim()) errors.cardHolder = "Cardholder name is required.";
   else if (input.cardHolder.trim().length < 3) errors.cardHolder = "Enter the name as printed on the card.";

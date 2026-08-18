@@ -26,7 +26,7 @@ const POINTS = [
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { signUp, user } = useApp();
+  const { signUp, user, continueAsGuest } = useApp();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -171,6 +171,27 @@ export default function RegisterPage() {
             className={`h-5 w-5 ${busy ? "animate-spin" : ""}`}
           />
           {busy ? "Creating account…" : "Create account"}
+        </button>
+
+        <div className="relative my-2 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-line" />
+          </div>
+          <span className="relative bg-surface px-3 text-micro font-medium uppercase tracking-wider text-ink-3">
+            Or
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            continueAsGuest();
+            router.push("/");
+          }}
+          className="btn-secondary btn-lg w-full justify-center text-center"
+        >
+          <Icon name="ticket" className="h-5 w-5 text-ink-2" />
+          Continue as guest
         </button>
       </form>
     </AuthShell>

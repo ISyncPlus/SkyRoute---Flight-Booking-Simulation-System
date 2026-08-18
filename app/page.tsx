@@ -87,7 +87,7 @@ function DemoAccount({
 }
 
 export default function HomePage() {
-  const { storageAvailable, user } = useApp();
+  const { storageAvailable, user, isGuest } = useApp();
 
   return (
     <div>
@@ -127,9 +127,16 @@ export default function HomePage() {
                 <Icon name="sparkles" className="h-3.5 w-3.5 text-accent" />
                 SkyRoute Airline System
               </span>
-              <span className="badge border border-positive/30 bg-positive-soft px-2.5 py-1 text-positive-ink font-mono text-micro">
-                ● High-Fidelity 2026
-              </span>
+              {isGuest ? (
+                <span className="badge gap-1.5 border border-accent/40 bg-accent-soft px-3 py-1.5 text-accent-ink font-medium">
+                  <Icon name="user" className="h-3.5 w-3.5" />
+                  Guest Mode Active
+                </span>
+              ) : (
+                <span className="badge border border-positive/30 bg-positive-soft px-2.5 py-1 text-positive-ink font-mono text-micro">
+                  ● High-Fidelity 2026
+                </span>
+              )}
             </div>
 
             <h1 className="mt-6 max-w-[16ch] text-hero font-semibold text-ink mx-auto lg:mx-0 text-center lg:text-left">
@@ -166,22 +173,41 @@ export default function HomePage() {
                     My bookings
                   </Link>
                 </>
+              ) : isGuest ? (
+                <>
+                  <a
+                    href="#search"
+                    className="btn-primary btn-lg w-full sm:w-auto text-center justify-center shadow-e2"
+                  >
+                    <Icon name="search" className="h-5 w-5" />
+                    Book flight as guest
+                  </a>
+                  <Link
+                    href="/manage"
+                    className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center"
+                  >
+                    <Icon name="luggage" className="h-5 w-5" />
+                    Manage booking
+                  </Link>
+                </>
               ) : (
                 <>
                   <Link
                     href="/register"
                     className="btn-primary btn-lg w-full sm:w-auto text-center justify-center shadow-e2"
                   >
-                    Create your account
+                    Get started
                     <Icon name="arrowRight" className="h-5 w-5" />
                   </Link>
-                  <Link
-                    href="/login"
+                  {/* No account required to reach a fare — the schedule is the
+                      point of the page, so it stays one click away. */}
+                  <a
+                    href="#search"
                     className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center"
                   >
-                    <Icon name="signIn" className="h-5 w-5" />
-                    Sign in
-                  </Link>
+                    <Icon name="search" className="h-5 w-5" />
+                    Search flights
+                  </a>
                 </>
               )}
             </div>
@@ -371,26 +397,37 @@ export default function HomePage() {
           <Reveal delay={120}>
             <div className="card-glass mt-12 flex flex-col items-center text-center gap-6 p-6 sm:p-12 lg:flex-row lg:items-center lg:justify-between lg:text-left">
               <div>
-                <h3 className="text-title-2 font-semibold text-ink">Ready to hold a seat?</h3>
+                {isGuest && (
+                  <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+                    <span className="badge bg-accent-soft text-accent-ink">
+                      <Icon name="ticket" className="h-3.5 w-3.5" />
+                      Guest Mode Active
+                    </span>
+                  </div>
+                )}
+                <h3 className="text-title-2 font-semibold text-ink">
+                  {isGuest ? "Ready to book your flight?" : "Ready to hold a seat?"}
+                </h3>
                 <p className="mx-auto lg:mx-0 mt-2.5 max-w-lg text-callout text-ink-2">
-                  Creating an account takes one form and never leaves your browser. Your details are
-                  stored securely in localStorage and sent nowhere.
+                  {isGuest
+                    ? "You are currently browsing as a guest. You can search live availability, select seats, and complete your reservation directly. To keep all your itineraries in one place, create a permanent account anytime."
+                    : "You can book as a guest without an account at all. Setting one up takes a single form, keeps every trip in one place, and never leaves your browser."}
                 </p>
               </div>
               <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row justify-center">
-                <Link
-                  href="/register"
+                <a
+                  href="#search"
                   className="btn-primary btn-lg w-full sm:w-auto text-center justify-center"
                 >
-                  Create your account
-                  <Icon name="arrowRight" className="h-5 w-5" />
-                </Link>
+                  <Icon name="search" className="h-5 w-5" />
+                  {isGuest ? "Book as guest now" : "Search flights"}
+                </a>
                 <Link
-                  href="/login"
+                  href="/register"
                   className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center"
                 >
-                  <Icon name="signIn" className="h-5 w-5" />
-                  Sign in
+                  {isGuest ? "Create permanent account" : "Get started"}
+                  <Icon name="arrowRight" className="h-5 w-5" />
                 </Link>
               </div>
             </div>

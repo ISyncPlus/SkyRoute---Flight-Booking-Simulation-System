@@ -14,9 +14,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   ensureSeeded,
   getSession,
+  isGuestMode,
   login as repoLogin,
   logout as repoLogout,
   register as repoRegister,
+  setGuestMode,
   setSession,
 } from "@/lib/repository";
 import { isStorageAvailable } from "@/lib/storage";
@@ -26,7 +28,10 @@ interface AppContextValue {
   ready: boolean;
   storageAvailable: boolean;
   user: SessionUser | null;
+  isGuest: boolean;
   isAdmin: boolean;
+  continueAsGuest: () => void;
+  exitGuest: () => void;
   signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   signUp: (input: {
     fullName: string;
@@ -46,6 +51,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [storageAvailable, setStorageAvailable] = useState(true);
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [revision, setRevision] = useState(0);
 
   useEffect(() => {
@@ -64,7 +70,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await ensureSeeded();
       if (cancelled) return;
 
-      setUser(getSession());
+      const sessionUser = getSession();
+      setUser(sessionUser);
+      setIsGuest(!sessionUser && isGuestMode());
       setReady(true);
     }
 
@@ -82,7 +90,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     function handleStorage(event: StorageEvent) {
       if (event.key && !event.key.startsWith("skyroute:")) return;
-      setUser(getSession());
+      const sessionUser = getSession();
+      setUser(sessionUser);
+      setIsGuest(!sessionUser && isGuestMode());
       setRevision((value) => value + 1);
     }
 
@@ -91,13 +101,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refresh = useCallback(() => {
-    setUser(getSession());
+    const sessionUser = getSession();
+    setUser(sessionUser);
+    setIsGuest(!sessionUser && isGuestMode());
+    setRevision((value) => value + 1);
+  }, []);
+
+  const continueAsGuest = useCallback(() => {
+    setGuestMode(true);
+    setIsGuest(true);
+    setRevision((value) => value + 1);
+  }, []);
+
+  const exitGuest = useCallback(() => {
+    setGuestMode(false);
+    setIsGuest(false);
     setRevision((value) => value + 1);
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const result = await repoLogin(email, password);
     if (result.ok) {
+      setGuestMode(false);
+      setIsGuest(false);
       setUser(result.data);
       setRevision((value) => value + 1);
       return { ok: true };
@@ -109,6 +135,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (input: { fullName: string; email: string; phone: string; password: string }) => {
       const result = await repoRegister(input);
       if (result.ok) {
+        setGuestMode(false);
+        setIsGuest(false);
         setUser(result.data);
         setRevision((value) => value + 1);
         return { ok: true };
@@ -121,6 +149,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(() => {
     repoLogout();
     setSession(null);
+    setGuestMode(false);
+    setIsGuest(false);
     setUser(null);
     setRevision((value) => value + 1);
   }, []);
@@ -130,14 +160,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ready,
       storageAvailable,
       user,
+      isGuest,
       isAdmin: user?.role === "admin",
+      continueAsGuest,
+      exitGuest,
       signIn,
       signUp,
       signOut,
       refresh,
       revision,
     }),
-    [ready, storageAvailable, user, signIn, signUp, signOut, refresh, revision],
+    [ready, storageAvailable, user, isGuest, continueAsGuest, exitGuest, signIn, signUp, signOut, refresh, revision],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

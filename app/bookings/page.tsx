@@ -14,7 +14,7 @@ import type { Airport, Booking, Flight } from "@/lib/types";
 type Filter = "upcoming" | "past" | "cancelled" | "all";
 
 export default function BookingsPage() {
-  const { ready, user, refresh, revision } = useApp();
+  const { ready, user, isGuest, refresh, revision } = useApp();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filter, setFilter] = useState<Filter>("upcoming");
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -45,6 +45,8 @@ export default function BookingsPage() {
         return enriched.filter((item) => item.booking.status === "confirmed" && item.departed);
       case "cancelled":
         return enriched.filter((item) => item.booking.status === "cancelled");
+      case "all":
+        return enriched;
       default:
         return enriched;
     }
@@ -81,22 +83,19 @@ export default function BookingsPage() {
   if (!user) {
     return (
       <div className="container-page max-w-xl">
-        <Alert tone="info" title="Sign in required">
-          Sign in to see the bookings attached to your account. If you booked without the account you
-          are signed into, you can retrieve it from the{" "}
-          <Link href="/manage" className="font-semibold underline">
-            manage booking
-          </Link>{" "}
-          page using your reference and surname.
+        <Alert tone="info" title={isGuest ? "You are browsing in Guest Mode" : "This page needs an account"}>
+          {isGuest
+            ? "Bookings made as a guest are not attached to an account. You can look up and manage your guest trip anytime on the Manage Booking page using your booking reference (PNR) and passenger surname."
+            : "Bookings are listed here once they are attached to an account. Booked as a guest, or with a different account? Retrieve that trip from the manage booking page using its reference and the passenger surname."}
         </Alert>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/login" className="btn-primary">
-            <Icon name="signIn" className="h-4 w-4" />
-            Sign in
+          <Link href="/manage" className="btn-primary">
+            <Icon name="search" className="h-4 w-4" />
+            Find guest booking
           </Link>
           <Link href="/register" className="btn-secondary">
             <Icon name="plus" className="h-4 w-4" />
-            Create an account
+            Create permanent account
           </Link>
         </div>
       </div>

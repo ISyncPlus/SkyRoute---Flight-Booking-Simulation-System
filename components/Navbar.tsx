@@ -24,7 +24,7 @@ const LINKS: { href: string; label: string; icon: IconName }[] = [
 ];
 
 export function Navbar() {
-  const { user, isAdmin, signOut, ready } = useApp();
+  const { user, isGuest, isAdmin, signOut, exitGuest, ready } = useApp();
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -102,22 +102,22 @@ export function Navbar() {
       />
 
       <div ref={railRef} className="nav-rail material scroll-edge">
-        <nav className="container-page flex h-16 items-center justify-between gap-4" aria-label="Main">
+        <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6" aria-label="Main">
           <Link
             href="/"
-            className="pressable flex items-center gap-2.5 text-title-3 font-semibold text-ink"
+            className="pressable flex shrink-0 items-center gap-2 text-title-3 font-semibold text-ink whitespace-nowrap"
           >
-            <LogoMark className="h-8 w-8" />
+            <LogoMark className="h-7 w-7" />
             SkyRoute
           </Link>
 
-          <ul className="hidden items-center gap-0.5 md:flex">
+          <ul className="hidden items-center gap-1 md:flex">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
                   aria-current={isCurrent(link.href) ? "page" : undefined}
-                  className={`pressable hover-fill block rounded-md px-3 py-2 text-footnote font-medium ${
+                  className={`pressable hover-fill block whitespace-nowrap rounded-md px-3 py-1.5 text-footnote font-medium transition-colors ${
                     isCurrent(link.href) ? "bg-fill text-ink" : "text-ink-2"
                   }`}
                 >
@@ -127,36 +127,64 @@ export function Navbar() {
             ))}
           </ul>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden shrink-0 items-center gap-2.5 md:flex">
             <ThemeToggle />
             {!ready ? null : user ? (
               <>
-                <span className="on-material flex items-center gap-2 text-footnote">
+                <span className="on-material flex items-center gap-1.5 text-footnote whitespace-nowrap">
                   <Icon name="user" className="h-4 w-4 text-ink-3" />
-                  {user.fullName.split(" ")[0]}
+                  <span className="font-medium text-ink">{user.fullName.split(" ")[0]}</span>
                   {isAdmin && (
-                    <span className="badge gap-1 bg-warn-soft text-warn-ink">
+                    <span className="badge gap-1 bg-warn-soft px-2 py-0.5 text-warn-ink text-micro">
                       <Icon name="shield" className="h-3 w-3" />
                       Admin
                     </span>
                   )}
                 </span>
-                <button type="button" onClick={handleSignOut} className="btn-secondary">
-                  <Icon name="signOut" className="h-4 w-4" />
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="btn-secondary !px-3 !py-1.5 text-footnote whitespace-nowrap"
+                >
+                  <Icon name="signOut" className="h-3.5 w-3.5" />
                   Sign out
                 </button>
               </>
-            ) : (
+            ) : isGuest ? (
               <>
-                <Link href="/login" className="btn-secondary">
-                  <Icon name="signIn" className="h-4 w-4" />
-                  Sign in
-                </Link>
-                <Link href="/register" className="btn-primary">
-                  <Icon name="plus" className="h-4 w-4" />
+                <span className="on-material flex items-center gap-1.5 rounded-full border border-line bg-surface/70 px-2.5 py-1 text-footnote font-medium text-ink whitespace-nowrap shadow-sm">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-white font-semibold text-micro">
+                    G
+                  </span>
+                  <span>Guest</span>
+                </span>
+                <Link
+                  href="/register"
+                  className="btn-primary !px-3.5 !py-1.5 text-footnote whitespace-nowrap shadow-sm"
+                >
                   Create account
                 </Link>
+                <button
+                  type="button"
+                  onClick={exitGuest}
+                  className="btn-secondary !px-2.5 !py-1.5 text-footnote whitespace-nowrap"
+                  title="Exit guest mode"
+                >
+                  <Icon name="signOut" className="h-3.5 w-3.5" />
+                  <span>Exit</span>
+                </button>
               </>
+            ) : (
+              /* One door in, rather than a sign-in/register pair: booking never
+                 requires an account now, so the bar should not open with a
+                 choice the visitor does not have to make yet. */
+              <Link
+                href="/register"
+                className="btn-primary !px-4 !py-1.5 text-footnote whitespace-nowrap shadow-sm"
+              >
+                Get started
+                <Icon name="arrowRight" className="h-3.5 w-3.5" />
+              </Link>
             )}
           </div>
 
@@ -209,17 +237,42 @@ export function Navbar() {
                 <Icon name="signOut" className="h-4 w-4" />
                 Sign out
               </button>
+            ) : isGuest ? (
+              <div className="flex w-full flex-col gap-2.5">
+                <div className="flex items-center justify-between px-1 text-footnote font-medium text-ink">
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-accent-ink font-semibold text-micro">
+                      G
+                    </span>
+                    Guest Traveler
+                  </span>
+                  <span className="badge bg-fill text-ink-3 text-micro">Guest Mode</span>
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    href="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="btn-primary flex-1 text-center justify-center"
+                  >
+                    Create account
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      exitGuest();
+                      setMenuOpen(false);
+                    }}
+                    className="btn-secondary"
+                  >
+                    Exit
+                  </button>
+                </div>
+              </div>
             ) : (
-              <>
-                <Link href="/login" onClick={() => setMenuOpen(false)} className="btn-secondary w-full">
-                  <Icon name="signIn" className="h-4 w-4" />
-                  Sign in
-                </Link>
-                <Link href="/register" onClick={() => setMenuOpen(false)} className="btn-primary w-full">
-                  <Icon name="plus" className="h-4 w-4" />
-                  Register
-                </Link>
-              </>
+              <Link href="/register" onClick={() => setMenuOpen(false)} className="btn-primary w-full">
+                Get started
+                <Icon name="arrowRight" className="h-4 w-4" />
+              </Link>
             )}
           </div>
         </div>

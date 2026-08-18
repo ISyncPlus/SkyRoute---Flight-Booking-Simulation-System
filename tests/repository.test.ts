@@ -410,6 +410,54 @@ describe("cancelBooking", () => {
     if (!result.ok) expect(result.error).toMatch(/permission/i);
   });
 
+  it("lets a guest cancel their own booking with the passenger surname", () => {
+    const created = createBooking(bookingInput(["20A"], { userId: null }));
+    if (!created.ok) throw new Error("booking failed");
+    expect(created.data.userId).toBeNull();
+
+    const result = cancelBooking(created.data.pnr, { kind: "guest", surname: "Okonkwo" });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.booking.status).toBe("cancelled");
+  });
+
+  it("matches a guest surname regardless of case or padding", () => {
+    const created = createBooking(bookingInput(["20A"], { userId: null }));
+    if (!created.ok) throw new Error("booking failed");
+
+    expect(cancelBooking(created.data.pnr, { kind: "guest", surname: "  oKoNkWo " }).ok).toBe(true);
+  });
+
+  it("refuses a guest cancellation when the surname is wrong", () => {
+    const created = createBooking(bookingInput(["20A"], { userId: null }));
+    if (!created.ok) throw new Error("booking failed");
+
+    const result = cancelBooking(created.data.pnr, { kind: "guest", surname: "Nwosu" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/permission/i);
+  });
+
+  /* The important one: a reference and a surname are printed on every
+     itinerary, so they must never be enough to cancel a registered
+     customer's trip. */
+  it("refuses a guest cancellation of a booking that belongs to an account", () => {
+    const created = createBooking(bookingInput(["20A"]));
+    if (!created.ok) throw new Error("booking failed");
+
+    const result = cancelBooking(created.data.pnr, { kind: "guest", surname: "Okonkwo" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/permission/i);
+  });
+
+  it("keeps guest bookings out of every account's booking list", () => {
+    const guest = createBooking(bookingInput(["20A"], { userId: null }));
+    const mine = createBooking(bookingInput(["20B"]));
+    if (!guest.ok || !mine.ok) throw new Error("booking failed");
+
+    const listed = listBookingsForUser(CUSTOMER.id).map((booking) => booking.pnr);
+    expect(listed).toContain(mine.data.pnr);
+    expect(listed).not.toContain(guest.data.pnr);
+  });
+
   it("allows an administrator to cancel any booking", () => {
     const created = createBooking(bookingInput(["20A"]));
     if (!created.ok) throw new Error("booking failed");

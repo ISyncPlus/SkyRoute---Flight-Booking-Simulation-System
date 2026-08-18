@@ -40,6 +40,7 @@ export const KEYS = {
   state: "state",
   session: "session",
   draft: "booking-draft",
+  guest: "guest",
 } as const;
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string; fieldErrors?: Record<string, string> };
@@ -117,6 +118,7 @@ export async function resetSystem(): Promise<PersistedState> {
   removeItem(KEYS.state);
   removeItem(KEYS.session);
   removeItem(KEYS.draft);
+  removeItem(KEYS.guest);
   return ensureSeeded();
 }
 
@@ -131,6 +133,15 @@ export function getSession(): SessionUser | null {
 export function setSession(user: SessionUser | null): void {
   if (user === null) removeItem(KEYS.session);
   else writeItem(KEYS.session, user);
+}
+
+export function isGuestMode(): boolean {
+  return readItem<boolean>(KEYS.guest, false);
+}
+
+export function setGuestMode(active: boolean): void {
+  if (active) writeItem(KEYS.guest, true);
+  else removeItem(KEYS.guest);
 }
 
 export async function register(input: {

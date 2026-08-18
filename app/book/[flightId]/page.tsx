@@ -36,6 +36,18 @@ import type { Airport, CabinClass, Flight, Passenger, Seat } from "@/lib/types";
 
 const STEPS = ["Select seats", "Passenger details", "Payment", "Confirmation"];
 
+const ACCOUNT_BENEFITS = [
+  "Every trip in one place, without a reference to hand",
+  "View, print or cancel a booking whenever you like",
+  "Details remembered the next time you book",
+];
+
+const GUEST_BENEFITS = [
+  "The same seat, cabin and fare",
+  "A reference and surname manage the trip later",
+  "Nothing kept beyond the booking itself",
+];
+
 function emptyPassenger(type: Passenger["type"]): Omit<Passenger, "id"> {
   return {
     title: "Mr",
@@ -268,42 +280,101 @@ function BookingWizard() {
 
   if (!user && !asGuest) {
     return (
-      <div className="container-page max-w-xl">
+      <div className="container-page max-w-4xl">
+        {/* The flight is restated first and in full. This screen interrupts a
+            purchase, so it has to prove it still knows what was being bought
+            before it asks anything. */}
         <div className="card-lg">
-          <h1 className="text-title-2 font-semibold text-ink">How would you like to book?</h1>
-          <p className="mt-2 text-callout text-ink-2">
-            You selected {flight.airline} {flight.flightNumber}, {airportLabel(origin)} to{" "}
-            {airportLabel(destination)} on {formatDate(flight.departureTime)}.
+          <p className="overline text-ink-3">Your selection</p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="text-title-2 font-semibold text-ink">{origin?.code}</span>
+            <Icon name="arrowRight" className="h-5 w-5 text-accent" />
+            <span className="text-title-2 font-semibold text-ink">{destination?.code}</span>
+            <span className="badge bg-fill text-ink-2">
+              {flight.airline} {flight.flightNumber}
+            </span>
+            <span className="badge bg-accent-soft text-accent-ink">{CABIN_NAMES[cabin]}</span>
+          </div>
+          <p className="mt-2.5 flex flex-wrap items-center gap-1.5 text-footnote text-ink-2">
+            <Icon name="planeTakeoff" className="h-4 w-4 text-ink-3" />
+            {formatDate(flight.departureTime)}
+            <span className="text-ink-3">·</span>
+            {airportLabel(origin)} to {airportLabel(destination)}
           </p>
+        </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/login" className="btn-primary">
-              <Icon name="signIn" className="h-4 w-4" />
-              Sign in
-            </Link>
-            <Link href="/register" className="btn-secondary">
-              <Icon name="plus" className="h-4 w-4" />
-              Create an account
+        <h1 className="mt-10 text-title-1 font-semibold text-ink">How would you like to book?</h1>
+        <p className="mt-2 max-w-xl text-callout text-ink-2">
+          Both routes book the same seat at the same fare. The only difference is how you get back
+          to the trip afterwards.
+        </p>
+
+        <div className="mt-6 grid items-start gap-5 md:grid-cols-2">
+          {/* Recommended path. Carries the accent, the badge and the filled
+              button — three signals pointing the same way, so the eye lands
+              here first without the other card being made to look broken. */}
+          <div className="card-lg relative border-accent/35 shadow-e2">
+            <span className="badge absolute right-6 top-6 gap-1.5 bg-accent-soft text-accent-ink">
+              <Icon name="sparkles" className="h-3.5 w-3.5" />
+              Recommended
+            </span>
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent-ink">
+              <Icon name="user" className="h-5 w-5" />
+            </span>
+            <h2 className="mt-4 text-title-3 font-semibold text-ink">With an account</h2>
+            <p className="mt-1.5 text-footnote text-ink-2">
+              One form now, and the trip is yours to manage from anywhere.
+            </p>
+            <ul className="mt-5 space-y-2.5">
+              {ACCOUNT_BENEFITS.map((benefit) => (
+                <li key={benefit} className="flex items-start gap-2.5 text-footnote text-ink-2">
+                  <Icon name="checkCircle" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+            <Link href="/register" className="btn-primary mt-6 w-full justify-center text-center">
+              Get started
+              <Icon name="arrowRight" className="h-4 w-4" />
             </Link>
           </div>
-          <p className="mt-3 text-caption text-ink-3">
-            An account keeps every trip you book in one place, ready to view or cancel.
-          </p>
 
-          {/* The guest route is deliberately quieter than the two buttons above
-              — offered without hesitation, but not the recommended path, since
-              a guest has only their reference to find the trip again. */}
-          <div className="mt-6 border-t border-line pt-6">
-            <button type="button" onClick={() => setAsGuest(true)} className="btn-secondary">
-              <Icon name="user" className="h-4 w-4" />
-              Continue as a guest
-            </button>
-            <p className="mt-3 text-caption text-ink-3">
-              No account needed. You will get a booking reference — keep it, as it and the
-              passenger surname are the only way back to this trip.
+          {/* Offered without hesitation or friction — but told plainly, since a
+              guest's reference really is the only way back to the booking. */}
+          <div className="card-lg">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-fill text-ink-2">
+              <Icon name="ticket" className="h-5 w-5" />
+            </span>
+            <h2 className="mt-4 text-title-3 font-semibold text-ink">As a guest</h2>
+            <p className="mt-1.5 text-footnote text-ink-2">
+              Straight to seat selection. Nothing to set up.
             </p>
+            <ul className="mt-5 space-y-2.5">
+              {GUEST_BENEFITS.map((benefit) => (
+                <li key={benefit} className="flex items-start gap-2.5 text-footnote text-ink-2">
+                  <Icon name="checkCircle" className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => setAsGuest(true)}
+              className="btn-secondary mt-6 w-full justify-center text-center"
+            >
+              Continue as a guest
+              <Icon name="arrowRight" className="h-4 w-4" />
+            </button>
           </div>
         </div>
+
+        <p className="mt-6 flex items-start gap-2 text-caption text-ink-3">
+          <Icon name="infoCircle" className="mt-0.5 h-4 w-4 shrink-0" />
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-accent-ink hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
     );
   }
