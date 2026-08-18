@@ -66,8 +66,32 @@ export const ICONS = {
   /* ---- Direction ---- */
   chevronLeft: icon("chevronLeft", <path d="M14.5 5.5L8 12l6.5 6.5" />),
   chevronRight: icon("chevronRight", <path d="M9.5 5.5L16 12l-6.5 6.5" />),
+  chevronDown: icon("chevronDown", <path d="M5.5 9.5L12 16l6.5-6.5" />),
+  chevronUp: icon("chevronUp", <path d="M5.5 14.5L12 8l6.5 6.5" />),
   arrowLeft: icon("arrowLeft", <path d="M19.5 12h-15M10.5 6L4.5 12l6 6" />),
   arrowRight: icon("arrowRight", <path d="M4.5 12h15M13.5 6l6 6-6 6" />),
+
+  /* ---- Amenities & Connectivity ---- */
+  wifi: icon("wifi",
+      <>
+        <path d="M5 9.5a10 10 0 0 1 14 0" />
+        <path d="M8.5 13a5 5 0 0 1 7 0" />
+        <circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none" />
+      </>
+    ),
+  food: icon("food",
+      <>
+        <path d="M18 4v16M14 4v4a2 2 0 0 0 2 2v10M6 4v7a3 3 0 0 0 6 0V4M9 4v7" />
+      </>
+    ),
+  radar: icon("radar",
+      <>
+        <path d="M12 21a9 9 0 1 0-9-9" />
+        <path d="M12 17a5 5 0 1 0-5-5" />
+        <circle cx="12" cy="12" r="1.5" />
+        <path d="M12 12l6-6" />
+      </>
+    ),
 
   /* ---- Status ---- */
   checkCircle: icon("checkCircle",
