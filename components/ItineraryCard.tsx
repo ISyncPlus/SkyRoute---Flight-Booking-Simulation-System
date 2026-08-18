@@ -192,9 +192,21 @@ export function ItineraryCard({
                   </div>
                 </dl>
                 {booking.payment && (
-                  <p className="mt-3 text-caption text-ink-3">
-                    {booking.payment.maskedCardNumber} · Ref {booking.payment.transactionReference}
-                  </p>
+                  <div className="mt-3 flex items-center gap-1.5 text-caption text-ink-3">
+                    <Icon
+                      name={
+                        booking.payment.method === "transfer"
+                          ? "building"
+                          : booking.payment.method === "wallet"
+                          ? "banknote"
+                          : "creditCard"
+                      }
+                      className="h-3.5 w-3.5 text-accent"
+                    />
+                    <span>
+                      {booking.payment.maskedCardNumber} · Ref {booking.payment.transactionReference}
+                    </span>
+                  </div>
                 )}
               </div>
             )}

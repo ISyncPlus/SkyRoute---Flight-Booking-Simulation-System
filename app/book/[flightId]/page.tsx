@@ -233,8 +233,9 @@ function BookingWizard() {
       passengers: withSeats,
       payment: {
         method: payment.method,
-        cardHolder: payment.cardHolder,
+        cardHolder: payment.cardHolder || user?.fullName || contactEmail,
         cardNumber: payment.cardNumber,
+        senderName: payment.senderName,
         forceFailure: payment.simulateFailure,
       },
     });
@@ -542,6 +543,8 @@ function BookingWizard() {
                 <PaymentForm
                   details={payment}
                   errors={paymentErrors}
+                  totalAmount={fare.total}
+                  currency={flight.currency}
                   onChange={(changes) => setPayment((current) => ({ ...current, ...changes }))}
                 />
 
@@ -607,8 +610,29 @@ function BookingWizard() {
                 disabled={submitting}
                 className="btn-primary w-full sm:w-auto text-center justify-center"
               >
-                <Icon name={submitting ? "spinner" : "lock"} className={`h-4 w-4 ${submitting ? "animate-spin" : ""}`} />
-                {submitting ? "Processing payment…" : `Pay ${formatMoney(fare.total, flight.currency)}`}
+                <Icon
+                  name={
+                    submitting
+                      ? "spinner"
+                      : payment.method === "transfer"
+                      ? "building"
+                      : payment.method === "wallet"
+                      ? "banknote"
+                      : "lock"
+                  }
+                  className={`h-4 w-4 ${submitting ? "animate-spin" : ""}`}
+                />
+                {submitting
+                  ? payment.method === "transfer"
+                    ? "Confirming bank transfer…"
+                    : payment.method === "wallet"
+                    ? "Debiting wallet balance…"
+                    : "Authorizing payment…"
+                  : payment.method === "transfer"
+                  ? `Confirm Bank Transfer · ${formatMoney(fare.total, flight.currency)}`
+                  : payment.method === "wallet"
+                  ? `Pay from Wallet · ${formatMoney(fare.total, flight.currency)}`
+                  : `Pay with Card · ${formatMoney(fare.total, flight.currency)}`}
               </button>
             )}
           </div>

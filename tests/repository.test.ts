@@ -285,6 +285,30 @@ describe("createBooking", () => {
     expect(window.localStorage.getItem("skyroute:state")).not.toContain("4084084084084081");
   });
 
+  it("processes a booking with bank transfer payment method", () => {
+    const input = bookingInput(["20A"]);
+    const result = createBooking({
+      ...input,
+      payment: { method: "transfer", senderName: "Ada Okonkwo" },
+    });
+    if (!result.ok) throw new Error("booking failed");
+    expect(result.data.payment?.method).toBe("transfer");
+    expect(result.data.payment?.cardHolder).toBe("Ada Okonkwo");
+    expect(result.data.payment?.status).toBe("successful");
+  });
+
+  it("processes a booking with wallet payment method", () => {
+    const input = bookingInput(["20B"]);
+    const result = createBooking({
+      ...input,
+      payment: { method: "wallet" },
+    });
+    if (!result.ok) throw new Error("booking failed");
+    expect(result.data.payment?.method).toBe("wallet");
+    expect(result.data.payment?.maskedCardNumber).toBe("SkyRoute Digital Wallet");
+    expect(result.data.payment?.status).toBe("successful");
+  });
+
   it("refuses to sell a seat twice", () => {
     expect(createBooking(bookingInput(["20A"])).ok).toBe(true);
 

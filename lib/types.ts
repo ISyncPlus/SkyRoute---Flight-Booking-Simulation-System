@@ -80,7 +80,33 @@ export interface Passenger {
   gender: "male" | "female";
   passportNumber: string;
   type: PassengerType;
+  /**
+   * The seat held on a *one-segment* booking, kept so that a single-flight
+   * itinerary reads without indexing into segments. On any booking with more
+   * than one flight this is `null` and {@link BookingSegment.seats} is the
+   * only truth — a passenger sits somewhere different on the way back.
+   */
   seatId: string | null;
+}
+
+/** How many flights a journey is made of, and in what shape. */
+export type TripType = "one-way" | "round-trip" | "multi-city";
+
+export const TRIP_TYPE_LABELS: Record<TripType, string> = {
+  "round-trip": "Round trip",
+  "one-way": "One way",
+  "multi-city": "Multi-city",
+};
+
+/**
+ * One flight inside a booking. Seats live here rather than on the passenger
+ * because the same traveller holds a different seat on each leg.
+ */
+export interface BookingSegment {
+  flightId: string;
+  cabin: CabinClass;
+  /** Passenger id → seat id. `null` for an infant, who travels on a lap. */
+  seats: Record<string, string | null>;
 }
 
 /** Itemised fare so the user can see exactly what they are paying for. */
@@ -116,8 +142,13 @@ export interface Booking {
    * on the manage page — it will never appear in anybody's "my bookings".
    */
   userId: string | null;
-  flightId: string;
-  cabin: CabinClass;
+  tripType: TripType;
+  /**
+   * Every flight on the journey, in the order they are flown. A one-way
+   * booking has one; a return has two; multi-city has as many as were built.
+   * Never empty.
+   */
+  segments: BookingSegment[];
   passengers: Passenger[];
   fare: FareBreakdown;
   payment: Payment | null;

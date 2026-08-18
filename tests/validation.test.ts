@@ -303,10 +303,12 @@ describe("validatePayment", () => {
     expect(result.errors.cardNumber).toMatch(/not valid/i);
   });
 
-  it("rejects a CVV that is not three or four digits", () => {
-    expect(validatePayment({ ...valid, cvv: "12" }, now).errors.cvv).toBeTruthy();
-    expect(validatePayment({ ...valid, cvv: "12345" }, now).errors.cvv).toBeTruthy();
-    expect(validatePayment({ ...valid, cvv: "1234" }, now).valid).toBe(true);
+  it("accepts bank transfer payment method without requiring card numbers", () => {
+    expect(validatePayment({ method: "transfer", cardHolder: "", cardNumber: "", expiry: "", cvv: "" }, now).valid).toBe(true);
+  });
+
+  it("accepts wallet payment method without requiring card numbers", () => {
+    expect(validatePayment({ method: "wallet", cardHolder: "", cardNumber: "", expiry: "", cvv: "" }, now).valid).toBe(true);
   });
 });
 

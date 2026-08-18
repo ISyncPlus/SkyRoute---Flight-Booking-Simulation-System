@@ -318,8 +318,9 @@ export interface CreateBookingInput {
   passengers: Omit<Passenger, "id">[];
   payment: {
     method: Payment["method"];
-    cardHolder: string;
-    cardNumber: string;
+    cardHolder?: string;
+    cardNumber?: string;
+    senderName?: string;
     /** Set to true to exercise the failed-payment path during testing. */
     forceFailure?: boolean;
   };
@@ -364,19 +365,43 @@ export function createBooking(input: CreateBookingInput, now: Date = new Date())
 
   const fare = calculateFare(context, input.passengers, seatMap);
 
-  // Simulated payment authorisation.
+  // Payment authorisation according to method.
   const paymentSucceeded = !input.payment.forceFailure;
+  let maskedCardNumber = "";
+  let cardHolderName = "";
+  let failureReason = "Payment declined by issuing provider.";
+
+  if (input.payment.method === "transfer") {
+    maskedCardNumber = "Bank Transfer (Providus Bank · 1305012345)";
+    cardHolderName = sanitiseText(
+      input.payment.senderName || input.payment.cardHolder || input.contactEmail || "Bank Transfer Depositor",
+      80,
+    );
+    failureReason = "Bank transfer clearing failed or timed out.";
+  } else if (input.payment.method === "wallet") {
+    maskedCardNumber = "SkyRoute Digital Wallet";
+    cardHolderName = sanitiseText(
+      input.payment.cardHolder || input.contactEmail || "SkyRoute Wallet Account",
+      80,
+    );
+    failureReason = "Insufficient wallet balance.";
+  } else {
+    maskedCardNumber = maskCardNumber(input.payment.cardNumber ?? "");
+    cardHolderName = sanitiseText(input.payment.cardHolder ?? "", 80);
+    failureReason = "Card declined by issuing bank.";
+  }
+
   const payment: Payment = {
     id: generateId("pay"),
     method: input.payment.method,
-    maskedCardNumber: maskCardNumber(input.payment.cardNumber),
-    cardHolder: sanitiseText(input.payment.cardHolder, 80),
+    maskedCardNumber,
+    cardHolder: cardHolderName,
     amount: fare.total,
     currency: flight.currency,
     status: paymentSucceeded ? "successful" : "failed",
     transactionReference: generateTransactionReference(),
     paidAt: now.toISOString(),
-    ...(paymentSucceeded ? {} : { failureReason: "Card declined by issuing bank (simulated)." }),
+    ...(paymentSucceeded ? {} : { failureReason }),
   };
 
   if (!paymentSucceeded) {

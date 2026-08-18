@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { detectCardBrand } from "@/lib/validation";
 import { Alert, Field } from "./ui";
 import { Icon, type IconName } from "./icons";
@@ -11,6 +12,7 @@ export interface PaymentDetails {
   cardNumber: string;
   expiry: string;
   cvv: string;
+  senderName?: string;
   simulateFailure: boolean;
 }
 
@@ -44,14 +46,29 @@ function formatExpiry(value: string): string {
 export function PaymentForm({
   details,
   errors,
+  totalAmount,
+  currency = "NGN",
   onChange,
 }: {
   details: PaymentDetails;
   errors: Record<string, string>;
+  totalAmount?: number;
+  currency?: string;
   onChange: (changes: Partial<PaymentDetails>) => void;
 }) {
   const brand = detectCardBrand(details.cardNumber);
   const isCard = details.method === "card";
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number>(500000);
+
+  const copyToClipboard = (key: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const fareTotal = totalAmount ?? 0;
+  const remainingWallet = walletBalance - fareTotal;
 
   return (
     <div className="space-y-5">
@@ -65,7 +82,7 @@ export function PaymentForm({
           {([
             { value: "card", label: "Debit / credit card", icon: "creditCard" },
             { value: "transfer", label: "Bank transfer", icon: "building" },
-            { value: "wallet", label: "Wallet", icon: "banknote" },
+            { value: "wallet", label: "Wallet balance", icon: "banknote" },
           ] as const satisfies readonly { value: Payment["method"]; label: string; icon: IconName }[]).map((option) => (
             <label
               key={option.value}
@@ -93,47 +110,124 @@ export function PaymentForm({
       {!isCard && (
         <div className="card-lg">
           <div className="mb-5 flex items-center gap-2 border-b border-line pb-4">
-            <Icon name={details.method === "transfer" ? "building" : "banknote"} className="h-4 w-4 text-ink-3" />
+            <Icon name={details.method === "transfer" ? "building" : "banknote"} className="h-4 w-4 text-accent" />
             <h3 className="text-footnote font-semibold text-ink">
-              {details.method === "transfer" ? "Bank transfer" : "SkyRoute wallet"}
+              {details.method === "transfer" ? "Pay via Direct Bank Transfer" : "Pay with SkyRoute Digital Wallet"}
             </h3>
           </div>
 
           {details.method === "transfer" ? (
-            <>
+            <div className="space-y-5">
               <p className="text-footnote text-ink-2">
-                Transfer the fare to the account below, quoting the reference. The booking is held
-                while the transfer clears, and your reference is issued as soon as it does.
+                Transfer the exact booking amount to the designated corporate clearing account below.
+                Your reservation is held and confirmed as soon as payment is submitted.
               </p>
-              <dl className="mt-5 grid gap-3 sm:grid-cols-3">
+
+              <div className="grid gap-3 sm:grid-cols-3">
                 {[
-                  { term: "Bank", value: "Providus Bank" },
-                  { term: "Account number", value: "1305012345", mono: true },
-                  { term: "Account name", value: "SkyRoute Airways Ltd" },
+                  { key: "bank", term: "Bank Name", value: "Providus Bank", copyable: "Providus Bank" },
+                  { key: "account", term: "Account Number", value: "1305012345", mono: true, copyable: "1305012345" },
+                  { key: "name", term: "Account Name", value: "SkyRoute Airways Ltd", copyable: "SkyRoute Airways Ltd" },
                 ].map((row) => (
-                  <div key={row.term} className="rounded-lg border border-line bg-fill px-4 py-3">
-                    <dt className="text-micro uppercase tracking-wide text-ink-3">{row.term}</dt>
-                    <dd className={`mt-1 text-footnote font-semibold text-ink ${row.mono ? "font-mono" : ""}`}>
-                      {row.value}
-                    </dd>
+                  <div key={row.term} className="relative flex flex-col justify-between rounded-lg border border-line bg-fill p-4">
+                    <div>
+                      <dt className="text-micro uppercase tracking-wide text-ink-3">{row.term}</dt>
+                      <dd className={`mt-1 text-footnote font-semibold text-ink ${row.mono ? "font-mono text-body" : ""}`}>
+                        {row.value}
+                      </dd>
+                    </div>
+                    {row.copyable && (
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(row.key, row.copyable)}
+                        className="mt-3 flex items-center gap-1.5 self-start rounded border border-line bg-surface px-2.5 py-1 text-caption text-ink-2 hover:bg-fill hover:text-ink transition-colors"
+                      >
+                        <Icon name={copiedKey === row.key ? "check" : "copy"} className="h-3.5 w-3.5 text-accent" />
+                        <span>{copiedKey === row.key ? "Copied!" : "Copy"}</span>
+                      </button>
+                    )}
                   </div>
                 ))}
-              </dl>
-            </>
-          ) : (
-            <>
-              <p className="text-footnote text-ink-2">
-                The fare is taken from your SkyRoute wallet the moment you confirm. Nothing else to
-                enter.
-              </p>
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-fill px-5 py-4">
-                <span className="flex items-center gap-2.5 text-footnote text-ink-2">
-                  <Icon name="banknote" className="h-4 w-4 text-ink-3" />
-                  Available balance
-                </span>
-                <span className="text-title-3 font-semibold tabular text-ink">₦250,000</span>
               </div>
-            </>
+
+              <div className="rounded-lg border border-line bg-surface p-4">
+                <Field
+                  label="Sender / Depositor Name"
+                  htmlFor="senderName"
+                  hint="Enter the name on the originating bank account"
+                  error={errors.senderName}
+                >
+                  <input
+                    id="senderName"
+                    type="text"
+                    placeholder="e.g. Ada Okonkwo"
+                    className="input"
+                    value={details.senderName ?? details.cardHolder}
+                    onChange={(event) =>
+                      onChange({ senderName: event.target.value, cardHolder: event.target.value })
+                    }
+                  />
+                </Field>
+              </div>
+
+              <div className="flex items-center gap-2 rounded-lg bg-accent-soft/50 p-3 text-footnote text-accent-ink">
+                <Icon name="checkCircle" className="h-4 w-4 shrink-0 text-accent" />
+                <span>Instant clearing simulation enabled. No waiting for manual teller verification.</span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <p className="text-footnote text-ink-2">
+                The total fare will be debited directly from your SkyRoute Digital Wallet balance.
+              </p>
+
+              <div className="rounded-xl border border-line bg-fill p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+                  <div>
+                    <p className="text-caption text-ink-3">Active Account</p>
+                    <p className="text-callout font-semibold text-ink">
+                      {details.cardHolder || "Verified SkyRoute Member"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-caption text-ink-3">Available Balance</p>
+                    <p className="text-title-2 font-semibold font-mono text-positive-ink">
+                      ₦{walletBalance.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-2 text-footnote text-ink-2">
+                  <div className="flex justify-between">
+                    <span>Fare total deduction</span>
+                    <span className="font-mono font-medium text-danger-ink">
+                      - ₦{fareTotal.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t border-line-strong pt-2 font-semibold text-ink">
+                    <span>Estimated balance after booking</span>
+                    <span className={`font-mono ${remainingWallet >= 0 ? "text-ink" : "text-danger-ink"}`}>
+                      ₦{Math.max(0, remainingWallet).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-caption text-positive-ink font-medium">
+                  <Icon name="checkCircle" className="h-4 w-4" />
+                  <span>Wallet is funded and ready for instant checkout</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setWalletBalance((b) => b + 100000)}
+                  className="btn-ghost !px-3 !py-1 text-caption text-accent"
+                >
+                  <Icon name="plus" className="h-3.5 w-3.5" />
+                  Add +₦100,000 Demo Funds
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

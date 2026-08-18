@@ -62,6 +62,12 @@ export const ICONS = {
   close: icon("close", <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />),
   check: icon("check", <path d="M4.5 12.5l4.8 4.8L19.5 6.6" />),
   plus: icon("plus", <path d="M12 4.5v15M4.5 12h15" />),
+  copy: icon("copy",
+      <>
+        <rect x="8.5" y="8.5" width="11" height="11" rx="2" />
+        <path d="M4.5 15.5V6.5a2 2 0 0 1 2-2h9" />
+      </>
+    ),
 
   /* ---- Direction ---- */
   chevronLeft: icon("chevronLeft", <path d="M14.5 5.5L8 12l6.5 6.5" />),
