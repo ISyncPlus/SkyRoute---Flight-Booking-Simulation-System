@@ -300,7 +300,8 @@ export function getSeatMap(flightId: string) {
 export interface CreateBookingInput {
   flightId: string;
   cabin: CabinClass;
-  userId: string;
+  /** `null` books as a guest — see {@link Booking.userId}. */
+  userId: string | null;
   contactEmail: string;
   contactPhone: string;
   passengers: Omit<Passenger, "id">[];
@@ -432,13 +433,26 @@ export function listAllBookings(): Booking[] {
 }
 
 /**
+ * Who is asking to cancel. A signed-in account is identified by its session; a
+ * guest is identified only by the surname they typed on the manage page, which
+ * is checked here against the booking's passengers.
+ *
+ * Modelled as a union rather than an optional surname so that a caller cannot
+ * quietly pass neither and land in an unguarded branch.
+ */
+export type CancelRequester =
+  | { kind: "account"; user: SessionUser }
+  | { kind: "guest"; surname: string };
+
+/**
  * Cancel a booking and compute the refund. `requestedBy` enforces ownership:
- * a customer may only cancel their own booking; an administrator may cancel
- * any booking.
+ * a customer may only cancel their own booking, an administrator may cancel
+ * any booking, and a guest may cancel only a booking that carries no account
+ * and whose surname they can produce.
  */
 export function cancelBooking(
   pnr: string,
-  requestedBy: SessionUser,
+  requestedBy: CancelRequester,
   now: Date = new Date(),
 ): Result<{ booking: Booking; refund: number }> {
   const state = loadState();
@@ -448,7 +462,20 @@ export function cancelBooking(
 
   const booking = state.bookings[index];
 
-  if (requestedBy.role !== "admin" && booking.userId !== requestedBy.id) {
+  if (requestedBy.kind === "guest") {
+    /* The surname is the whole of a guest's proof, so it is re-checked here
+       rather than trusted from the lookup the page already did. A booking that
+       belongs to an account is deliberately out of reach this way: otherwise a
+       reference and a surname would be enough to cancel a registered
+       customer's trip without ever signing in. */
+    const normalised = requestedBy.surname.trim().toLowerCase();
+    const surnameMatches = booking.passengers.some(
+      (passenger) => passenger.lastName.toLowerCase() === normalised,
+    );
+    if (booking.userId !== null || !surnameMatches) {
+      return { ok: false, error: "You do not have permission to cancel this booking." };
+    }
+  } else if (requestedBy.user.role !== "admin" && booking.userId !== requestedBy.user.id) {
     return { ok: false, error: "You do not have permission to cancel this booking." };
   }
   if (booking.status === "cancelled") return { ok: false, error: "This booking has already been cancelled." };

@@ -110,7 +110,12 @@ export interface Payment {
 /** A completed reservation, identified by its PNR. */
 export interface Booking {
   pnr: string;
-  userId: string;
+  /**
+   * The account this booking belongs to, or `null` when it was made as a
+   * guest. A guest booking is reached only through its reference and surname
+   * on the manage page — it will never appear in anybody's "my bookings".
+   */
+  userId: string | null;
   flightId: string;
   cabin: CabinClass;
   passengers: Passenger[];
