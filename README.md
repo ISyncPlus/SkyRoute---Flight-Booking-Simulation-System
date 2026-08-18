@@ -1,224 +1,188 @@
-# SkyRoute — Flight Booking Simulation System
+# SkyRoute — Flight Booking System
 
-A complete flight booking simulation built with **Next.js 15**, **React 19**, **TypeScript** and
-**Tailwind CSS**. It has **no database and no backend**: the entire system state — schedule, user
-accounts, bookings and payments — is persisted in the browser's `localStorage`.
+A modern, full-featured flight booking system built with **Next.js 15**, **React 19**, **TypeScript** and **Tailwind CSS**. It operates as a self-contained system with **zero backend dependencies**: all schedules, user accounts, reservations, and seat mappings persist directly in the browser's `localStorage`.
 
 ---
 
-## Quick start
+## Quick Start
 
 ```bash
 npm install     # install dependencies
 npm run dev     # start the development server
 ```
 
-Open <http://localhost:3000>.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-On first load the application seeds itself: 21 days of departures across 16 airports and 34 routes,
-plus two demonstration accounts.
+On first load, the application seeds an operational schedule with **21 days of departures across 16 international hubs and 34 routes**, complete with pre-configured demonstration accounts:
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Customer | `customer@skyroute.test` | `Passw0rd` |
-| Administrator | `admin@skyroute.test` | `Admin@123` |
+| Role | Email | Password | Access Level |
+| --- | --- | --- | --- |
+| **Customer** | `customer@skyroute.test` | `Passw0rd` | Flight search, booking, seat selection, itinerary management |
+| **Administrator** | `admin@skyroute.test` | `Admin@123` | Flight dispatch console, route management, passenger manifests |
 
-### Other commands
+### Key Commands
 
 ```bash
-npm test              # run the 193-test suite once
+npm test              # run the 193-test Vitest test suite
 npm run test:watch    # re-run tests on change
-npm run build         # production build
-npm start             # serve the production build
-npm run lint          # ESLint
+npm run build         # compile production Next.js bundle
+npm start             # start the production server
+npm run lint          # run ESLint checks
 ```
 
 ---
 
-## Features
+## Features & Modules
 
-**Customer**
+### Customer Journey
+- **Real-Time Schedule Search**: Filter by route (origin/destination), departure date, cabin tier, and passenger party (Adults / Children / Infants).
+- **Interactive Seat Map**: Aircraft-specific cabin layouts (Boeing 787-9, Airbus A330-300, Boeing 737-800, Embraer E175) with live seat selection, exit-row premiums, window/aisle categorization, and "Assign seats for me" automation.
+- **Dynamic Yield Fare Engine**: Real-time fare calculation driven by advance purchase curves, cabin load factor surge pricing, passenger type multipliers, and cabin class upgrades.
+- **Interactive Yield Calculator**: Explore how advance booking windows and seat occupancy dynamically adjust airfare quotes in real time.
+- **Cabin Class Suites**: Visual specs and privileges for First Class Private Suites, Business Class Direct-Aisle Pods, and Economy Comfort.
+- **Fleet Specifications**: Detailed technical data (range, cruise speed, seat configurations) across 4 commercial aircraft families.
+- **Passenger Validation**: Client-side validation with age-band cross-checking, international passport capture, and payment card Luhn algorithm verification.
+- **Booking Management & Refunds**: Manage reservations via 6-character PNR or customer profile, view e-tickets, and cancel flights with sliding-scale refund calculation.
 
-- Flight search by route, date, cabin class and party size (adults / children / infants)
-- Result sorting by price, duration, departure or arrival, and filtering by airline
-- Suggested alternative dates when a search returns nothing
-- Interactive, keyboard-accessible seat map per aircraft type, with window / aisle / middle / exit-row
-  pricing
-- "Assign seats for me" automatic allocation
-- Passenger details with an age-band cross-check against the fare type
-- Passport capture, required only for international routes
-- Simulated payment with genuine Luhn card validation, brand detection and expiry checking
-- A deliberate "simulate a declined payment" switch so the failure path can be demonstrated
-- Booking confirmation with a six-character PNR and a printable e-ticket
-- My Bookings, filtered by upcoming / past / cancelled
-- Cancellation with an automatic sliding-scale refund calculation
-- Manage Booking: retrieve any reservation with a PNR and surname, no account required
-
-**Administrator**
-
-- Dashboard: flights, bookings, passengers, users, gross/net revenue, cancellation rate, busiest routes
-- Flight management: create, change status (scheduled / delayed / cancelled), delete
-- Deletion is refused for flights carrying confirmed bookings, to prevent orphaned records
-- Booking management with search by PNR, passenger name or email, and administrative cancellation
-- User directory (credentials are stored hashed and are never displayed)
-- Storage usage meter and a full system reset that clears data and reseeds the schedule
+### Administrator Console
+- **Operational Dashboard**: Live metrics for active flights, passenger counts, gross/net revenue, cancellation rates, and busiest routes.
+- **Flight Operations**: Create new flights, adjust departure/arrival timings, update base pricing, and set status flags (Scheduled / Delayed / Cancelled).
+- **Integrity Constraints**: Prevents deletion of flights with confirmed passenger bookings to avoid orphaned records.
+- **Global Manifests**: Search all passenger bookings by PNR, customer name, or email with administrative cancellation capabilities.
+- **System Storage & Reset**: Monitor `localStorage` storage utilization and trigger full schedule reseeding.
 
 ---
 
 ## Architecture
 
-A four-layer client-side architecture. Each layer only talks to the one directly below it.
+SkyRoute follows a strict four-layer architecture. Each layer communicates only with the layer directly beneath it:
 
 ```
 ┌──────────────────────────────────────────────┐
-│  Presentation      app/**/page.tsx           │  Next.js App Router pages
-│                    components/*.tsx          │  React components
+│  Presentation      app/**/page.tsx           │  Next.js 15 App Router pages &
+│                    components/*.tsx          │  React 19 interactive components
 ├──────────────────────────────────────────────┤
-│  Application       lib/repository.ts         │  Use cases, authorisation,
+│  Application       lib/repository.ts         │  Use cases, authorization,
 │                                              │  transaction boundaries
 ├──────────────────────────────────────────────┤
-│  Domain            lib/pricing.ts            │  Pure business rules:
-│                    lib/seats.ts              │  fares, seat maps,
-│                    lib/validation.ts         │  validation, refunds
+│  Domain            lib/pricing.ts            │  Pure business logic:
+│                    lib/seats.ts              │  dynamic yield, seat maps,
+│                    lib/validation.ts         │  validation, cancellation refunds
 │                    lib/auth.ts  lib/ids.ts   │
 ├──────────────────────────────────────────────┤
-│  Persistence       lib/storage.ts            │  The ONLY module that
-│                                              │  touches localStorage
+│  Persistence       lib/storage.ts            │  Isolated localStorage adapter
 └──────────────────────────────────────────────┘
 ```
 
-**Why this matters.** `lib/storage.ts` is the single point of contact with the browser. Swapping
-`localStorage` for a REST API and a real database means rewriting that one file and making the
-repository functions asynchronous — no page and no domain rule would need to change.
-
-### Key design decisions
-
-| Decision | Rationale |
-| --- | --- |
-| Seat maps are *derived*, never stored | Availability is computed from bookings, so the two can never disagree |
-| Business rules are pure functions | Fully unit-testable with no DOM, no storage and no mocking |
-| Repository returns `{ ok, data }` / `{ ok, error }` | Callers branch on a result instead of wrapping everything in try/catch |
-| Validation runs in the UI *and* in the repository | A user editing `localStorage` by hand cannot bypass the rules |
-| Authorisation lives in the repository | Hiding a button is usability; refusing the operation is security |
-| Seats re-checked at write time | Prevents two browser tabs from selling the same seat |
-| Schema version stored with the data | Allows a controlled migration or reset when the model changes |
+### Architectural Principles
+- **Derived Seat Maps**: Seat maps and availability are derived dynamically from confirmed reservations, guaranteeing 100% consistency across concurrent browser tabs.
+- **Pure Domain Logic**: Core pricing, validation, and seat allocation rules are pure functions, completely decoupling business logic from UI and persistence.
+- **Strong Isolation**: `lib/storage.ts` is the single point of contact with the browser storage layer, allowing seamless migration to REST APIs or databases without altering UI pages or domain logic.
+- **Dual-Layer Validation**: Validation rules execute in both the UI and the repository layer to prevent state manipulation.
 
 ---
 
-## Project structure
+## Project Structure
 
 ```
 skyroute/
 ├── app/
-│   ├── layout.tsx                  Root layout, provider, navigation, footer
-│   ├── globals.css                 Tailwind layers and component classes
-│   ├── page.tsx                    Home and flight search
-│   ├── search/page.tsx             Results with sorting and filtering
-│   ├── book/[flightId]/page.tsx    Four-step booking wizard
-│   ├── confirmation/[pnr]/page.tsx E-ticket, printable
-│   ├── bookings/page.tsx           My Bookings and cancellation
-│   ├── manage/page.tsx             PNR + surname lookup
-│   ├── login/page.tsx
-│   ├── register/page.tsx
-│   └── admin/page.tsx              Administrator console (5 tabs)
+│   ├── layout.tsx                  Root layout, theme provider, global nav & footer
+│   ├── globals.css                 Design tokens, animations, and Tailwind utilities
+│   ├── page.tsx                    Landing page with hero, search, showcase modules & FAQ
+│   ├── search/page.tsx             Flight results with live sorting and filtering
+│   ├── book/[flightId]/page.tsx    Step-by-step booking & seat selection flow
+│   ├── confirmation/[pnr]/page.tsx Printable e-ticket & confirmed reservation
+│   ├── bookings/page.tsx           My Bookings list with status filtering & cancellation
+│   ├── manage/page.tsx             Direct PNR + surname reservation lookup
+│   ├── login/page.tsx              Customer & Administrator sign-in
+│   ├── register/page.tsx           Account registration
+│   └── admin/page.tsx              Administrator operations console
 ├── components/
-│   ├── AppProvider.tsx             Session context, seeding, cross-tab sync
-│   ├── Navbar.tsx  ui.tsx          Navigation and shared primitives
-│   ├── SearchForm.tsx  FlightCard.tsx
-│   ├── SeatMap.tsx                 Accessible interactive seat map
-│   ├── PassengerForm.tsx  PaymentForm.tsx
-│   └── FareSummary.tsx  ItineraryCard.tsx
+│   ├── AppProvider.tsx             Session context, storage initialization & cross-tab sync
+│   ├── SideRays.tsx                Theme-adaptive WebGL volumetric light ray effect
+│   ├── LiveTicker.tsx              Real-time operational telemetry ticker
+│   ├── DestinationShowcase.tsx     Route explorer with destination photography & direct links
+│   ├── CabinShowcase.tsx           Interactive First, Business & Economy cabin explorer
+│   ├── FleetShowcase.tsx           Aircraft specifications & route pairing matrix
+│   ├── SimulationPricingExplainer.tsx Interactive dynamic yield fare calculator
+│   ├── TestimonialsSection.tsx     Passenger & aviation expert testimonials
+│   ├── FaqSection.tsx              Expandable FAQ accordion
+│   ├── SearchForm.tsx              Multi-criteria flight search widget
+│   ├── FlightCard.tsx              Flight listing card with real-time fare quote
+│   ├── SeatMap.tsx                 Interactive keyboard-accessible cabin seat map
+│   ├── PassengerForm.tsx           Passenger details form with age-band validation
+│   └── PaymentForm.tsx             Card payment form with Luhn check and brand detection
 ├── lib/
-│   ├── types.ts                    Domain model
-│   ├── storage.ts                  localStorage adapter (the only one)
-│   ├── repository.ts               Use cases and authorisation
-│   ├── pricing.ts                  Fare engine and refund policy
-│   ├── seats.ts                    Seat map generation and conflict checks
-│   ├── validation.ts               All validation rules, incl. Luhn
-│   ├── auth.ts                     Salted, iterated password hashing
+│   ├── types.ts                    TypeScript domain interfaces
+│   ├── storage.ts                  Isolated browser localStorage adapter
+│   ├── repository.ts               Data access, business operations & authorization
+│   ├── pricing.ts                  Dynamic yield engine and refund calculation
+│   ├── seats.ts                    Seat map generator and conflict prevention
+│   ├── validation.ts               Comprehensive input validation rules
+│   ├── auth.ts                     Salted, iterated password hashing & demo accounts
 │   ├── ids.ts                      PNR and identifier generation
-│   ├── seed.ts                     Airports, routes, aircraft, schedule
-│   └── format.ts                   Date, time and currency presentation
-└── tests/                          193 Vitest tests
+│   ├── seed.ts                     Initial airports, routes, fleet and schedules
+│   └── format.ts                   Currency, date, and time formatting helpers
+└── tests/                          193 Vitest unit & integration tests
 ```
 
 ---
 
-## The fare engine
+## Dynamic Fare & Refund Engine
 
-Price per passenger:
-
+### Airfare Calculation
 ```
-baseFare
-  × advancePurchaseFactor(daysToDeparture)   0.90 → 1.50
-  × demandFactor(cabinLoadFactor)            1.00 → 1.35
-  × passengerTypeFactor                      adult 1.0 · child 0.75 · infant 0.10
-  × cabinFactor                              economy 1.0 · business 2.6 · first 4.2
+Final Passenger Airfare =
+  Base Reference Fare
+  × advancePurchaseFactor(daysToDeparture)   [0.90 (30+ days) → 1.50 (last-minute)]
+  × demandFactor(cabinLoadFactor)            [1.00 (<50% load) → 1.35 (>90% peak)]
+  × passengerTypeFactor                      [Adult 1.0 · Child 0.75 · Infant 0.10]
+  × cabinFactor                              [Economy 1.0 · Business 2.6 · First 4.2]
+
+Total Booking Price = Σ(Passenger Fares) + Seat Selection Fees + 7.5% VAT + ₦2,500 Service Charge
 ```
 
-Booking total = Σ passenger fares + seat selection fees + 7.5% VAT + NGN 2,500 service charge.
+### Cancellation Refund Schedule
+The booking service charge (₦2,500) is non-refundable; the remainder is refunded based on the remaining cancellation window:
 
-**Refund on cancellation** (the service charge is never refunded):
-
-| Time before departure | Refund |
-| --- | --- |
-| 7 days or more | 90% |
-| 3 to 7 days | 70% |
-| 24 to 72 hours | 50% |
-| Under 24 hours | 0% |
+| Time Prior to Departure | Refund Percentage |
+| --- | ---: |
+| 7 days or more (168+ hours) | **90%** |
+| 3 to 7 days (72–168 hours) | **70%** |
+| 24 to 72 hours | **50%** |
+| Under 24 hours | **0%** |
 
 ---
 
-## Testing
+## Testing & Quality Assurance
 
-193 tests across five suites, run with Vitest in a jsdom environment.
+The codebase includes **193 unit and integration tests** executed via Vitest:
 
-| Suite | Tests | Covers |
+| Test Suite | Tests | Scope Covered |
 | --- | ---: | --- |
-| `pricing.test.ts` | 30 | Fare factors, itemisation, VAT, refund policy |
-| `seats.test.ts` | 23 | Seat map generation, occupancy, conflict detection |
-| `validation.test.ts` | 73 | Email, phone, password, age bands, Luhn, expiry, PNR |
-| `auth.test.ts` | 21 | Salting, hashing, constant-time comparison |
-| `repository.test.ts` | 46 | Register, sign in, search, book, cancel, authorisation |
+| `pricing.test.ts` | 30 | Yield factors, itemized totals, tax calculations, cancellation refunds |
+| `seats.test.ts` | 23 | Seat map generation, occupancy resolution, conflict detection |
+| `validation.test.ts` | 73 | Email/phone formats, age-band rules, Luhn algorithm, expiry dates |
+| `auth.test.ts` | 21 | Password salting, key stretching, constant-time comparison |
+| `repository.test.ts` | 46 | Sign-in, account creation, flight dispatch, booking & authorization |
 
 ```bash
 npm test
 ```
 
-Notable cases: double-booking a seat is refused; a declined payment writes nothing; a customer cannot
-cancel another customer's booking; a customer cannot create a flight; a flight with confirmed
-bookings cannot be deleted; corrupted `localStorage` degrades safely instead of crashing.
-
 ---
 
-## Limitations
+## Technology Stack
 
-This is an academic simulation, and its constraints are deliberate.
-
-- **Storage is per-browser.** Data does not sync between machines, browsers or profiles. Clearing
-  browsing data erases everything.
-- **Roughly a 5 MB quota.** Ample for this schedule, but not a production data store.
-- **Client-side security only.** Passwords are salted and iteratively hashed, but everything the
-  application knows lives on the user's machine. Real authentication requires a server; the technical
-  report sets out the server-side design that would replace this.
-- **No real payments.** No card data leaves the browser and nothing is charged.
-- **No emails.** Confirmation messages are described in the UI but never sent.
-
----
-
-## Technology
-
-| Concern | Choice |
+| Layer | Technology |
 | --- | --- |
-| Framework | Next.js 15 (App Router) |
-| UI library | React 19 |
-| Language | TypeScript 5.7 (strict mode) |
-| Styling | Tailwind CSS 3.4 |
-| Testing | Vitest 2 + jsdom |
-| Persistence | Browser `localStorage` |
-| Linting | ESLint with `eslint-config-next` |
-
----
-
-*Built as an academic project. No real flights, seats or payments are involved; all schedules,
-airlines and fares are fictional.*
+| **Framework** | Next.js 15 (App Router) |
+| **UI Library** | React 19 |
+| **Language** | TypeScript 5.7 (Strict Mode) |
+| **Styling** | Tailwind CSS 3.4 + Vanilla CSS Variables |
+| **Animations** | Framer Motion + WebGL (`ogl`) |
+| **Theme System** | Next Themes (System / Dark / Light) |
+| **Testing** | Vitest 2.1 + jsdom |
+| **Persistence** | Browser `localStorage` |
+| **Icons** | Custom 24×24 SVG Icon System |

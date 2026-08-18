@@ -11,4 +11,8 @@ coverage/
 next-env.d.ts
 tsconfig.tsbuildinfo
 
-
+# AI Agent & Assistant Configs
+.agents/
+.claude/
+CLAUDE.md
+skills-lock.json
