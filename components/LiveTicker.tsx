@@ -59,9 +59,9 @@ export function LiveTicker() {
 
   return (
     <div className="w-full border-y border-line bg-surface/80 py-3 backdrop-blur-md">
-      <div className="container-wide flex flex-col items-center justify-between gap-3 text-caption md:flex-row">
+      <div className="container-wide flex flex-col items-center justify-center gap-3 text-caption xl:flex-row xl:justify-between">
         {/* Left: Operations Live Status Indicator */}
-        <div className="flex items-center gap-2.5 font-medium text-ink">
+        <div className="flex shrink-0 items-center justify-center gap-2.5 font-medium text-ink">
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
@@ -71,11 +71,11 @@ export function LiveTicker() {
           <span className="font-mono text-xs text-ink-2">{tickerTime || "UTC 12:00:00"}</span>
         </div>
 
-        {/* Right: Scrolling/Flowing Metric Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-ink-2">
+        {/* Right: Scrolling/Flowing Metric Pills (Fully Centered) */}
+        <div className="flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-ink-2 xl:w-auto">
           {TICKER_ITEMS.map((item) => (
-            <div key={item.label} className="flex items-center gap-2">
-              <Icon name={item.icon} className="h-3.5 w-3.5 text-accent" />
+            <div key={item.label} className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
+              <Icon name={item.icon} className="h-3.5 w-3.5 shrink-0 text-accent" />
               <span className="text-ink-3">{item.label}:</span>
               <span className="font-semibold text-ink">{item.value}</span>
             </div>

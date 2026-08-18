@@ -1,5 +1,5 @@
 'use client';
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { gsap } from 'gsap';
 
 const throttle = (func: (...args: any[]) => void, limit: number) => {
@@ -76,6 +76,19 @@ const DotGrid: React.FC<DotGridProps> = ({
     lastY: 0
   });
 
+  const [isInteractivePC, setIsInteractivePC] = useState(false);
+
+  useEffect(() => {
+    const checkIsPC = () => {
+      const isDesktop = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
+      setIsInteractivePC(isDesktop);
+    };
+
+    checkIsPC();
+    window.addEventListener('resize', checkIsPC);
+    return () => window.removeEventListener('resize', checkIsPC);
+  }, []);
+
   const baseRgb = useMemo(() => hexToRgb(baseColor), [baseColor]);
   const activeRgb = useMemo(() => hexToRgb(activeColor), [activeColor]);
 
@@ -88,6 +101,7 @@ const DotGrid: React.FC<DotGridProps> = ({
   }, [dotSize]);
 
   const buildGrid = useCallback(() => {
+    if (!isInteractivePC) return;
     const wrap = wrapperRef.current;
     const canvas = canvasRef.current;
     if (!wrap || !canvas) return;
@@ -126,10 +140,10 @@ const DotGrid: React.FC<DotGridProps> = ({
       }
     }
     dotsRef.current = dots;
-  }, [dotSize, gap]);
+  }, [dotSize, gap, isInteractivePC]);
 
   useEffect(() => {
-    if (!circlePath) return;
+    if (!isInteractivePC || !circlePath) return;
 
     let rafId: number;
     const proxSq = proximity * proximity;
@@ -150,19 +164,19 @@ const DotGrid: React.FC<DotGridProps> = ({
         const dy = dot.cy - py;
         const dsq = dx * dx + dy * dy;
 
-        let style = baseColor;
+        let dotStyle = baseColor;
         if (dsq <= proxSq) {
           const dist = Math.sqrt(dsq);
           const t = 1 - dist / proximity;
           const r = Math.round(baseRgb.r + (activeRgb.r - baseRgb.r) * t);
           const g = Math.round(baseRgb.g + (activeRgb.g - baseRgb.g) * t);
           const b = Math.round(baseRgb.b + (activeRgb.b - baseRgb.b) * t);
-          style = `rgb(${r},${g},${b})`;
+          dotStyle = `rgb(${r},${g},${b})`;
         }
 
         ctx.save();
         ctx.translate(ox, oy);
-        ctx.fillStyle = style;
+        ctx.fillStyle = dotStyle;
         ctx.fill(circlePath);
         ctx.restore();
       }
@@ -172,9 +186,10 @@ const DotGrid: React.FC<DotGridProps> = ({
 
     draw();
     return () => cancelAnimationFrame(rafId);
-  }, [proximity, baseColor, activeRgb, baseRgb, circlePath]);
+  }, [isInteractivePC, proximity, baseColor, activeRgb, baseRgb, circlePath]);
 
   useEffect(() => {
+    if (!isInteractivePC) return;
     buildGrid();
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined' && wrapperRef.current) {
@@ -187,9 +202,11 @@ const DotGrid: React.FC<DotGridProps> = ({
       if (ro) ro.disconnect();
       else window.removeEventListener('resize', buildGrid);
     };
-  }, [buildGrid]);
+  }, [isInteractivePC, buildGrid]);
 
   useEffect(() => {
+    if (!isInteractivePC) return;
+
     const onMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -287,11 +304,26 @@ const DotGrid: React.FC<DotGridProps> = ({
       window.removeEventListener('mousemove', throttledMove);
       window.removeEventListener('click', onClick);
     };
-  }, [maxSpeed, speedTrigger, proximity, resistance, returnDuration, shockRadius, shockStrength]);
+  }, [isInteractivePC, maxSpeed, speedTrigger, proximity, resistance, returnDuration, shockRadius, shockStrength]);
+
+  const step = dotSize + gap;
+  const radius = dotSize / 2;
 
   return (
     <div className={`flex items-center justify-center h-full w-full relative ${className}`} style={style}>
-      <div ref={wrapperRef} className="w-full h-full relative">
+      {/* Static Crisp Dot Grid for Mobile & Tablet (0 GPU/CPU overhead) */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 block lg:hidden pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(${baseColor} ${radius}px, transparent ${radius}px)`,
+          backgroundSize: `${step}px ${step}px`,
+          backgroundPosition: 'center',
+        }}
+      />
+
+      {/* Interactive Physics Canvas Active on PC Only */}
+      <div ref={wrapperRef} className="w-full h-full relative hidden lg:block">
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
       </div>
     </div>
