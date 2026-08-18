@@ -170,7 +170,7 @@ export function PaymentForm({
                 </Field>
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg bg-accent-soft/50 p-3 text-footnote text-accent-ink">
+              <div className="flex items-center gap-2 rounded-lg bg-accent-soft p-3 text-footnote text-accent-ink">
                 <Icon name="checkCircle" className="h-4 w-4 shrink-0 text-accent" />
                 <span>Instant clearing simulation enabled. No waiting for manual teller verification.</span>
               </div>

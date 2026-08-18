@@ -16,8 +16,17 @@
      grey. It is below the threshold anyone would name as "green", but it is
      what stops the chrome reading as stock iOS. */
   --canvas: #f1f3f2;
-  --surface: #ffffff;
-  --raised: #ffffff;
+  /* Not pure white. The canvas already carries a trace of the accent's hue,
+     and a #ffffff card sitting on it read as a different, colder material —
+     the tint is what makes surface and canvas look like one family. */
+  --surface: #fafcfb;
+  /* Channel form of --surface, purely for Tailwind's bg-surface/NN opacity
+     modifiers — see the comment on `surface` in tailwind.config.ts. Keep this
+     in step with --surface by hand; it can't be derived from it in plain CSS. */
+  --surface-rgb: 250 252 251;
+  /* Raised sits above surface, so it stays the lightest thing on the page —
+     but still tinted, so nothing in the stack is flat white. */
+  --raised: #fdfefe;
   --fill: #eceff0;
   --fill-strong: #dfe4e3;
   --line: rgba(38, 60, 57, 0.13);
@@ -30,6 +39,7 @@
   /* Deep teal. Dark enough at #0d6b5e to clear 4.5:1 on white, so the same
      value works for a link and for a filled button's background. */
   --accent: #0d6b5e;
+  --accent-rgb: 13 107 94;
   --accent-hover: #0a564d;
   --accent-soft: #e2f2ef;
   --accent-ink: #095349;
@@ -40,6 +50,7 @@
      the one real hazard in a teal palette, and a confirmed badge has to be
      unmistakable beside a teal button. It also never ships without a tick. */
   --positive: #3d7a24;
+  --positive-rgb: 61 122 36;
   --positive-soft: #eaf4e1;
   --positive-ink: #2c5a19;
 
@@ -52,7 +63,7 @@
   --danger-ink: #9d2125;
 
   /* Translucent chrome. A floating layer, not an opaque strip. */
-  --material: rgba(255, 255, 255, 0.72);
+  --material: rgba(250, 252, 251, 0.76);
   --material-edge: rgba(255, 255, 255, 0.7);
 
   /* Ambient light behind the landing hero. Static, never looping: a slowly
@@ -67,7 +78,7 @@
   --shadow-press: inset 0 1px 2px rgba(17, 24, 39, 0.1);
 
   /* Seat map */
-  --seat-free: #ffffff;
+  --seat-free: #fafcfb;
   --seat-free-line: rgba(38, 60, 57, 0.28);
   --seat-taken: #dfe4e3;
   --seat-taken-ink: #99a3a1;
@@ -99,6 +110,7 @@
      the accent's hue, which is where the warmth shows. */
   --canvas: #000000;
   --surface: #171d1c;
+  --surface-rgb: 23 29 28;
   --raised: #222a29;
   --fill: #222a29;
   --fill-strong: #2f3937;
@@ -112,12 +124,14 @@
   /* Lifted well above the light-mode value: a colour that reads as "deep"
      on white reads as "muddy" on black. */
   --accent: #2fc4ae;
+  --accent-rgb: 47 196 174;
   --accent-hover: #57d6c3;
   --accent-soft: rgba(47, 196, 174, 0.16);
   --accent-ink: #6fdcca;
   --on-accent: #04231f;
 
   --positive: #7bc44a;
+  --positive-rgb: 123 196 74;
   --positive-soft: rgba(123, 196, 74, 0.16);
   --positive-ink: #9ad470;
 

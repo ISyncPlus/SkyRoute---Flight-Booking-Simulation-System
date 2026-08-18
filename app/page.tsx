@@ -260,7 +260,7 @@ export default function HomePage() {
             </div>
 
             {/* Route Arc Sub-panel */}
-            <div className="p-5 sm:p-6 bg-surface/75 backdrop-blur-md border-t border-line/30">
+            <div className="p-5 sm:p-6 bg-surface/75 backdrop-blur-md border-t border-line">
               <RouteArc from="LOS" to="ABV" className="h-auto w-full" />
               <div className="mt-4 flex flex-col gap-2 sm:flex-row items-center justify-between text-footnote text-ink-2">
                 <span className="flex items-center gap-1.5 font-mono text-ink">

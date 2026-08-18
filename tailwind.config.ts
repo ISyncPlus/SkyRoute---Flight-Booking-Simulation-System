@@ -21,7 +21,19 @@ const config: Config = {
     extend: {
       colors: {
         canvas: "var(--canvas)",
-        surface: "var(--surface)",
+        /* surface, accent and positive are opaque in both themes, so pointing
+           them at an "R G B" channel variable (declared alongside the hex
+           value in globals.css) instead of the flat hex is what lets Tailwind
+           generate bg-surface/90, border-accent/35 and friends. Unmodified use
+           (`bg-surface`) is unaffected: Tailwind substitutes 1 for
+           <alpha-value> when no modifier is given, which is the same fully
+           opaque result the hex produced.
+           line, accent-soft and the rest are NOT converted here — their bare,
+           unmodified form is already a deliberate partial alpha (e.g. line is
+           13% by design), and this channel pattern makes the unmodified case
+           fully opaque. Converting them would silently turn every existing
+           `border-line` in the app solid. */
+        surface: "rgb(var(--surface-rgb) / <alpha-value>)",
         raised: "var(--raised)",
         fill: "var(--fill)",
         "fill-strong": "var(--fill-strong)",
@@ -32,13 +44,13 @@ const config: Config = {
         "ink-2": "var(--ink-2)",
         "ink-3": "var(--ink-3)",
 
-        accent: "var(--accent)",
+        accent: "rgb(var(--accent-rgb) / <alpha-value>)",
         "accent-hover": "var(--accent-hover)",
         "accent-soft": "var(--accent-soft)",
         "accent-ink": "var(--accent-ink)",
         "on-accent": "var(--on-accent)",
 
-        positive: "var(--positive)",
+        positive: "rgb(var(--positive-rgb) / <alpha-value>)",
         "positive-soft": "var(--positive-soft)",
         "positive-ink": "var(--positive-ink)",
 

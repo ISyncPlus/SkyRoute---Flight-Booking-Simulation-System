@@ -189,7 +189,7 @@ export function SimulationPricingExplainer() {
                   <dt className="text-ink-2">Cabin Upgrade Multiplier</dt>
                   <dd className="font-mono text-accent">× {cabinMult.toFixed(1)}</dd>
                 </div>
-                <div className="flex justify-between border-t border-line/60 pt-2">
+                <div className="flex justify-between border-t border-line pt-2">
                   <dt className="font-medium text-ink">Derived Adult Airfare</dt>
                   <dd className="font-mono font-semibold text-ink">
                     {formatMoney(adultPassengerFare)}

@@ -73,7 +73,7 @@ export function FaqSection() {
                 className={`overflow-hidden rounded-xl border transition-all duration-200 backdrop-blur-xl ${
                   isOpen
                     ? "border-line-strong bg-surface/90 shadow-e2"
-                    : "border-line/70 bg-surface/80 hover:bg-surface/95 hover:border-line shadow-e1"
+                    : "border-line bg-surface/80 hover:bg-surface/95 hover:border-line shadow-e1"
                 }`}
               >
                 <button
