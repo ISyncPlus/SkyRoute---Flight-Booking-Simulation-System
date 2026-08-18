@@ -88,6 +88,13 @@ export function Navbar() {
     ? [...LINKS, { href: "/admin", label: "Admin", icon: "shield" as IconName }]
     : LINKS;
 
+  function handleLogoClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (pathname === "/") {
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
   return (
     <header className="no-print sticky top-0 z-40">
       {/* Dismiss layer with backdrop blur */}
@@ -105,7 +112,8 @@ export function Navbar() {
         <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6" aria-label="Main">
           <Link
             href="/"
-            className="pressable flex shrink-0 items-center gap-2 text-title-3 font-semibold text-ink whitespace-nowrap"
+            onClick={handleLogoClick}
+            className="pressable flex shrink-0 items-center gap-2 text-title-3 font-semibold text-ink whitespace-nowrap cursor-pointer"
           >
             <LogoMark className="h-7 w-7" />
             SkyRoute
