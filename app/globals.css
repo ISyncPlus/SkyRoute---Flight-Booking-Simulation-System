@@ -247,46 +247,64 @@
   }
 
   /* ---- Navigation rail --------------------------------------------------
-     Edge to edge and flush while the page sits at the top; once it scrolls,
-     the bar contracts and lifts away from the edge into a floating pill.
-     That change is the signal — content is now passing *underneath* the bar
-     rather than beginning below it, and the glass says so by blurring what
-     it covers.
+     Edge to edge and flush while the page sits at the top; as it scrolls, the
+     bar gathers itself in — narrowing, rounding, lifting off the edge — until
+     it is a floating pill. That is the signal: content is now passing
+     *underneath* the bar rather than beginning below it, and the glass says
+     so by blurring what it covers.
 
-     It lifts with a transform rather than a margin so the sticky header's
-     own box never changes height: a margin here would shove the whole page
-     down 12px at the exact moment the class flips.
+     Every property below is driven off `--nav-p`, a 0→1 scroll progress that
+     Navbar.tsx writes straight onto this element. So the bar is not switching
+     between two states with a transition bridging them — it is *at* whatever
+     position the scroll puts it, and it tracks the finger or wheel exactly.
+     That also means no `transition` here on purpose: a transition would fight
+     the per-frame updates and lag behind the scroll.
 
-     The side and top borders are present but transparent at rest, so the
-     detached state only has to animate `border-color`. Growing a border
-     from 0 to 1px would shift the bar's contents by a pixel instead. */
+     It lifts with a transform rather than a margin so the sticky header's own
+     box never changes height — a margin would shove the whole page down as
+     the bar rose. */
   .nav-rail {
     @apply relative mx-auto w-full;
+    --nav-p: 0;
+    /* At p=1 this resolves to 64rem on a wide viewport, and to a 1.5rem inset
+       on anything narrower — so the pill never touches the screen edges. */
+    width: calc(100% - var(--nav-p) * max(1.5rem, 100% - 64rem));
     max-width: 100%;
     border: 1px solid transparent;
     border-bottom-color: var(--line);
-    border-radius: 0;
-    transform: translateY(0);
-    transition:
-      width var(--dur-sheet) var(--ease-drawer),
-      max-width var(--dur-sheet) var(--ease-drawer),
-      border-radius var(--dur-sheet) var(--ease-drawer),
-      transform var(--dur-sheet) var(--ease-drawer),
-      border-color var(--dur-panel) ease,
-      box-shadow var(--dur-panel) ease;
+    /* Interpolating to half the bar's height, not to 9999px: multiplying a
+       huge radius by p would look fully round almost immediately. */
+    border-radius: calc(2.0625rem * var(--nav-p));
+    transform: translateY(calc(0.75rem * var(--nav-p)));
+    border-top-color: color-mix(in srgb, var(--line) calc(var(--nav-p) * 100%), transparent);
+    border-left-color: color-mix(in srgb, var(--line) calc(var(--nav-p) * 100%), transparent);
+    border-right-color: color-mix(in srgb, var(--line) calc(var(--nav-p) * 100%), transparent);
+    /* A brighter rim along the top edge is what reads as glass rather than as
+       a translucent panel — it is the highlight a real bevel catches. */
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--material-edge) calc(var(--nav-p) * 100%), transparent);
+    -webkit-backdrop-filter: blur(calc(24px + 8px * var(--nav-p)))
+      saturate(calc(180% + 20% * var(--nav-p)));
+    backdrop-filter: blur(calc(24px + 8px * var(--nav-p)))
+      saturate(calc(180% + 20% * var(--nav-p)));
   }
 
-  .nav-rail[data-scrolled="true"] {
-    width: calc(100% - 1.5rem);
-    max-width: 64rem;
-    border-color: var(--line);
-    border-radius: 9999px;
-    transform: translateY(0.75rem);
-    /* A brighter rim along the top edge is what reads as glass rather than
-       as a translucent panel — it is the highlight a real bevel catches. */
-    box-shadow: var(--shadow-3), inset 0 1px 0 var(--material-edge);
-    -webkit-backdrop-filter: blur(32px) saturate(200%);
-    backdrop-filter: blur(32px) saturate(200%);
+  /* The cast shadow rides a pseudo-element because a box-shadow's spread and
+     colour cannot be interpolated from a single scalar — an opacity can. */
+  .nav-rail::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: var(--shadow-3);
+    opacity: var(--nav-p);
+    pointer-events: none;
+  }
+
+  /* The progressive blur under a flush bar is right only while the bar is
+     flush; under a floating pill it would be a stray full-width smear. */
+  .nav-rail::after {
+    opacity: calc(1 - var(--nav-p));
   }
 
   /* ---- Pressables -------------------------------------------------------
@@ -715,13 +733,8 @@
     background-color: var(--fill-strong);
   }
 
-  /* The bar still detaches and contracts — it just stops travelling to get
-     there. Only the colour and shadow are left to cross-fade. */
-  .nav-rail {
-    transition:
-      border-color var(--dur-panel) ease,
-      box-shadow var(--dur-panel) ease;
-  }
+  /* The bar still detaches and contracts, but Navbar.tsx snaps `--nav-p` to
+     0 or 1 instead of sweeping it, so the shape changes without the travel. */
 
   .sheet,
   .sheet[data-open="true"] {
@@ -813,8 +826,8 @@
     backdrop-filter: none;
   }
 
-  /* The detached bar keeps its shape — it just stops being see-through. */
-  .nav-rail[data-scrolled="true"] {
+  /* The bar keeps its shape and its travel — it just stops being see-through. */
+  .nav-rail {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }

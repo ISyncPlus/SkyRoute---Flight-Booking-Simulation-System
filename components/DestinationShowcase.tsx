@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "./icons";
 import { Reveal } from "./ui";
+import { dateInputValue } from "@/lib/format";
 
 interface DestinationCard {
   id: string;
@@ -29,23 +31,23 @@ const DESTINATIONS: DestinationCard[] = [
     destCode: "LHR",
     country: "United Kingdom",
     image: "/images/dest-london.jpg",
-    flightTime: "6h 35m",
+    flightTime: "6h 40m",
     aircraft: "Boeing 787-9 Dreamliner",
-    startingFare: "₦620,000",
+    startingFare: "₦1,180,000",
     tag: "Flagship Route",
     featured: true,
   },
   {
-    id: "abv-dxb",
-    originCity: "Abuja",
-    originCode: "ABV",
+    id: "los-dxb",
+    originCity: "Lagos",
+    originCode: "LOS",
     destCity: "Dubai",
     destCode: "DXB",
     country: "United Arab Emirates",
     image: "/images/dest-dubai.jpg",
-    flightTime: "7h 10m",
-    aircraft: "Boeing 787-9 Dreamliner",
-    startingFare: "₦580,000",
+    flightTime: "7h 15m",
+    aircraft: "Boeing 777-300ER",
+    startingFare: "₦1,050,000",
     tag: "High Demand",
     featured: true,
   },
@@ -57,29 +59,31 @@ const DESTINATIONS: DestinationCard[] = [
     destCode: "CDG",
     country: "France",
     image: "/images/dest-paris.jpg",
-    flightTime: "6h 25m",
+    flightTime: "6h 30m",
     aircraft: "Airbus A330-300",
-    startingFare: "₦640,000",
+    startingFare: "₦1,120,000",
     tag: "Popular",
     featured: true,
   },
   {
-    id: "los-abv",
-    originCity: "Lagos",
-    originCode: "LOS",
-    destCity: "Lagos & Coastal Coast",
+    id: "abv-los",
+    originCity: "Abuja",
+    originCode: "ABV",
+    destCity: "Lagos",
     destCode: "LOS",
-    country: "Nigeria Hub",
+    country: "Nigeria",
     image: "/images/dest-lagos.jpg",
     flightTime: "1h 10m",
     aircraft: "Boeing 737-800",
-    startingFare: "₦65,000",
+    startingFare: "₦118,000",
     tag: "Frequent Shuttle",
     featured: true,
   },
 ];
 
 export function DestinationShowcase() {
+  const tomorrow = dateInputValue(1);
+
   return (
     <section aria-labelledby="destinations-heading" className="container-wide section">
       <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
@@ -103,7 +107,7 @@ export function DestinationShowcase() {
         </Reveal>
       </div>
 
-      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {DESTINATIONS.map((dest, idx) => (
           <Reveal key={dest.id} delay={idx * 70}>
             <div className="card group relative flex h-full flex-col overflow-hidden p-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-e3">
@@ -136,7 +140,7 @@ export function DestinationShowcase() {
               </div>
 
               {/* Card Body Details */}
-              <div className="flex flex-1 flex-col justify-between p-5">
+              <div className="flex flex-1 flex-col justify-between p-5 sm:p-6">
                 <div>
                   <div className="flex items-center justify-between text-footnote font-semibold text-ink">
                     <span className="flex items-center gap-1.5 font-mono text-ink">
@@ -154,7 +158,7 @@ export function DestinationShowcase() {
                   </p>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
+                <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
                   <div>
                     <span className="block text-micro uppercase tracking-wide text-ink-3">
                       From
@@ -164,7 +168,7 @@ export function DestinationShowcase() {
                     </span>
                   </div>
                   <Link
-                    href={`/search?origin=${dest.originCode}&destination=${dest.destCode}`}
+                    href={`/search?from=${dest.originCode}&to=${dest.destCode}&date=${tomorrow}&cabin=economy&adults=1`}
                     className="btn-primary px-3.5 py-2 text-caption shadow-none"
                     aria-label={`Search flights from ${dest.originCity} to ${dest.destCity}`}
                   >

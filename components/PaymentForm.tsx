@@ -47,9 +47,9 @@ export function PaymentForm({
         passes the Luhn check, for example <code className="font-semibold">4084 0840 8408 4081</code>.
       </Alert>
 
-      <fieldset className="card-lg">
-        <legend className="px-1 text-footnote font-semibold text-ink">Payment method</legend>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+      <div className="card-lg">
+        <h3 className="mb-4 text-footnote font-semibold text-ink">Payment method</h3>
+        <div className="grid gap-3 sm:grid-cols-3">
           {([
             { value: "card", label: "Debit / credit card", icon: "creditCard" },
             { value: "transfer", label: "Bank transfer", icon: "building" },
@@ -76,13 +76,13 @@ export function PaymentForm({
             </label>
           ))}
         </div>
-      </fieldset>
+      </div>
 
-      <fieldset className="card-lg">
-        <legend className="flex items-center gap-2 px-1 text-footnote font-semibold text-ink">
+      <div className="card-lg">
+        <div className="mb-5 flex items-center gap-2 border-b border-line pb-4">
           <Icon name="lock" className="h-4 w-4 text-ink-3" />
-          Card details
-        </legend>
+          <h3 className="text-footnote font-semibold text-ink">Card details</h3>
+        </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
@@ -159,7 +159,7 @@ export function PaymentForm({
             will be held.
           </span>
         </label>
-      </fieldset>
+      </div>
     </div>
   );
 }

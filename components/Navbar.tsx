@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "./AppProvider";
 import { Icon, type IconName } from "./icons";
 import { LogoMark } from "./Brand";
@@ -12,6 +12,11 @@ import { ThemeToggle } from "./ui/theme-toggle";
    the glyph is what the eye lands on first. The desktop bar stays text-only:
    four labelled icons plus the account controls would crowd it at the width
    the breakpoint actually starts. */
+/* How far the page scrolls while the bar gathers itself in. Short enough that
+   it is fully a pill by the time the first section clears the top, long enough
+   that the change reads as motion rather than a snap. */
+const TRAVEL = 120;
+
 const LINKS: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Search flights", icon: "search" },
   { href: "/bookings", label: "My bookings", icon: "ticket" },
@@ -23,8 +28,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  /** Drives the bar's contract-and-detach. See `.nav-rail` in globals.css. */
-  const [scrolled, setScrolled] = useState(false);
+  const railRef = useRef<HTMLDivElement>(null);
 
   // A menu that cannot be dismissed with Escape traps the user in it.
   useEffect(() => {
@@ -37,18 +41,37 @@ export function Navbar() {
   }, [menuOpen]);
 
   /**
-   * The threshold is well clear of 0 so that the elastic overscroll at the
-   * top of the page — and the couple of pixels a focus jump moves things —
-   * cannot flip the bar back and forth. React bails out of the re-render
-   * when the boolean is unchanged, so this stays cheap on every frame.
+   * Scroll progress, 0 → 1 across the first {@link TRAVEL} pixels, written
+   * straight onto the rail as a CSS variable. Deliberately *not* React state:
+   * this updates on every frame of a scroll, and re-rendering the whole
+   * navigation that often to move a number would be wasteful. The CSS owns
+   * what the number means; this only reports where the page is.
    */
   useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 24);
+    const rail = railRef.current;
+    if (!rail) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      const raw = Math.min(1, Math.max(0, window.scrollY / TRAVEL));
+      // Reduced motion gets the same two end states, with none of the travel.
+      rail!.style.setProperty("--nav-p", String(reduceMotion ? Math.round(raw) : raw));
     }
-    onScroll(); // A reload partway down the page must not start attached.
+
+    function onScroll() {
+      // Coalesce to one write per frame: scroll fires far more often than paint.
+      if (!frame) frame = requestAnimationFrame(update);
+    }
+
+    update(); // A reload partway down the page must not start out attached.
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   function handleSignOut() {
@@ -78,10 +101,7 @@ export function Navbar() {
         }`}
       />
 
-      <div
-        data-scrolled={scrolled}
-        className={`nav-rail material ${scrolled ? "" : "scroll-edge"}`}
-      >
+      <div ref={railRef} className="nav-rail material scroll-edge">
         <nav className="container-page flex h-16 items-center justify-between gap-4" aria-label="Main">
           <Link
             href="/"

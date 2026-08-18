@@ -15,7 +15,7 @@
 
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
-import { useEffect, useState, type MouseEvent } from "react";
+import { useSyncExternalStore, type MouseEvent } from "react";
 
 const REVEAL_MS = 600;
 const STYLE_ELEMENT_ID = "theme-toggle-reveal";
@@ -51,12 +51,18 @@ function setRevealStyles(css: string) {
   style.textContent = css;
 }
 
+/* Hydration guard. `false` on the server, `true` once the client takes over —
+   with no effect and no second render pass, which is what a setState-on-mount
+   would cost. Hoisted so the identities stay stable across renders. */
+const subscribeToNothing = () => () => {};
+const onClient = () => true;
+const onServer = () => false;
+
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
   // The resolved theme is only known once mounted on the client — rendering
   // it any earlier would disagree with the server-rendered markup.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(subscribeToNothing, onClient, onServer);
 
   const isDark = mounted && resolvedTheme === "dark";
 

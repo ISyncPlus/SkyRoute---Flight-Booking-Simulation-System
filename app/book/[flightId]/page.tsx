@@ -400,14 +400,17 @@ function BookingWizard() {
                   );
                 })}
 
-                <fieldset className="card-lg">
-                  <legend className="px-1 text-footnote font-semibold text-ink">
-                    Contact details
-                  </legend>
-                  <p className="mt-1 text-caption text-ink-3">
-                    The booking confirmation and any schedule change will be sent here.
-                  </p>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div className="card-lg">
+                  <div className="mb-5 border-b border-line pb-4">
+                    <h3 className="flex items-center gap-2 text-footnote font-semibold text-ink">
+                      <Icon name="mail" className="h-4 w-4 text-ink-3" />
+                      Contact details
+                    </h3>
+                    <p className="mt-1 text-caption text-ink-3">
+                      The booking confirmation and any schedule change will be sent here.
+                    </p>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Email address" htmlFor="contactEmail" error={contactErrors.email}>
                       <input
                         id="contactEmail"
@@ -434,7 +437,7 @@ function BookingWizard() {
                       />
                     </Field>
                   </div>
-                </fieldset>
+                </div>
               </section>
             )}
 
