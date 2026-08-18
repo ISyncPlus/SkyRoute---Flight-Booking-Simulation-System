@@ -70,8 +70,10 @@ export function FaqSection() {
           return (
             <Reveal key={faq.question} delay={idx * 50}>
               <div
-                className={`overflow-hidden rounded-xl border transition-colors duration-200 ${
-                  isOpen ? "border-line-strong bg-surface shadow-e1" : "border-line bg-surface/60 hover:bg-surface"
+                className={`overflow-hidden rounded-xl border transition-all duration-200 backdrop-blur-xl ${
+                  isOpen
+                    ? "border-line-strong bg-surface/90 shadow-e2"
+                    : "border-line/70 bg-surface/80 hover:bg-surface/95 hover:border-line shadow-e1"
                 }`}
               >
                 <button

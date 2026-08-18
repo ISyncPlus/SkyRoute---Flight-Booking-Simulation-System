@@ -217,11 +217,11 @@
      Bigger surfaces read as thicker: more radius, more shadow. ---------- */
 
   .card {
-    @apply rounded-xl border border-line bg-surface p-6 shadow-e1;
+    @apply rounded-xl border border-line bg-surface/90 backdrop-blur-xl p-6 shadow-e1;
   }
 
   .card-lg {
-    @apply rounded-2xl border border-line bg-surface p-6 shadow-e2 sm:p-8;
+    @apply rounded-2xl border border-line bg-surface/90 backdrop-blur-xl p-6 shadow-e2 sm:p-8;
   }
 
   /* A card that is also a link target. */
