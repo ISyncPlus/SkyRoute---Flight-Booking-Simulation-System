@@ -10,6 +10,7 @@ import { Alert, Reveal } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
 import FoldText from "@/components/FoldText";
 import { LightRays } from "@/components/LightRays";
+import { DotGrid } from "@/components/DotGrid";
 import { LiveTicker } from "@/components/LiveTicker";
 import { DestinationShowcase } from "@/components/DestinationShowcase";
 import { CabinShowcase } from "@/components/CabinShowcase";
@@ -279,38 +280,57 @@ export default function HomePage() {
       {/* ---------------- Live Telemetry Ticker ---------------- */}
       <LiveTicker />
 
-      {/* ---------------- Flight Search Section ---------------- */}
+      {/* ---------------- Flight Search Section with DotGrid ---------------- */}
       <section
         id="search"
         aria-labelledby="search-heading"
-        className="container-wide scroll-mt-24 py-8 sm:py-12"
+        className="relative isolate overflow-hidden scroll-mt-24 py-10 sm:py-14"
       >
-        {!storageAvailable && (
-          <div className="mb-8">
-            <Alert tone="error" title="Browser storage is unavailable">
-              This application stores its data in your browser&apos;s localStorage. It appears to be
-              disabled or full. This often happens in private browsing mode. Please open the site in
-              a normal window to continue.
-            </Alert>
-          </div>
-        )}
+        {/* Interactive Theme-Aware Physics DotGrid Background */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-60 dark:opacity-75 transition-opacity duration-700"
+        >
+          <DotGrid
+            dotSize={4}
+            gap={24}
+            baseColor={resolvedTheme === "dark" ? "#162e2a" : "#d3e3e0"}
+            activeColor={resolvedTheme === "dark" ? "#2fc4ae" : "#0d6b5e"}
+            proximity={140}
+            shockRadius={220}
+            shockStrength={4}
+            className="h-full w-full"
+          />
+        </div>
 
-        <Reveal>
-          <div className="text-center">
-            <p className="overline text-accent">Real-Time Schedule Engine</p>
-            <h2 id="search-heading" className="mt-2 text-display font-semibold text-ink">
-              Where would you like to fly?
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-lead text-ink-2">
-              Pick a route and departure date. Browse the full 21-day schedule with live seat
-              availability and dynamic pricing before holding a reservation.
-            </p>
-          </div>
-        </Reveal>
+        <div className="container-wide">
+          {!storageAvailable && (
+            <div className="mb-8">
+              <Alert tone="error" title="Browser storage is unavailable">
+                This application stores its data in your browser&apos;s localStorage. It appears to be
+                disabled or full. This often happens in private browsing mode. Please open the site in
+                a normal window to continue.
+              </Alert>
+            </div>
+          )}
 
-        <Reveal delay={80} className="mt-10">
-          <SearchForm />
-        </Reveal>
+          <Reveal>
+            <div className="text-center">
+              <p className="overline text-accent">Real-Time Schedule Engine</p>
+              <h2 id="search-heading" className="mt-2 text-display font-semibold text-ink">
+                Where would you like to fly?
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl text-lead text-ink-2">
+                Pick a route and departure date. Browse the full 21-day schedule with live seat
+                availability and dynamic pricing before holding a reservation.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={80} className="mt-10">
+            <SearchForm />
+          </Reveal>
+        </div>
       </section>
 
       {/* ---------------- Destination & Route Explorer ---------------- */}
