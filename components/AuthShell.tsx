@@ -11,10 +11,11 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useTheme } from "next-themes";
 import { RouteArc } from "./RouteArc";
 import { Icon } from "./icons";
 import { LogoMark } from "./Brand";
-import { SideRays } from "./SideRays";
+import { LightRays } from "./LightRays";
 
 export function AuthShell({
   title,
@@ -29,6 +30,8 @@ export function AuthShell({
   children: ReactNode;
   footer: ReactNode;
 }) {
+  const { resolvedTheme } = useTheme();
+
   return (
     <div className="relative isolate overflow-hidden">
       <div aria-hidden="true" className="hero-glow" />
@@ -36,18 +39,19 @@ export function AuthShell({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-70 transition-opacity duration-700"
       >
-        <SideRays
-          origin="top-left"
-          speed={1.5}
-          spread={2.0}
-          lightRayColor1="#0d6b5e"
-          lightRayColor2="#0284c7"
-          lightIntensity={1.1}
-          lightOpacity={0.35}
-          darkRayColor1="#2fc4ae"
-          darkRayColor2="#38bdf8"
-          darkIntensity={1.6}
-          darkOpacity={0.75}
+        <LightRays
+          raysOrigin="top-left"
+          raysColor={resolvedTheme === "dark" ? "#2fc4ae" : "#0d6b5e"}
+          raysSpeed={1.5}
+          lightSpread={2.0}
+          rayLength={3.0}
+          pulsating={false}
+          fadeDistance={1.8}
+          saturation={1.3}
+          followMouse={true}
+          mouseInfluence={0.15}
+          noiseAmount={0.05}
+          distortion={0.08}
           className="h-full w-full"
         />
       </div>

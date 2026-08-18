@@ -100,7 +100,7 @@ skyroute/
 │   └── admin/page.tsx              Administrator operations console
 ├── components/
 │   ├── AppProvider.tsx             Session context, storage initialization & cross-tab sync
-│   ├── SideRays.tsx                Theme-adaptive WebGL volumetric light ray effect
+│   ├── LightRays.tsx               Theme-adaptive WebGL volumetric light ray effect
 │   ├── LiveTicker.tsx              Real-time operational telemetry ticker
 │   ├── DestinationShowcase.tsx     Route explorer with destination photography & direct links
 │   ├── CabinShowcase.tsx           Interactive First, Business & Economy cabin explorer

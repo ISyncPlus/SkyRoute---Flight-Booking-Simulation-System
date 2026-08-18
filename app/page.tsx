@@ -5,13 +5,11 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { SearchForm } from "@/components/SearchForm";
 import { RouteArc } from "@/components/RouteArc";
-import Orb from "@/components/Orb";
 import { useApp } from "@/components/AppProvider";
 import { Alert, Reveal } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
 import FoldText from "@/components/FoldText";
-import { SideRays } from "@/components/SideRays";
-import ShaderLensBlur from "@/components/ui/shader-lens-blur";
+import { LightRays } from "@/components/LightRays";
 import { LiveTicker } from "@/components/LiveTicker";
 import { DestinationShowcase } from "@/components/DestinationShowcase";
 import { CabinShowcase } from "@/components/CabinShowcase";
@@ -93,40 +91,32 @@ export default function HomePage() {
   const { storageAvailable, user, isGuest } = useApp();
   const { resolvedTheme } = useTheme();
 
-  /* The orb shades itself against whatever it is sitting on, so it has to be
-     told. Literal values because the shader parses a hex string and cannot
-     resolve a CSS variable; these mirror `--canvas` in globals.css.
-     `resolvedTheme`, not `theme` — the latter is "system" until someone picks,
-     which would leave the orb lit for light mode on a dark screen. */
-  const orbBackground = resolvedTheme === "dark" ? "#000000" : "#f1f3f2";
 
   return (
-    <div>
+    <div className="relative">
+
       {/* ---------------- Hero Section ---------------- */}
       <section className="relative isolate overflow-hidden">
         <div aria-hidden="true" className="hero-glow" />
         
-        {/* Dynamic Light/Dark SideRays Effect */}
+        {/* Dynamic Light/Dark LightRays Effect */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-80 transition-opacity duration-700"
         >
-          <SideRays
-            origin="top-right"
-            speed={1.8}
-            spread={2.2}
-            saturation={1.4}
-            blend={0.7}
-            lightRayColor1="#0d6b5e"
-            lightRayColor2="#0284c7"
-            lightIntensity={1.2}
-            lightOpacity={0.4}
-            lightFalloff={2.2}
-            darkRayColor1="#2fc4ae"
-            darkRayColor2="#38bdf8"
-            darkIntensity={1.8}
-            darkOpacity={0.8}
-            darkFalloff={1.8}
+          <LightRays
+            raysOrigin="top-right"
+            raysColor={resolvedTheme === "dark" ? "#2fc4ae" : "#0d6b5e"}
+            raysSpeed={1.5}
+            lightSpread={2.2}
+            rayLength={3.2}
+            pulsating={false}
+            fadeDistance={1.8}
+            saturation={1.3}
+            followMouse={true}
+            mouseInfluence={0.15}
+            noiseAmount={0.05}
+            distortion={0.08}
             className="h-full w-full"
           />
         </div>
@@ -242,10 +232,6 @@ export default function HomePage() {
           {/* Right: Rich Photorealistic Aircraft Media Card with Interactive Shader Lens Blur */}
           <div className="card-glass relative overflow-hidden p-0 shadow-e3 group">
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-fill">
-              {/* Interactive Three.js WebGL Shader Lens Blur Background Layer */}
-              <div className="absolute inset-0 z-0 opacity-40 mix-blend-screen transition-opacity duration-700 group-hover:opacity-75">
-                <ShaderLensBlur />
-              </div>
 
               <Image
                 src="/images/hero-aircraft.jpg"
