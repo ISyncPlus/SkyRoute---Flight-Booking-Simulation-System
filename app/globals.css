@@ -44,6 +44,8 @@
   --accent-soft: #e2f2ef;
   --accent-ink: #095349;
   --on-accent: #ffffff;
+  --dot-grid-base: rgba(13, 107, 94, 0.25);
+  --dot-grid-active: #0d6b5e;
 
   /* Success sits at a distinctly warmer, yellower green than the accent —
      hue 128 against the accent's 172. Teal and green next to each other is
@@ -129,6 +131,8 @@
   --accent-soft: rgba(47, 196, 174, 0.16);
   --accent-ink: #6fdcca;
   --on-accent: #04231f;
+  --dot-grid-base: rgba(47, 196, 174, 0.28);
+  --dot-grid-active: #2fc4ae;
 
   --positive: #7bc44a;
   --positive-rgb: 123 196 74;

@@ -316,7 +316,7 @@ const DotGrid: React.FC<DotGridProps> = ({
         aria-hidden="true"
         className="absolute inset-0 block lg:hidden pointer-events-none"
         style={{
-          backgroundImage: `radial-gradient(${baseColor} ${radius}px, transparent ${radius}px)`,
+          backgroundImage: `radial-gradient(var(--dot-grid-base, ${baseColor}) ${radius}px, transparent ${radius}px)`,
           backgroundSize: `${step}px ${step}px`,
           backgroundPosition: 'center',
         }}

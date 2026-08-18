@@ -290,8 +290,8 @@ export default function HomePage() {
           <DotGrid
             dotSize={4}
             gap={24}
-            baseColor={resolvedTheme === "dark" ? "#162e2a" : "#d3e3e0"}
-            activeColor={resolvedTheme === "dark" ? "#2fc4ae" : "#0d6b5e"}
+            baseColor={resolvedTheme === "light" ? "#c8ded9" : "#1b3a33"}
+            activeColor={resolvedTheme === "light" ? "#0d6b5e" : "#2fc4ae"}
             proximity={140}
             shockRadius={220}
             shockStrength={4}
