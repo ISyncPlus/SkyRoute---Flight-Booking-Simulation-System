@@ -22,7 +22,7 @@ import { SeatMap } from "@/components/SeatMap";
 import { Alert, Field, Spinner, StepIndicator } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { airportLabel, CABIN_NAMES, formatDate, formatTime, isInternational } from "@/lib/format";
-import { calculateFare, daysUntil, formatMoney, type FareContext } from "@/lib/pricing";
+import { calculateFare, combineFares, daysUntil, formatMoney, type FareContext } from "@/lib/pricing";
 import { buildSeatMap, loadFactor, seatsInCabin } from "@/lib/seats";
 import {
   availableCabins,
@@ -32,7 +32,7 @@ import {
   listAllBookings,
 } from "@/lib/repository";
 import { isValidEmail, isValidPhone, validatePassenger, validatePayment } from "@/lib/validation";
-import type { Airport, CabinClass, Flight, Passenger, Seat } from "@/lib/types";
+import type { Airport, CabinClass, Flight, Passenger, Seat, TripType } from "@/lib/types";
 
 const STEPS = ["Select seats", "Passenger details", "Payment", "Confirmation"];
 
@@ -67,7 +67,18 @@ function BookingWizard() {
   const router = useRouter();
   const { ready, user, revision } = useApp();
 
-  const flightId = decodeURIComponent(params.flightId ?? "");
+  /* The route segment carries every flight of the journey, comma separated:
+     `/book/LOS-ABV-1` for one way, `/book/LOS-ABV-1,ABV-LOS-9` for a return.
+     A single id is just the one-element case, so old links keep working. */
+  const flightIds = useMemo(
+    () =>
+      decodeURIComponent(params.flightId ?? "")
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean),
+    [params.flightId],
+  );
+  const flightId = flightIds[0] ?? "";
   const adults = Math.max(1, Number(query.get("adults") ?? 1) || 1);
   const children = Math.max(0, Number(query.get("children") ?? 0) || 0);
   const infants = Math.max(0, Number(query.get("infants") ?? 0) || 0);
@@ -78,8 +89,11 @@ function BookingWizard() {
   const [asGuest, setAsGuest] = useState(false);
   /** Which way the wizard is travelling, so the step can enter from that side. */
   const [goingBack, setGoingBack] = useState(false);
-  const [seats, setSeats] = useState<Seat[]>([]);
-  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  /** Seat map and chosen seats per leg, index-aligned with `flights`. */
+  const [seatsByLeg, setSeatsByLeg] = useState<Seat[][]>([]);
+  const [selectedByLeg, setSelectedByLeg] = useState<string[][]>([]);
+  /** Which leg's cabin the seat step is currently showing. */
+  const [activeLeg, setActiveLeg] = useState(0);
   const [passengers, setPassengers] = useState<Omit<Passenger, "id">[]>(() => [
     ...Array.from({ length: adults }, () => emptyPassenger("adult")),
     ...Array.from({ length: children }, () => emptyPassenger("child")),
@@ -102,18 +116,35 @@ function BookingWizard() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const flight = useStored(() => getFlight(flightId), undefined as Flight | undefined, [flightId]);
+  /** Every flight of the journey. Undefined entries are dropped. */
+  const flights = useStored(
+    () => flightIds.map((id) => getFlight(id)).filter((entry): entry is Flight => Boolean(entry)),
+    [] as Flight[],
+    [flightIds.join(",")],
+  );
+  const flight = flights[0];
+  const multiLeg = flights.length > 1;
+
   const airports = useStored(listAirports, [] as Airport[]);
   const origin = airports.find((airport) => airport.code === flight?.originCode);
   const destination = airports.find((airport) => airport.code === flight?.destinationCode);
 
+  /* The cabin of whichever leg the seat step is showing — not of the first
+     flight. The aircraft can differ between the outbound and the return, so a
+     cabin fitted on one is not guaranteed on the other. */
   const cabin: CabinClass = useMemo(() => {
-    if (!flight) return "economy";
-    return availableCabins(flight).includes(requestedCabin) ? requestedCabin : "economy";
-  }, [flight, requestedCabin]);
+    const shown = flights[activeLeg] ?? flights[0];
+    if (!shown) return "economy";
+    return availableCabins(shown).includes(requestedCabin) ? requestedCabin : "economy";
+  }, [flights, activeLeg, requestedCabin]);
 
   const seatsNeeded = adults + children;
   const requirePassport = isInternational(origin, destination);
+
+  /* The search says what kind of journey this is; the number of flights is the
+     fallback when a link arrives without it. */
+  const tripType: TripType =
+    (query.get("trip") as TripType | null) ?? (flights.length > 1 ? "multi-city" : "one-way");
 
   // Prefill contact details from the signed-in account.
   useEffect(() => {
@@ -123,34 +154,66 @@ function BookingWizard() {
     }
   }, [user]);
 
-  // Recompute the seat map whenever storage changes (including from another tab).
+  // Recompute every leg's seat map whenever storage changes (including from
+  // another tab). One booking pass covers all legs.
   useEffect(() => {
-    if (!ready || !flight) return;
-    setSeats(buildSeatMap(flight, listAllBookings()));
-  }, [ready, flight, revision]);
+    if (!ready || flights.length === 0) return;
+    const all = listAllBookings();
+    setSeatsByLeg(flights.map((entry) => buildSeatMap(entry, all)));
+    setSelectedByLeg((current) =>
+      flights.map((_, index) => current[index] ?? []),
+    );
+  }, [ready, flights, revision]);
+
+  const seats = seatsByLeg[activeLeg] ?? [];
+  const selectedSeats = selectedByLeg[activeLeg] ?? [];
+  /** Every leg has its seats chosen, which is what gates leaving this step. */
+  const allLegsSeated =
+    flights.length > 0 &&
+    flights.every((_, index) => (selectedByLeg[index] ?? []).length === seatsNeeded);
+
+  /** Map a passenger index to its position in a leg's seat-selection array. */
+  function seatIndexFor(passengerIndex: number): number {
+    return passengers.slice(0, passengerIndex).filter((p) => p.type !== "infant").length;
+  }
 
   const fare = useMemo(() => {
-    if (!flight) return null;
-    const context: FareContext = {
-      baseFare: flight.baseFare,
-      cabin,
-      daysToDeparture: daysUntil(flight.departureTime),
-      load: loadFactor(seats, cabin),
-    };
-    const withSeats = passengers.map((passenger, index) => ({
-      type: passenger.type,
-      seatId: passenger.type === "infant" ? null : (selectedSeats[seatIndexFor(index)] ?? null),
-    }));
-    return calculateFare(context, withSeats, seats);
+    if (flights.length === 0) return null;
 
-    /** Map a passenger index to its position in the seat-selection array. */
-    function seatIndexFor(passengerIndex: number): number {
-      return passengers.slice(0, passengerIndex).filter((p) => p.type !== "infant").length;
-    }
-  }, [flight, cabin, seats, passengers, selectedSeats]);
+    // Each leg is quoted against its own demand and days-to-departure, then
+    // combined so the booking fee is charged once rather than per flight.
+    const perLeg = flights.map((entry, legIndex) => {
+      const legSeats = seatsByLeg[legIndex] ?? [];
+      const legCabin = availableCabins(entry).includes(requestedCabin) ? requestedCabin : "economy";
+      const chosen = selectedByLeg[legIndex] ?? [];
+
+      const context: FareContext = {
+        baseFare: entry.baseFare,
+        cabin: legCabin,
+        daysToDeparture: daysUntil(entry.departureTime),
+        load: loadFactor(legSeats, legCabin),
+      };
+      const withSeats = passengers.map((passenger, index) => ({
+        type: passenger.type,
+        seatId: passenger.type === "infant" ? null : (chosen[seatIndexFor(index)] ?? null),
+      }));
+      return calculateFare(context, withSeats, legSeats);
+    });
+
+    return combineFares(perLeg);
+  }, [flights, seatsByLeg, passengers, selectedByLeg, requestedCabin]);
+
+  /** Replace one leg's selection, leaving every other leg untouched. */
+  function setLegSeats(legIndex: number, next: (current: string[]) => string[]) {
+    setSelectedByLeg((current) => {
+      const copy = flights.map((_, index) => current[index] ?? []);
+      copy[legIndex] = next(copy[legIndex]);
+      return copy;
+    });
+  }
 
   function toggleSeat(seatId: string) {
-    setSelectedSeats((current) => {
+    setLegSeats(activeLeg, (current) => {
       if (current.includes(seatId)) return current.filter((id) => id !== seatId);
       if (current.length >= seatsNeeded) return current;
       return [...current, seatId];
@@ -158,9 +221,17 @@ function BookingWizard() {
   }
 
   /** Assign the first available seats automatically, keeping the party together. */
+  /** Fills every leg at once — nobody wants to press this per flight. */
   function autoAssignSeats() {
-    const available = seatsInCabin(seats, cabin).filter((seat) => seat.status === "available");
-    setSelectedSeats(available.slice(0, seatsNeeded).map((seat) => seat.id));
+    setSelectedByLeg(
+      flights.map((entry, legIndex) => {
+        const legCabin = availableCabins(entry).includes(requestedCabin) ? requestedCabin : "economy";
+        return seatsInCabin(seatsByLeg[legIndex] ?? [], legCabin)
+          .filter((seat) => seat.status === "available")
+          .slice(0, seatsNeeded)
+          .map((seat) => seat.id);
+      }),
+    );
   }
 
   function validatePassengerStep(): boolean {
@@ -185,8 +256,17 @@ function BookingWizard() {
 
   function goToStep(next: number) {
     setSubmitError(null);
-    if (next > 0 && selectedSeats.length !== seatsNeeded) {
-      setSubmitError(`Please select ${seatsNeeded} seat${seatsNeeded === 1 ? "" : "s"} before continuing.`);
+    if (next > 0 && !allLegsSeated) {
+      // Name the flight that is short, so a return trip does not just say
+      // "select seats" while the leg you already did looks complete.
+      const shortLeg = flights.findIndex(
+        (_, index) => (selectedByLeg[index] ?? []).length !== seatsNeeded,
+      );
+      const which = multiLeg && shortLeg >= 0 ? ` for flight ${shortLeg + 1}` : "";
+      setSubmitError(
+        `Please select ${seatsNeeded} seat${seatsNeeded === 1 ? "" : "s"}${which} before continuing.`,
+      );
+      if (shortLeg >= 0) setActiveLeg(shortLeg);
       return;
     }
     if (next > 1 && !validatePassengerStep()) {
@@ -213,18 +293,29 @@ function BookingWizard() {
     setSubmitting(true);
     setSubmitError(null);
 
-    // Attach the chosen seats to the fare-paying passengers, in order.
-    let seatCursor = 0;
-    const withSeats = passengers.map((passenger) => {
-      if (passenger.type === "infant") return { ...passenger, seatId: null };
-      const seatId = selectedSeats[seatCursor] ?? null;
-      seatCursor += 1;
-      return { ...passenger, seatId };
+    /* One leg per flight, each carrying its own seats positionally aligned
+       with `passengers` — an infant never takes one. */
+    const legs = flights.map((entry, legIndex) => {
+      const chosen = selectedByLeg[legIndex] ?? [];
+      let seatCursor = 0;
+      return {
+        flightId: entry.id,
+        cabin: availableCabins(entry).includes(requestedCabin) ? requestedCabin : ("economy" as CabinClass),
+        seatIds: passengers.map((passenger) => {
+          if (passenger.type === "infant") return null;
+          const seatId = chosen[seatCursor] ?? null;
+          seatCursor += 1;
+          return seatId;
+        }),
+      };
     });
 
+    // Kept for the passenger records themselves; seats live on the legs.
+    const withSeats = passengers.map((passenger) => ({ ...passenger, seatId: null }));
+
     const result = createBooking({
-      flightId: flight.id,
-      cabin,
+      legs,
+      tripType,
       // No account behind the booking when it was made as a guest; it will be
       // reachable only by its reference and surname.
       userId: user?.id ?? null,
@@ -246,8 +337,12 @@ function BookingWizard() {
       setSubmitError(result.error);
       // A seat clash means the map is stale - refresh it so the user can reselect.
       if (result.error.includes("no longer available")) {
-        setSeats(buildSeatMap(flight, listAllBookings()));
-        setSelectedSeats([]);
+        // A seat clash means every leg's map is stale, not just the one that
+        // lost the race — rebuild them all and start the seat step over.
+        const all = listAllBookings();
+        setSeatsByLeg(flights.map((entry) => buildSeatMap(entry, all)));
+        setSelectedByLeg(flights.map(() => []));
+        setActiveLeg(0);
         setGoingBack(true);
         setStep(0);
       }
@@ -433,6 +528,35 @@ function BookingWizard() {
           >
             {step === 0 && (
               <section aria-labelledby="seats-heading" className="card-lg">
+                {/* One cabin is shown at a time. The tick is what tells you a
+                    leg is already done, so a return trip cannot be left half
+                    seated without it being obvious which half. */}
+                {multiLeg && (
+                  <div
+                    role="tablist"
+                    aria-label="Flight to seat"
+                    className="segmented mb-5 flex max-w-full overflow-x-auto"
+                  >
+                    {flights.map((entry, index) => {
+                      const done = (selectedByLeg[index] ?? []).length === seatsNeeded;
+                      return (
+                        <button
+                          key={entry.id}
+                          type="button"
+                          role="tab"
+                          aria-selected={activeLeg === index}
+                          aria-pressed={activeLeg === index}
+                          onClick={() => setActiveLeg(index)}
+                          className="segment flex items-center gap-1.5 whitespace-nowrap"
+                        >
+                          {done && <Icon name="check" className="h-3.5 w-3.5 text-positive" />}
+                          {entry.originCode} → {entry.destinationCode}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <div className="mb-5 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div>
                     <h2 id="seats-heading" className="text-title-3 font-semibold text-ink">

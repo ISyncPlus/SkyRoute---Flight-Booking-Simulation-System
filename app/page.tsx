@@ -120,7 +120,7 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="container-wide grid items-center gap-12 pb-16 pt-8 sm:pt-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12 lg:pb-20 lg:pt-20">
+        <div className="container-wide grid items-center gap-8 pb-8 pt-4 sm:pt-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 lg:pb-12 lg:pt-8">
           <div className="hero-in flex flex-col items-center text-center lg:items-start lg:text-left">
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
               <span className="badge gap-1.5 border border-line bg-surface px-3 py-1.5 text-ink-2 shadow-e1">
@@ -139,7 +139,7 @@ export default function HomePage() {
               )}
             </div>
 
-            <h1 className="mt-6 max-w-[16ch] text-hero font-semibold text-ink mx-auto lg:mx-0 text-center lg:text-left">
+            <h1 className="mt-4 max-w-[16ch] text-hero font-semibold text-ink mx-auto lg:mx-0 text-center lg:text-left">
               <FoldText
                 text="The whole booking journey, end to end."
                 splitBy="word"
@@ -150,12 +150,12 @@ export default function HomePage() {
               />
             </h1>
 
-            <p className="mt-6 max-w-xl text-lead text-ink-2 mx-auto lg:mx-0 text-center lg:text-left">
+            <p className="mt-4 max-w-xl text-lead text-ink-2 mx-auto lg:mx-0 text-center lg:text-left">
               Search a live schedule, choose your seat on an interactive cabin map, watch fares respond to
               demand, and manage your trip end to end.
             </p>
 
-            <div className="mt-8 flex flex-col w-full sm:w-auto gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+            <div className="mt-6 flex flex-col w-full sm:w-auto gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
               {user ? (
                 <>
                   <a
@@ -213,7 +213,7 @@ export default function HomePage() {
             </div>
 
             {/* Quick Stats Metrics */}
-            <dl className="mt-10 grid w-full grid-cols-2 gap-4 border-t border-line pt-6 sm:grid-cols-4 sm:gap-x-8">
+            <dl className="mt-6 grid w-full grid-cols-2 gap-4 border-t border-line pt-5 sm:grid-cols-4 sm:gap-x-8">
               {STATS.map((stat) => (
                 <div key={stat.label} className="text-center lg:text-left">
                   <dt className="sr-only">{stat.label}</dt>
@@ -282,7 +282,7 @@ export default function HomePage() {
       <section
         id="search"
         aria-labelledby="search-heading"
-        className="container-wide scroll-mt-24 py-12 sm:py-16"
+        className="container-wide scroll-mt-24 py-8 sm:py-12"
       >
         {!storageAvailable && (
           <div className="mb-8">

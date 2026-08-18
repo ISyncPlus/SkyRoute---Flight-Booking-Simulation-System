@@ -208,9 +208,9 @@
     @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
   }
 
-  /* Vertical rhythm for marketing sections — room to breathe between ideas. */
+  /* Vertical rhythm for marketing sections — balanced modern spacing. */
   .section {
-    @apply py-16 sm:py-24;
+    @apply py-12 sm:py-16;
   }
 
   /* ---- Surfaces ---------------------------------------------------------
