@@ -11,7 +11,7 @@ import { useApp } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, Field, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { cancelBooking, findBookingByPnrAndSurname, getFlight, listAirports } from "@/lib/repository";
+import { cancelBooking, findBookingByPnrAndSurname, getFlight, listAirports, listFlights } from "@/lib/repository";
 import { calculateRefund, formatMoney, refundRate } from "@/lib/pricing";
 import { isValidPnr, PNR_LENGTH } from "@/lib/ids";
 import type { Booking } from "@/lib/types";
@@ -83,6 +83,7 @@ export default function ManageBookingPage() {
 
   const flight = booking ? getFlight(booking.flightId) : undefined;
   const airports = listAirports();
+  const allFlights = listFlights();
 
   const departed = flight ? new Date(flight.departureTime).getTime() <= Date.now() : false;
   /* A booking made while signed in stays the property of that account — the

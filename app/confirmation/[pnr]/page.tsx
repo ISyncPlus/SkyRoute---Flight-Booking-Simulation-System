@@ -6,7 +6,7 @@ import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { findBookingByPnr, getFlight, listAirports } from "@/lib/repository";
+import { findBookingByPnr, getFlight, listAirports, listFlights } from "@/lib/repository";
 import type { Airport, Booking, Flight } from "@/lib/types";
 
 /**
@@ -48,6 +48,8 @@ export default function ConfirmationPage() {
     [booking],
   );
   const airports = useStored(listAirports, [] as Airport[]);
+  // The whole schedule, so a multi-leg booking can resolve every one of its flights.
+  const allFlights = useStored(listFlights, [] as Flight[]);
 
   if (!ready) {
     return (

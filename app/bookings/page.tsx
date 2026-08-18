@@ -6,7 +6,7 @@ import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, EmptyState, Segmented, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { cancelBooking, getFlight, listAirports, listBookingsForUser } from "@/lib/repository";
+import { cancelBooking, getFlight, listAirports, listBookingsForUser, listFlights } from "@/lib/repository";
 import { calculateRefund, formatMoney, refundRate } from "@/lib/pricing";
 import { formatDate } from "@/lib/format";
 import type { Airport, Booking, Flight } from "@/lib/types";
@@ -25,6 +25,8 @@ export default function BookingsPage() {
   }, [ready, user, revision]);
 
   const airports = useStored(listAirports, [] as Airport[]);
+  // The whole schedule, so a multi-leg booking can resolve every one of its flights.
+  const allFlights = useStored(listFlights, [] as Flight[]);
 
   const enriched = useStored(
     () =>
