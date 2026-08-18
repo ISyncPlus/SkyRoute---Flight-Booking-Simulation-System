@@ -108,7 +108,7 @@ export function CabinShowcase() {
         </div>
       </Reveal>
 
-      {/* Apple-Style Glassmorphism Segmented Tab Controller */}
+      {/* Apple-Style Segmented Tab Controller (No Rings) */}
       <Reveal delay={60} className="mt-10 flex justify-center px-4">
         <div className="relative inline-flex flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-line bg-surface/60 p-1.5 shadow-e1 backdrop-blur-xl sm:flex-nowrap">
           {CABIN_TIERS.map((tier) => {
@@ -127,7 +127,7 @@ export function CabinShowcase() {
                   <motion.div
                     layoutId="activeCabinPill"
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                    className="absolute inset-0 rounded-xl border border-accent/40 bg-surface shadow-md shadow-black/10 backdrop-blur-md"
+                    className="absolute inset-0 rounded-xl bg-surface shadow-sm"
                     style={{ zIndex: -1 }}
                   />
                 )}
@@ -138,94 +138,80 @@ export function CabinShowcase() {
         </div>
       </Reveal>
 
-      {/* Cabin Details Showcase Card */}
+      {/* Cabin Details Showcase Card - Locked Dimensions */}
       <Reveal delay={120} className="mt-10">
-        <div className="card-glass grid overflow-hidden p-0 shadow-e2 lg:grid-cols-[1.1fr_0.9fr]">
-          {/* Left: High-Res Cabin Photography with Transitional Crossfade */}
-          <div className="relative min-h-[340px] w-full overflow-hidden bg-fill sm:min-h-[440px] lg:min-h-[520px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current.id}
-                initial={{ opacity: 0, scale: 1.04 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 h-full w-full"
-              >
-                <Image
-                  src={current.image}
-                  alt={current.name}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-black/70" />
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Floating Title & Badge Overlay */}
-            <div className="absolute bottom-6 left-6 right-6 z-10 text-white">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={current.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+        <div className="card-glass grid min-h-[560px] overflow-hidden p-0 shadow-e2 lg:grid-cols-[1.1fr_0.9fr]">
+          {/* Left: High-Res Cabin Photography with Stacked Absolute Crossfades */}
+          <div className="relative h-[360px] w-full overflow-hidden bg-fill sm:h-[440px] lg:h-full lg:min-h-[560px]">
+            {CABIN_TIERS.map((tier) => {
+              const active = tier.id === selectedCabin;
+              return (
+                <div
+                  key={tier.id}
+                  className={`absolute inset-0 h-full w-full transition-all duration-500 ease-in-out ${
+                    active ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-105 pointer-events-none"
+                  }`}
                 >
-                  <span className="badge border border-white/20 bg-white/20 text-white backdrop-blur-md">
-                    {current.badge}
-                  </span>
-                  <h3 className="mt-2 text-title-1 font-semibold text-white drop-shadow-md">
-                    {current.name}
-                  </h3>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                  <Image
+                    src={tier.image}
+                    alt={tier.name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    className="object-cover"
+                    priority={tier.id === "business"}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-black/70" />
+
+                  {/* Floating Title & Badge Overlay */}
+                  <div className="absolute bottom-6 left-6 right-6 z-10 text-white">
+                    <span className="badge border border-white/20 bg-white/20 text-white backdrop-blur-md">
+                      {tier.badge}
+                    </span>
+                    <h3 className="mt-2 text-title-1 font-semibold text-white drop-shadow-md">
+                      {tier.name}
+                    </h3>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Right: Cabin Features & Specifications with Fluid Crossfade */}
-          <div className="flex flex-col justify-between overflow-hidden p-6 sm:p-10 text-center sm:text-left items-center sm:items-stretch">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="flex h-full w-full flex-col justify-between"
-              >
-                <div>
-                  <h4 className="text-title-2 font-semibold text-ink">{current.headline}</h4>
-                  <p className="mt-3 text-callout text-ink-2">{current.description}</p>
+          {/* Right: Cabin Features & Specifications with Stable Dimensions */}
+          <div className="flex flex-col justify-between overflow-hidden p-6 sm:p-10 text-center sm:text-left items-center sm:items-stretch lg:min-h-[560px]">
+            <div className="flex h-full w-full flex-col justify-between">
+              <div>
+                <h4 className="text-title-2 font-semibold text-ink transition-opacity duration-300">
+                  {current.headline}
+                </h4>
+                <p className="mt-3 text-callout text-ink-2 transition-opacity duration-300">
+                  {current.description}
+                </p>
 
-                  {/* Feature Checklist */}
-                  <ul className="mt-8 space-y-3.5 text-left inline-block sm:block">
-                    {current.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-footnote text-ink">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
-                          <Icon name="check" size={12} />
-                        </span>
-                        <span className="font-medium text-ink-2">{feature.label}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Spec Matrix Grid */}
-                <div className="mt-8 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4 w-full">
-                  {current.specs.map((spec) => (
-                    <div key={spec.label} className="rounded-lg bg-surface/70 p-3 border border-line text-center sm:text-left shadow-sm">
-                      <dt className="text-micro uppercase text-ink-3">{spec.label}</dt>
-                      <dd className="mt-1 font-mono text-footnote font-semibold text-ink">
-                        {spec.value}
-                      </dd>
-                    </div>
+                {/* Feature Checklist */}
+                <ul className="mt-8 space-y-3.5 text-left inline-block sm:block">
+                  {current.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-footnote text-ink">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
+                        <Icon name="check" size={12} />
+                      </span>
+                      <span className="font-medium text-ink-2">{feature.label}</span>
+                    </li>
                   ))}
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                </ul>
+              </div>
+
+              {/* Spec Matrix Grid */}
+              <div className="mt-8 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4 w-full">
+                {current.specs.map((spec) => (
+                  <div key={spec.label} className="rounded-lg bg-surface/70 p-3 border border-line text-center sm:text-left shadow-sm">
+                    <dt className="text-micro uppercase text-ink-3">{spec.label}</dt>
+                    <dd className="mt-1 font-mono text-footnote font-semibold text-ink">
+                      {spec.value}
+                    </dd>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </Reveal>
