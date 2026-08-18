@@ -98,11 +98,11 @@ export function CabinShowcase() {
         <div className="text-center">
           <p className="overline text-accent">Elevated Onboard Comfort</p>
           <h2 id="cabin-heading" className="mt-2 text-display font-semibold text-ink">
-            Experience Our Simulated Cabins
+            Experience Our Fleet Cabins
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-lead text-ink-2">
-            Every aircraft in the simulation is modeled with realistic seat configurations, pitch
-            distances, and cabin tier pricing.
+            Every aircraft in our fleet is configured with generous seat pitches, ergonomic contours,
+            and tailored cabin class privileges.
           </p>
         </div>
       </Reveal>

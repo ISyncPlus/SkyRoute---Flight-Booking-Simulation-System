@@ -125,7 +125,7 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="badge gap-1.5 border border-line bg-surface px-3 py-1.5 text-ink-2 shadow-e1">
                 <Icon name="sparkles" className="h-3.5 w-3.5 text-accent" />
-                Flight Booking Simulation System
+                SkyRoute Airline System
               </span>
               <span className="badge border border-positive/30 bg-positive-soft px-2.5 py-1 text-positive-ink font-mono text-micro">
                 ● High-Fidelity 2026
@@ -144,9 +144,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-6 max-w-xl text-lead text-ink-2">
-              Search a live schedule, choose your seat on a real cabin map, watch the fare respond to
-              demand, and manage the trip long after you book. Every flight here is fictional. Every
-              step of the journey is not.
+              Search a live schedule, choose your seat on an interactive cabin map, watch fares respond to
+              demand, and manage your trip end to end.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -227,7 +226,7 @@ export default function HomePage() {
                   FLAGSHIP FLIGHT · LOS ⇄ LHR
                 </p>
                 <p className="mt-0.5 text-footnote font-medium text-white/95">
-                  Simulating altitude 38,000 ft · Cruising speed 903 km/h
+                  Cruising altitude 38,000 ft · Speed 903 km/h
                 </p>
               </div>
             </div>
@@ -303,13 +302,13 @@ export default function HomePage() {
       <section aria-labelledby="features-heading" className="container-wide section">
         <Reveal>
           <div className="text-center">
-            <p className="overline text-accent">Simulation Capabilities</p>
+            <p className="overline text-accent">Airline Capabilities</p>
             <h2 id="features-heading" className="mt-2 text-display font-semibold text-ink">
-              Everything an Airline Does, Simulated Honestly
+              Everything an Airline Does, Engineered with Precision
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-lead text-ink-2">
-              Designed as a comprehensive showcase of modern aviation logic, data modeling, and
-              interactive state management.
+              Designed as a comprehensive showcase of modern aviation operations, seat management,
+              and live fare calculation.
             </p>
           </div>
         </Reveal>

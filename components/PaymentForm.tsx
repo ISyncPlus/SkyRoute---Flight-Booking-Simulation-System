@@ -154,8 +154,8 @@ export function PaymentForm({
             className="mt-0.5 h-4 w-4"
           />
           <span>
-            <span className="font-medium text-ink">Simulate a declined payment.</span> Included so
-            the failure path can be demonstrated and tested: the booking will be rejected and no seats
+            <span className="font-medium text-ink">Test a declined payment.</span> Included so
+            the failure path can be demonstrated: the booking will be rejected and no seats
             will be held.
           </span>
         </label>

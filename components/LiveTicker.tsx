@@ -6,7 +6,7 @@ import { Icon } from "./icons";
 const TICKER_ITEMS = [
   {
     icon: "radar" as const,
-    label: "Active Simulated Flights",
+    label: "Active Flights",
     value: "42 in Air",
     detail: "Real-time vector tracking",
   },
@@ -14,7 +14,7 @@ const TICKER_ITEMS = [
     icon: "clock" as const,
     label: "On-Time Dispatch Rate",
     value: "98.7%",
-    detail: "Last 24h simulation",
+    detail: "Last 24h operations",
   },
   {
     icon: "seat" as const,
@@ -24,7 +24,7 @@ const TICKER_ITEMS = [
   },
   {
     icon: "shield" as const,
-    label: "Offline Data Engine",
+    label: "Data Engine",
     value: "100% Local",
     detail: "Browser-isolated storage",
   },
@@ -60,13 +60,13 @@ export function LiveTicker() {
   return (
     <div className="w-full border-y border-line bg-surface/80 py-3 backdrop-blur-md">
       <div className="container-wide flex flex-col items-center justify-between gap-3 text-caption md:flex-row">
-        {/* Left: Simulation Live Status Indicator */}
+        {/* Left: Operations Live Status Indicator */}
         <div className="flex items-center gap-2.5 font-medium text-ink">
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
           </span>
-          <span className="font-semibold text-accent-ink">SIMULATION LIVE</span>
+          <span className="font-semibold text-accent-ink">OPERATIONS LIVE</span>
           <span className="text-ink-3">|</span>
           <span className="font-mono text-xs text-ink-2">{tickerTime || "UTC 12:00:00"}</span>
         </div>

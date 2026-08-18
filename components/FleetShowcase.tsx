@@ -81,12 +81,12 @@ export function FleetShowcase() {
       <Reveal>
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div>
-            <p className="overline text-accent">Simulated Fleet Specifications</p>
+            <p className="overline text-accent">Commercial Fleet Specifications</p>
             <h2 id="fleet-heading" className="mt-2 text-display font-semibold text-ink">
               Engineered for Modern Aviation
             </h2>
             <p className="mt-3 max-w-2xl text-lead text-ink-2">
-              Our simulation accurately configures seat maps, cabin layouts, and pricing algorithms
+              Our fleet operates with optimized seat maps, cabin layouts, and dynamic fare yielding
               across four distinct commercial aircraft families.
             </p>
           </div>
@@ -134,7 +134,7 @@ export function FleetShowcase() {
 
               {/* Primary Routes */}
               <div className="mt-6">
-                <p className="text-footnote font-semibold text-ink">Scheduled Simulation Routes:</p>
+                <p className="text-footnote font-semibold text-ink">Scheduled Direct Routes:</p>
                 <div className="mt-2.5 flex flex-wrap gap-2">
                   {plane.primaryRoutes.map((route, i) => (
                     <span

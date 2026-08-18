@@ -11,14 +11,14 @@ interface FaqItem {
 
 const FAQS: FaqItem[] = [
   {
-    question: "Is this a real airline booking site or an academic simulation?",
+    question: "Is real money charged during booking?",
     answer:
-      "SkyRoute is a comprehensive academic flight booking simulation system. All schedules, flight numbers, aircraft types, fares, and ticket references are fictional. No real flights are operated, no actual money is charged, and simulated credit card numbers are validated offline without payment gateways.",
+      "No. SkyRoute operates as a self-contained system. All schedules, flight numbers, aircraft types, fares, and ticket references are securely managed locally. Payment cards are validated client-side without external payment gateway charges.",
   },
   {
     question: "How does SkyRoute persist bookings, schedules, and accounts?",
     answer:
-      "The entire application runs client-side using browser localStorage. When you first load SkyRoute, an initial seed schedule covering 21 days of departures across 16 airports is generated in memory and saved to your browser. Your bookings, registered accounts, and seat selections stay private and never leave your machine.",
+      "The entire application runs client-side using browser localStorage. When you first load SkyRoute, an initial schedule covering 21 days of departures across 16 airports is generated and saved to your browser. Your bookings, registered accounts, and seat selections stay private and never leave your machine.",
   },
   {
     question: "How is dynamic pricing calculated for each flight?",
@@ -26,14 +26,14 @@ const FAQS: FaqItem[] = [
       "Fares are calculated using a multi-factor revenue yield model based on base fare, advance purchase timeline (bookings made 30+ days ahead receive early-bird discounts while last-minute bookings surge by up to 50%), cabin load factor (as seats sell out, demand tiers trigger automatic price increases), cabin class multipliers, and seat selection tier fees.",
   },
   {
-    question: "Can I manage, modify, or cancel my simulated reservation?",
+    question: "Can I manage, modify, or cancel my reservation?",
     answer:
       "Yes. Using your 6-character PNR (Passenger Name Record) or by logging into your account, you can view your full itemized itinerary, baggage allowances, and cabin seat assignments. You can also cancel your flight with automated refund calculation determined by hours remaining until scheduled departure.",
   },
   {
     question: "What capabilities does the Administrator account offer?",
     answer:
-      "Logging in as the Administrator (admin@skyroute.sim) grants access to the Flight Operations Console. From there, you can add new flights to the schedule, edit departure/arrival timings, adjust base pricing, inspect global passenger reservations, and simulate flight cancellations or delays.",
+      "Logging in as the Administrator (admin@skyroute.sim) grants access to the Flight Operations Console. From there, you can add new flights to the schedule, edit departure/arrival timings, adjust base pricing, inspect global passenger reservations, and update flight schedules or status flags.",
   },
   {
     question: "How do I test with pre-seeded demonstration accounts?",
@@ -58,8 +58,8 @@ export function FaqSection() {
             Everything You Need to Know About SkyRoute
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-lead text-ink-2">
-            Answers to common questions regarding our offline simulation architecture, revenue
-            management algorithms, and data persistence.
+            Answers to common questions regarding booking policies, revenue management algorithms,
+            and local data persistence.
           </p>
         </div>
       </Reveal>

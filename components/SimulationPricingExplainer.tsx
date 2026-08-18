@@ -165,7 +165,7 @@ export function SimulationPricingExplainer() {
             <div>
               <div className="flex items-center justify-between border-b border-line pb-4">
                 <span className="text-footnote font-semibold uppercase tracking-wider text-ink-3">
-                  Simulated Fare Quote
+                  Live Fare Quote
                 </span>
                 <span className="badge bg-positive-soft text-positive-ink font-mono text-micro">
                   Real-time Yield
@@ -216,7 +216,7 @@ export function SimulationPricingExplainer() {
               <div className="flex items-baseline justify-between">
                 <div>
                   <span className="block text-micro uppercase tracking-wide text-ink-3">
-                    Total Simulated Price
+                    Total Price
                   </span>
                   <span className="font-mono text-title-1 font-semibold text-accent-ink">
                     {formatMoney(totalFare)}

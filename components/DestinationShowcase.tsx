@@ -85,7 +85,7 @@ export function DestinationShowcase() {
       <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
         <Reveal>
           <div>
-            <p className="overline text-accent">Simulated Global Network</p>
+            <p className="overline text-accent">Global Route Network</p>
             <h2 id="destinations-heading" className="mt-2 text-display font-semibold text-ink">
               Explore Popular Routes & Hubs
             </h2>

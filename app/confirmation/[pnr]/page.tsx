@@ -104,7 +104,7 @@ export default function ConfirmationPage() {
       </div>
 
       <p className="no-print mt-8 text-caption text-ink-3">
-        This is a simulated booking created for academic demonstration. It is not valid for travel.
+        This reservation is saved locally in your browser storage.
       </p>
     </div>
   );

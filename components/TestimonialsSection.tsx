@@ -38,13 +38,13 @@ export function TestimonialsSection() {
     <section aria-labelledby="testimonials-heading" className="container-wide section">
       <Reveal>
         <div className="text-center">
-          <p className="overline text-accent">Simulation Fidelity</p>
+          <p className="overline text-accent">Passenger Feedback</p>
           <h2 id="testimonials-heading" className="mt-2 text-display font-semibold text-ink">
-            Trusted by Aviation Enthusiasts & Researchers
+            Trusted by Frequent Flyers & Aviation Experts
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-lead text-ink-2">
-            Built to provide a rigorous, authentic simulation of airline operations, pricing mechanics,
-            and passenger reservation journeys.
+            Engineered to deliver a seamless flight booking journey, realistic cabin comfort, and
+            reliable scheduling.
           </p>
         </div>
       </Reveal>
