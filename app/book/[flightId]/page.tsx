@@ -310,30 +310,32 @@ function BookingWizard() {
           to the trip afterwards.
         </p>
 
-        <div className="mt-6 grid items-start gap-5 md:grid-cols-2">
+        <div className="mt-6 grid items-stretch gap-5 md:grid-cols-2">
           {/* Recommended path. Carries the accent, the badge and the filled
               button — three signals pointing the same way, so the eye lands
               here first without the other card being made to look broken. */}
-          <div className="card-lg relative border-accent/35 shadow-e2">
-            <span className="badge absolute right-6 top-6 gap-1.5 bg-accent-soft text-accent-ink">
-              <Icon name="sparkles" className="h-3.5 w-3.5" />
-              Recommended
-            </span>
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent-ink">
-              <Icon name="user" className="h-5 w-5" />
-            </span>
-            <h2 className="mt-4 text-title-3 font-semibold text-ink">With an account</h2>
-            <p className="mt-1.5 text-footnote text-ink-2">
-              One form now, and the trip is yours to manage from anywhere.
-            </p>
-            <ul className="mt-5 space-y-2.5">
-              {ACCOUNT_BENEFITS.map((benefit) => (
-                <li key={benefit} className="flex items-start gap-2.5 text-footnote text-ink-2">
-                  <Icon name="checkCircle" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  {benefit}
-                </li>
-              ))}
-            </ul>
+          <div className="card-lg relative flex h-full flex-col justify-between border-accent/35 shadow-e2">
+            <div>
+              <span className="badge absolute right-6 top-6 gap-1.5 bg-accent-soft text-accent-ink">
+                <Icon name="sparkles" className="h-3.5 w-3.5" />
+                Recommended
+              </span>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent-ink">
+                <Icon name="user" className="h-5 w-5" />
+              </span>
+              <h2 className="mt-4 text-title-3 font-semibold text-ink">With an account</h2>
+              <p className="mt-1.5 text-footnote text-ink-2">
+                One form now, and the trip is yours to manage from anywhere.
+              </p>
+              <ul className="mt-5 space-y-2.5">
+                {ACCOUNT_BENEFITS.map((benefit) => (
+                  <li key={benefit} className="flex items-start gap-2.5 text-footnote text-ink-2">
+                    <Icon name="checkCircle" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </div>
             <Link href="/register" className="btn-primary mt-6 w-full justify-center text-center">
               Get started
               <Icon name="arrowRight" className="h-4 w-4" />
@@ -342,22 +344,24 @@ function BookingWizard() {
 
           {/* Offered without hesitation or friction — but told plainly, since a
               guest's reference really is the only way back to the booking. */}
-          <div className="card-lg">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-fill text-ink-2">
-              <Icon name="ticket" className="h-5 w-5" />
-            </span>
-            <h2 className="mt-4 text-title-3 font-semibold text-ink">As a guest</h2>
-            <p className="mt-1.5 text-footnote text-ink-2">
-              Straight to seat selection. Nothing to set up.
-            </p>
-            <ul className="mt-5 space-y-2.5">
-              {GUEST_BENEFITS.map((benefit) => (
-                <li key={benefit} className="flex items-start gap-2.5 text-footnote text-ink-2">
-                  <Icon name="checkCircle" className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
-                  {benefit}
-                </li>
-              ))}
-            </ul>
+          <div className="card-lg flex h-full flex-col justify-between">
+            <div>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-fill text-ink-2">
+                <Icon name="ticket" className="h-5 w-5" />
+              </span>
+              <h2 className="mt-4 text-title-3 font-semibold text-ink">As a guest</h2>
+              <p className="mt-1.5 text-footnote text-ink-2">
+                Straight to seat selection. Nothing to set up.
+              </p>
+              <ul className="mt-5 space-y-2.5">
+                {GUEST_BENEFITS.map((benefit) => (
+                  <li key={benefit} className="flex items-start gap-2.5 text-footnote text-ink-2">
+                    <Icon name="checkCircle" className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </div>
             <button
               type="button"
               onClick={() => setAsGuest(true)}
