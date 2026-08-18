@@ -60,21 +60,21 @@ function DemoAccount({
   admin?: boolean;
 }) {
   return (
-    <div className="card">
-      <p className="flex items-center gap-2 text-footnote font-semibold text-ink">
+    <div className="card text-center sm:text-left">
+      <p className="flex items-center justify-center sm:justify-start gap-2 text-footnote font-semibold text-ink">
         <Icon name={admin ? "shield" : "user"} className="h-4 w-4 text-ink-3" />
         {role}
         {admin && <span className="badge bg-warn-soft text-warn-ink">Admin</span>}
       </p>
       <dl className="mt-4 space-y-2 text-footnote">
-        <div className="flex flex-wrap gap-x-2">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2">
           <dt className="flex items-center gap-1.5 text-ink-3">
             <Icon name="mail" className="h-3.5 w-3.5" />
             Email
           </dt>
           <dd className="font-mono text-ink-2">{email}</dd>
         </div>
-        <div className="flex flex-wrap gap-x-2">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2">
           <dt className="flex items-center gap-1.5 text-ink-3">
             <Icon name="lock" className="h-3.5 w-3.5" />
             Password
@@ -121,8 +121,8 @@ export default function HomePage() {
         </div>
 
         <div className="container-wide grid items-center gap-12 pb-16 pt-8 sm:pt-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12 lg:pb-20 lg:pt-20">
-          <div className="hero-in">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="hero-in flex flex-col items-center text-center lg:items-start lg:text-left">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
               <span className="badge gap-1.5 border border-line bg-surface px-3 py-1.5 text-ink-2 shadow-e1">
                 <Icon name="sparkles" className="h-3.5 w-3.5 text-accent" />
                 SkyRoute Airline System
@@ -132,7 +132,7 @@ export default function HomePage() {
               </span>
             </div>
 
-            <h1 className="mt-6 max-w-[16ch] text-hero font-semibold text-ink">
+            <h1 className="mt-6 max-w-[16ch] text-hero font-semibold text-ink mx-auto lg:mx-0 text-center lg:text-left">
               <FoldText
                 text="The whole booking journey, end to end."
                 splitBy="word"
@@ -143,12 +143,12 @@ export default function HomePage() {
               />
             </h1>
 
-            <p className="mt-6 max-w-xl text-lead text-ink-2">
+            <p className="mt-6 max-w-xl text-lead text-ink-2 mx-auto lg:mx-0 text-center lg:text-left">
               Search a live schedule, choose your seat on an interactive cabin map, watch fares respond to
               demand, and manage your trip end to end.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col w-full sm:w-auto gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
               {user ? (
                 <>
                   <a
@@ -187,9 +187,9 @@ export default function HomePage() {
             </div>
 
             {/* Quick Stats Metrics */}
-            <dl className="mt-10 grid grid-cols-2 gap-4 border-t border-line pt-6 sm:grid-cols-4 sm:gap-x-8">
+            <dl className="mt-10 grid w-full grid-cols-2 gap-4 border-t border-line pt-6 sm:grid-cols-4 sm:gap-x-8">
               {STATS.map((stat) => (
-                <div key={stat.label}>
+                <div key={stat.label} className="text-center lg:text-left">
                   <dt className="sr-only">{stat.label}</dt>
                   <dd>
                     <span className="tabular block text-title-2 font-semibold text-ink sm:text-title-1">
@@ -234,7 +234,7 @@ export default function HomePage() {
             {/* Route Arc Sub-panel */}
             <div className="p-5 sm:p-6 bg-surface/70 backdrop-blur-md">
               <RouteArc from="LOS" to="ABV" className="h-auto w-full" />
-              <div className="mt-4 flex items-center justify-between text-footnote text-ink-2">
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row items-center justify-between text-footnote text-ink-2">
                 <span className="flex items-center gap-1.5 font-mono text-ink">
                   LOS (Lagos)
                   <Icon name="arrowRight" className="h-3.5 w-3.5 text-accent" />
@@ -316,7 +316,7 @@ export default function HomePage() {
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((feature, index) => (
             <Reveal key={feature.title} delay={index * 80}>
-              <div className="card h-full transition-all hover:shadow-e2">
+              <div className="card flex h-full flex-col items-center text-center sm:items-start sm:text-left transition-all hover:shadow-e2">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent-ink">
                   <Icon name={feature.icon} className="h-5 w-5" />
                 </span>
@@ -369,15 +369,15 @@ export default function HomePage() {
           </div>
 
           <Reveal delay={120}>
-            <div className="card-glass mt-12 flex flex-col items-start gap-6 p-6 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
+            <div className="card-glass mt-12 flex flex-col items-center text-center gap-6 p-6 sm:p-12 lg:flex-row lg:items-center lg:justify-between lg:text-left">
               <div>
                 <h3 className="text-title-2 font-semibold text-ink">Ready to hold a seat?</h3>
-                <p className="mt-2.5 max-w-lg text-callout text-ink-2">
+                <p className="mx-auto lg:mx-0 mt-2.5 max-w-lg text-callout text-ink-2">
                   Creating an account takes one form and never leaves your browser. Your details are
                   stored securely in localStorage and sent nowhere.
                 </p>
               </div>
-              <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row">
+              <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row justify-center">
                 <Link
                   href="/register"
                   className="btn-primary btn-lg w-full sm:w-auto text-center justify-center"

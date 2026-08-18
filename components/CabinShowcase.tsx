@@ -108,15 +108,19 @@ export function CabinShowcase() {
       </Reveal>
 
       {/* Segmented Tier Switcher */}
-      <Reveal delay={60} className="mt-10 flex justify-center">
-        <div className="segmented inline-flex p-1.5 shadow-sm">
-          {CABIN_TIERS.map((tier) => (
+      <Reveal delay={60} className="mt-10 flex justify-center px-4">
+        <div className="segmented grid w-full max-w-md grid-cols-2 gap-1.5 p-1.5 shadow-sm sm:inline-flex sm:w-auto sm:flex-row sm:gap-1">
+          {CABIN_TIERS.map((tier, idx) => (
             <button
               key={tier.id}
               type="button"
               onClick={() => setSelectedCabin(tier.id)}
               aria-pressed={selectedCabin === tier.id}
-              className="segment px-5 py-2.5 text-callout font-medium"
+              className={`segment px-3.5 py-2.5 text-callout font-medium text-center transition-all ${
+                idx === 2
+                  ? "col-span-2 justify-self-center w-auto px-6 sm:col-auto sm:justify-self-auto sm:w-auto sm:px-5"
+                  : "w-full sm:w-auto sm:px-5"
+              }`}
             >
               {tier.name}
             </button>
@@ -149,13 +153,13 @@ export function CabinShowcase() {
           </div>
 
           {/* Right: Cabin Features & Specifications */}
-          <div className="flex flex-col justify-between p-6 sm:p-10">
-            <div>
+          <div className="flex flex-col justify-between p-6 sm:p-10 text-center sm:text-left items-center sm:items-stretch">
+            <div className="w-full">
               <h4 className="text-title-2 font-semibold text-ink">{current.headline}</h4>
               <p className="mt-3 text-callout text-ink-2">{current.description}</p>
 
               {/* Feature Checklist */}
-              <ul className="mt-8 space-y-3.5">
+              <ul className="mt-8 space-y-3.5 text-left inline-block sm:block">
                 {current.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-footnote text-ink">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
@@ -168,9 +172,9 @@ export function CabinShowcase() {
             </div>
 
             {/* Spec Matrix Grid */}
-            <div className="mt-8 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4">
+            <div className="mt-8 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4 w-full">
               {current.specs.map((spec) => (
-                <div key={spec.label} className="rounded-lg bg-surface/70 p-3 border border-line">
+                <div key={spec.label} className="rounded-lg bg-surface/70 p-3 border border-line text-center sm:text-left">
                   <dt className="text-micro uppercase text-ink-3">{spec.label}</dt>
                   <dd className="mt-1 font-mono text-footnote font-semibold text-ink">
                     {spec.value}

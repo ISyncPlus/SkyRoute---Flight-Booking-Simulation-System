@@ -86,21 +86,21 @@ export function DestinationShowcase() {
 
   return (
     <section aria-labelledby="destinations-heading" className="container-wide section">
-      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+      <div className="flex flex-col items-center text-center justify-between gap-6 md:flex-row md:items-end md:text-left">
         <Reveal>
           <div>
             <p className="overline text-accent">Global Route Network</p>
             <h2 id="destinations-heading" className="mt-2 text-display font-semibold text-ink">
               Explore Popular Routes & Hubs
             </h2>
-            <p className="mt-3 max-w-2xl text-lead text-ink-2">
+            <p className="mx-auto md:mx-0 mt-3 max-w-2xl text-lead text-ink-2">
               From high-density regional shuttles to intercontinental long-haul flagships. Select any
               destination to experience dynamic pricing across scheduled dates.
             </p>
           </div>
         </Reveal>
-        <Reveal delay={80}>
-          <Link href="/search" className="btn-secondary whitespace-nowrap">
+        <Reveal delay={80} className="w-full md:w-auto flex justify-center md:justify-end">
+          <Link href="/search" className="btn-secondary w-full sm:w-auto text-center justify-center whitespace-nowrap">
             <Icon name="search" className="h-4 w-4 text-accent" />
             Browse all 16 airports
           </Link>

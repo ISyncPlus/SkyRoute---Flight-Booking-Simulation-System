@@ -215,11 +215,11 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
       </div>
 
       <div className="mt-6 flex flex-col gap-4 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-md text-caption text-ink-3">
+        <p className="max-w-md text-caption text-ink-3 text-center sm:text-left">
           Children are 2–11 years; infants under 2 travel on an adult&apos;s lap and are not
           allocated a seat.
         </p>
-        <button type="submit" className="btn-primary w-full sm:w-auto sm:px-7">
+        <button type="submit" className="btn-primary w-full sm:w-auto sm:px-7 justify-center">
           <Icon name="search" className="h-[1.15rem] w-[1.15rem]" />
           Search flights
         </button>

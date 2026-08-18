@@ -52,10 +52,10 @@ export function TestimonialsSection() {
       <div className="mt-12 grid gap-6 md:grid-cols-3">
         {TESTIMONIALS.map((t, idx) => (
           <Reveal key={t.name} delay={idx * 80}>
-            <div className="card flex h-full flex-col justify-between p-6 sm:p-8 transition-all hover:shadow-e2">
-              <div>
+            <div className="card flex h-full flex-col justify-between p-6 sm:p-8 transition-all hover:shadow-e2 text-center sm:text-left items-center sm:items-stretch">
+              <div className="flex flex-col items-center sm:items-start w-full">
                 {/* Rating stars */}
-                <div className="flex items-center gap-1 text-warn">
+                <div className="flex items-center justify-center sm:justify-start gap-1 text-warn">
                   {[...Array(t.rating)].map((_, i) => (
                     <Icon key={i} name="sparkles" className="h-4 w-4 fill-current text-warn" />
                   ))}
@@ -71,7 +71,7 @@ export function TestimonialsSection() {
               </div>
 
               {/* User Identity */}
-              <div className="mt-8 flex items-center gap-3 border-t border-line pt-4">
+              <div className="mt-8 flex w-full items-center justify-center sm:justify-start gap-3 border-t border-line pt-4 text-left">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-footnote font-semibold text-on-accent">
                   {t.avatar}
                 </span>

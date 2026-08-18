@@ -55,7 +55,7 @@ export function SimulationPricingExplainer() {
         <div className="card-glass grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr]">
           {/* Controls Panel */}
           <div className="space-y-6">
-            <h3 className="text-title-2 font-semibold text-ink">
+            <h3 className="text-title-2 font-semibold text-ink text-center sm:text-left">
               Interactive Yield Calculator
             </h3>
 

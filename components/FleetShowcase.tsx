@@ -79,13 +79,13 @@ export function FleetShowcase() {
   return (
     <section aria-labelledby="fleet-heading" className="container-wide section">
       <Reveal>
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+        <div className="flex flex-col items-center text-center justify-between gap-6 md:flex-row md:items-end md:text-left">
           <div>
             <p className="overline text-accent">Commercial Fleet Specifications</p>
             <h2 id="fleet-heading" className="mt-2 text-display font-semibold text-ink">
               Engineered for Modern Aviation
             </h2>
-            <p className="mt-3 max-w-2xl text-lead text-ink-2">
+            <p className="mx-auto md:mx-0 mt-3 max-w-2xl text-lead text-ink-2">
               Our fleet operates with optimized seat maps, cabin layouts, and dynamic fare yielding
               across four distinct commercial aircraft families.
             </p>
@@ -102,7 +102,7 @@ export function FleetShowcase() {
               type="button"
               onClick={() => setActiveAircraft(f.id)}
               aria-pressed={activeAircraft === f.id}
-              className={`pressable flex flex-col items-start rounded-xl border p-4 text-left transition-all ${
+              className={`pressable flex flex-col items-center text-center sm:items-start sm:text-left rounded-xl border p-4 transition-all ${
                 activeAircraft === f.id
                   ? "border-accent bg-accent/5 shadow-e1 ring-1 ring-accent"
                   : "border-line bg-surface hover:border-line-strong"
@@ -122,8 +122,8 @@ export function FleetShowcase() {
       <Reveal delay={120} className="mt-8">
         <div className="card-glass p-6 sm:p-10">
           <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
                 <h3 className="text-title-1 font-semibold text-ink">{plane.name}</h3>
                 <span className="badge border border-line bg-surface text-ink-2 font-medium">
                   {plane.category}
@@ -133,9 +133,9 @@ export function FleetShowcase() {
               <p className="mt-4 text-lead text-ink-2">{plane.description}</p>
 
               {/* Primary Routes */}
-              <div className="mt-6">
+              <div className="mt-6 w-full">
                 <p className="text-footnote font-semibold text-ink">Scheduled Direct Routes:</p>
-                <div className="mt-2.5 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap justify-center lg:justify-start gap-2">
                   {plane.primaryRoutes.map((route, i) => (
                     <span
                       key={i}
