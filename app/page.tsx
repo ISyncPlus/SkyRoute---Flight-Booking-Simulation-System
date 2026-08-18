@@ -280,13 +280,9 @@ export default function HomePage() {
       {/* ---------------- Live Telemetry Ticker ---------------- */}
       <LiveTicker />
 
-      {/* ---------------- Flight Search Section with DotGrid ---------------- */}
-      <section
-        id="search"
-        aria-labelledby="search-heading"
-        className="relative isolate overflow-hidden scroll-mt-24 py-10 sm:py-14"
-      >
-        {/* Interactive Theme-Aware Physics DotGrid Background */}
+      {/* ---------------- Lower Page Wrapper with Continuous Interactive DotGrid Background ---------------- */}
+      <div className="relative isolate overflow-hidden">
+        {/* Interactive Theme-Aware Physics DotGrid Background Layer */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-60 dark:opacity-75 transition-opacity duration-700"
@@ -303,7 +299,12 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="container-wide">
+        {/* ---------------- Flight Search Section ---------------- */}
+        <section
+          id="search"
+          aria-labelledby="search-heading"
+          className="container-wide scroll-mt-24 py-10 sm:py-14"
+        >
           {!storageAvailable && (
             <div className="mb-8">
               <Alert tone="error" title="Browser storage is unavailable">
@@ -330,131 +331,131 @@ export default function HomePage() {
           <Reveal delay={80} className="mt-10">
             <SearchForm />
           </Reveal>
-        </div>
-      </section>
+        </section>
 
-      {/* ---------------- Destination & Route Explorer ---------------- */}
-      <DestinationShowcase />
+        {/* ---------------- Destination & Route Explorer ---------------- */}
+        <DestinationShowcase />
 
-      {/* ---------------- Cabin Class Experience ---------------- */}
-      <CabinShowcase />
+        {/* ---------------- Cabin Class Experience ---------------- */}
+        <CabinShowcase />
 
-      {/* ---------------- Fleet & Aircraft Specifications ---------------- */}
-      <FleetShowcase />
+        {/* ---------------- Fleet & Aircraft Specifications ---------------- */}
+        <FleetShowcase />
 
-      {/* ---------------- Dynamic Pricing Architecture ---------------- */}
-      <SimulationPricingExplainer />
+        {/* ---------------- Dynamic Pricing Architecture ---------------- */}
+        <SimulationPricingExplainer />
 
-      {/* ---------------- Architecture & Capabilities ---------------- */}
-      <section aria-labelledby="features-heading" className="container-wide section">
-        <Reveal>
-          <div className="text-center">
-            <p className="overline text-accent">Airline Capabilities</p>
-            <h2 id="features-heading" className="mt-2 text-display font-semibold text-ink">
-              Everything an Airline Does, Engineered with Precision
-            </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-lead text-ink-2">
-              Designed as a comprehensive showcase of modern aviation operations, seat management,
-              and live fare calculation.
-            </p>
-          </div>
-        </Reveal>
-
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((feature, index) => (
-            <Reveal key={feature.title} delay={index * 80}>
-              <div className="card flex h-full flex-col items-center text-center sm:items-start sm:text-left transition-all hover:shadow-e2">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent-ink">
-                  <Icon name={feature.icon} className="h-5 w-5" />
-                </span>
-                <h3 className="mt-5 text-headline font-semibold text-ink">{feature.title}</h3>
-                <p className="mt-2.5 text-footnote text-ink-2">{feature.body}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* ---------------- Testimonials & Social Proof ---------------- */}
-      <TestimonialsSection />
-
-      {/* ---------------- Frequently Asked Questions ---------------- */}
-      <FaqSection />
-
-      {/* ---------------- Demonstration Accounts & Final Call To Action ---------------- */}
-      {!user && (
-        <section aria-labelledby="demo-heading" className="container-wide pb-16 sm:pb-24">
+        {/* ---------------- Architecture & Capabilities ---------------- */}
+        <section aria-labelledby="features-heading" className="container-wide section">
           <Reveal>
             <div className="text-center">
-              <p className="overline text-accent">Instant Testing Credentials</p>
-              <h2 id="demo-heading" className="mt-2 text-title-1 font-semibold text-ink">
-                Prefer not to sign up? Borrow an account.
+              <p className="overline text-accent">Airline Capabilities</p>
+              <h2 id="features-heading" className="mt-2 text-display font-semibold text-ink">
+                Everything an Airline Does, Engineered with Precision
               </h2>
-              <p className="mx-auto mt-3 max-w-xl text-callout text-ink-2">
-                Both demo roles are pre-seeded into your browser on first launch. The administrator can
-                manage the global schedule, modify timings, and inspect passenger manifests.
+              <p className="mx-auto mt-3 max-w-2xl text-lead text-ink-2">
+                Designed as a comprehensive showcase of modern aviation operations, seat management,
+                and live fare calculation.
               </p>
             </div>
           </Reveal>
 
-          <div className="mx-auto mt-8 grid max-w-3xl gap-5 sm:grid-cols-2">
-            <Reveal>
-              <DemoAccount
-                role="Customer"
-                email={DEMO_CUSTOMER.email}
-                password={DEMO_CUSTOMER.password}
-              />
-            </Reveal>
-            <Reveal delay={80}>
-              <DemoAccount
-                role="Administrator"
-                email={DEMO_ADMIN.email}
-                password={DEMO_ADMIN.password}
-                admin
-              />
-            </Reveal>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {FEATURES.map((feature, index) => (
+              <Reveal key={feature.title} delay={index * 80}>
+                <div className="card flex h-full flex-col items-center text-center sm:items-start sm:text-left transition-all hover:shadow-e2">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent-ink">
+                    <Icon name={feature.icon} className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-5 text-headline font-semibold text-ink">{feature.title}</h3>
+                  <p className="mt-2.5 text-footnote text-ink-2">{feature.body}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
+        </section>
 
-          <Reveal delay={120}>
-            <div className="card-glass mt-12 flex flex-col items-center text-center gap-6 p-6 sm:p-12 lg:flex-row lg:items-center lg:justify-between lg:text-left">
-              <div>
-                {isGuest && (
-                  <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
-                    <span className="badge bg-accent-soft text-accent-ink">
-                      <Icon name="ticket" className="h-3.5 w-3.5" />
-                      Guest Mode Active
-                    </span>
-                  </div>
-                )}
-                <h3 className="text-title-2 font-semibold text-ink">
-                  {isGuest ? "Ready to book your flight?" : "Ready to hold a seat?"}
-                </h3>
-                <p className="mx-auto lg:mx-0 mt-2.5 max-w-lg text-callout text-ink-2">
-                  {isGuest
-                    ? "You are currently browsing as a guest. You can search live availability, select seats, and complete your reservation directly. To keep all your itineraries in one place, create a permanent account anytime."
-                    : "You can book as a guest without an account at all. Setting one up takes a single form, keeps every trip in one place, and never leaves your browser."}
+        {/* ---------------- Testimonials & Social Proof ---------------- */}
+        <TestimonialsSection />
+
+        {/* ---------------- Frequently Asked Questions ---------------- */}
+        <FaqSection />
+
+        {/* ---------------- Demonstration Accounts & Final Call To Action ---------------- */}
+        {!user && (
+          <section aria-labelledby="demo-heading" className="container-wide pb-16 sm:pb-24">
+            <Reveal>
+              <div className="text-center">
+                <p className="overline text-accent">Instant Testing Credentials</p>
+                <h2 id="demo-heading" className="mt-2 text-title-1 font-semibold text-ink">
+                  Prefer not to sign up? Borrow an account.
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl text-callout text-ink-2">
+                  Both demo roles are pre-seeded into your browser on first launch. The administrator can
+                  manage the global schedule, modify timings, and inspect passenger manifests.
                 </p>
               </div>
-              <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row justify-center">
-                <a
-                  href="#search"
-                  className="btn-primary btn-lg w-full sm:w-auto text-center justify-center"
-                >
-                  <Icon name="search" className="h-5 w-5" />
-                  {isGuest ? "Book as guest now" : "Search flights"}
-                </a>
-                <Link
-                  href="/register"
-                  className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center"
-                >
-                  {isGuest ? "Create permanent account" : "Get started"}
-                  <Icon name="arrowRight" className="h-5 w-5" />
-                </Link>
-              </div>
+            </Reveal>
+
+            <div className="mx-auto mt-8 grid max-w-3xl gap-5 sm:grid-cols-2">
+              <Reveal>
+                <DemoAccount
+                  role="Customer"
+                  email={DEMO_CUSTOMER.email}
+                  password={DEMO_CUSTOMER.password}
+                />
+              </Reveal>
+              <Reveal delay={80}>
+                <DemoAccount
+                  role="Administrator"
+                  email={DEMO_ADMIN.email}
+                  password={DEMO_ADMIN.password}
+                  admin
+                />
+              </Reveal>
             </div>
-          </Reveal>
-        </section>
-      )}
+
+            <Reveal delay={120}>
+              <div className="card-glass mt-12 flex flex-col items-center text-center gap-6 p-6 sm:p-12 lg:flex-row lg:items-center lg:justify-between lg:text-left">
+                <div>
+                  {isGuest && (
+                    <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+                      <span className="badge bg-accent-soft text-accent-ink">
+                        <Icon name="ticket" className="h-3.5 w-3.5" />
+                        Guest Mode Active
+                      </span>
+                    </div>
+                  )}
+                  <h3 className="text-title-2 font-semibold text-ink">
+                    {isGuest ? "Ready to book your flight?" : "Ready to hold a seat?"}
+                  </h3>
+                  <p className="mx-auto lg:mx-0 mt-2.5 max-w-lg text-callout text-ink-2">
+                    {isGuest
+                      ? "You are currently browsing as a guest. You can search live availability, select seats, and complete your reservation directly. To keep all your itineraries in one place, create a permanent account anytime."
+                      : "You can book as a guest without an account at all. Setting one up takes a single form, keeps every trip in one place, and never leaves your browser."}
+                  </p>
+                </div>
+                <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row justify-center">
+                  <a
+                    href="#search"
+                    className="btn-primary btn-lg w-full sm:w-auto text-center justify-center"
+                  >
+                    <Icon name="search" className="h-5 w-5" />
+                    {isGuest ? "Book as guest now" : "Search flights"}
+                  </a>
+                  <Link
+                    href="/register"
+                    className="btn-secondary btn-lg w-full sm:w-auto text-center justify-center"
+                  >
+                    {isGuest ? "Create permanent account" : "Get started"}
+                    <Icon name="arrowRight" className="h-5 w-5" />
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
