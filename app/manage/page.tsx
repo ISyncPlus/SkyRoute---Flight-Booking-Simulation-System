@@ -11,6 +11,7 @@ import { useApp } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, Field, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { api } from "@/lib/api";
 import { cancelBooking, findBookingByPnrAndSurname, getFlight, listAirports, listFlights } from "@/lib/repository";
 import { calculateRefund, formatMoney, refundRate } from "@/lib/pricing";
 import { isValidPnr, PNR_LENGTH } from "@/lib/ids";
@@ -25,8 +26,9 @@ export default function ManageBookingPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const nextErrors: Record<string, string> = {};
 
@@ -39,20 +41,51 @@ export default function ManageBookingPage() {
     setBooking(null);
     if (Object.keys(nextErrors).length > 0) return;
 
-    const found = findBookingByPnrAndSurname(pnr, surname);
+    setLoading(true);
     setConfirming(false);
     setMessage(null);
+
+    try {
+      const apiRes = await api.bookings.lookup(pnr.trim().toUpperCase(), surname.trim());
+      if (apiRes.ok && apiRes.data.booking) {
+        setBooking(apiRes.data.booking);
+        setLoading(false);
+        return;
+      }
+      if (!apiRes.ok && apiRes.status === 404) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
+    const found = findBookingByPnrAndSurname(pnr, surname);
+    setLoading(false);
     if (!found) setNotFound(true);
     else setBooking(found);
   }
 
-  function handleCancel() {
+  async function handleCancel() {
     if (!booking) return;
 
-    /* Signed in and it is your booking? Cancel as the account. Otherwise fall
-       back to the guest route, where the surname just typed into the form is
-       the proof — and which the repository will refuse for any booking that
-       belongs to an account. */
+    try {
+      const apiRes = await api.bookings.cancel(booking.pnr);
+      if (apiRes.ok && apiRes.data.booking) {
+        setBooking(apiRes.data.booking);
+        setMessage({
+          tone: "success",
+          text: `Booking ${booking.pnr} was cancelled. A refund of ${formatMoney(apiRes.data.refund)} will be returned to the original payment method.`,
+        });
+        refresh();
+        setConfirming(false);
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
     const asAccount = user && booking.userId === user.id;
     const result = cancelBooking(
       booking.pnr,
@@ -72,6 +105,7 @@ export default function ManageBookingPage() {
 
     setConfirming(false);
   }
+
 
   if (!ready) {
     return (

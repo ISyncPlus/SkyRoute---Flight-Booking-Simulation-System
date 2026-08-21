@@ -11,6 +11,7 @@
  */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { api } from "@/lib/api";
 import {
   ensureSeeded,
   getSession,
@@ -70,6 +71,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await ensureSeeded();
       if (cancelled) return;
 
+      // Try checking active session with backend API
+      try {
+        const meRes = await api.auth.getMe();
+        if (!cancelled && meRes.ok && meRes.data.user) {
+          setUser(meRes.data.user);
+          setSession(meRes.data.user);
+          setIsGuest(false);
+          setReady(true);
+          return;
+        }
+      } catch {
+        // Backend offline or request failed, fallback to local session
+      }
+
+      if (cancelled) return;
       const sessionUser = getSession();
       setUser(sessionUser);
       setIsGuest(!sessionUser && isGuestMode());
@@ -120,6 +136,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
+    // Attempt backend API login first
+    try {
+      const apiRes = await api.auth.login(email, password);
+      if (apiRes.ok && apiRes.data.user) {
+        setGuestMode(false);
+        setIsGuest(false);
+        setSession(apiRes.data.user);
+        setUser(apiRes.data.user);
+        setRevision((value) => value + 1);
+        return { ok: true };
+      }
+      if (!apiRes.ok && apiRes.error) {
+        return { ok: false, error: apiRes.error };
+      }
+    } catch {
+      // Backend request error
+    }
+
+    // Local fallback
     const result = await repoLogin(email, password);
     if (result.ok) {
       setGuestMode(false);
@@ -133,6 +168,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = useCallback(
     async (input: { fullName: string; email: string; phone: string; password: string }) => {
+      // Attempt backend API register first
+      try {
+        const apiRes = await api.auth.register(input);
+        if (apiRes.ok && apiRes.data.user) {
+          setGuestMode(false);
+          setIsGuest(false);
+          setSession(apiRes.data.user);
+          setUser(apiRes.data.user);
+          setRevision((value) => value + 1);
+          return { ok: true };
+        }
+        if (!apiRes.ok && (apiRes.error || apiRes.fieldErrors)) {
+          return { ok: false, error: apiRes.error, fieldErrors: apiRes.fieldErrors };
+        }
+      } catch {
+        // Backend request error
+      }
+
+      // Local fallback
       const result = await repoRegister(input);
       if (result.ok) {
         setGuestMode(false);
@@ -146,7 +200,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    try {
+      await api.auth.logout();
+    } catch {
+      // Ignore network error on logout
+    }
     repoLogout();
     setSession(null);
     setGuestMode(false);
@@ -154,6 +213,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setRevision((value) => value + 1);
   }, []);
+
 
   const value = useMemo<AppContextValue>(
     () => ({

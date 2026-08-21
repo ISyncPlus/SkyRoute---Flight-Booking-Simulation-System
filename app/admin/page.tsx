@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useApp, useStored } from "@/components/AppProvider";
 import { Alert, Field, Segmented, Spinner, StatusBadge } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
+import { api, type AdminStats } from "@/lib/api";
 import {
   cancelBooking,
   createFlight,
@@ -45,15 +46,62 @@ const TABS: { key: Tab; label: string }[] = [
 const AIRCRAFT_TYPES = Object.keys(AIRCRAFT_LAYOUTS);
 
 export default function AdminPage() {
-  const { ready, user, isAdmin, refresh } = useApp();
+  const { ready, user, isAdmin, refresh, revision } = useApp();
   const [tab, setTab] = useState<Tab>("overview");
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
-  const stats = useStored(() => (isAdmin ? getStats() : null), null, [isAdmin]);
-  const flights = useStored(() => (isAdmin ? listFlights() : []), [] as Flight[], [isAdmin]);
-  const bookings = useStored(() => (isAdmin ? listAllBookings() : []), [] as Booking[], [isAdmin]);
-  const users = useStored(() => (isAdmin ? listUsers() : []), [] as User[], [isAdmin]);
-  const airports = useStored(listAirports, [] as Airport[]);
+  const [stats, setStats] = useState<AdminStats | any>(null);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [airports, setAirports] = useState<Airport[]>([]);
+
+  useEffect(() => {
+    if (!ready || !isAdmin) return;
+    let cancelled = false;
+
+    async function loadAdminData() {
+      try {
+        const [statsRes, flightsRes, bookingsRes, usersRes, airportsRes] = await Promise.all([
+          api.admin.getStats(),
+          api.admin.listFlights(),
+          api.admin.listBookings(),
+          api.admin.listUsers(),
+          api.flights.listAirports(),
+        ]);
+
+        if (!cancelled) {
+          if (statsRes.ok && statsRes.data.stats) setStats(statsRes.data.stats);
+          else setStats(getStats());
+
+          if (flightsRes.ok && flightsRes.data.flights) setFlights(flightsRes.data.flights);
+          else setFlights(listFlights());
+
+          if (bookingsRes.ok && bookingsRes.data.bookings) setBookings(bookingsRes.data.bookings);
+          else setBookings(listAllBookings());
+
+          if (usersRes.ok && usersRes.data.users) setUsers(usersRes.data.users);
+          else setUsers(listUsers());
+
+          if (airportsRes.ok && airportsRes.data.airports) setAirports(airportsRes.data.airports);
+          else setAirports(listAirports());
+        }
+      } catch {
+        if (!cancelled) {
+          setStats(getStats());
+          setFlights(listFlights());
+          setBookings(listAllBookings());
+          setUsers(listUsers());
+          setAirports(listAirports());
+        }
+      }
+    }
+
+    void loadAdminData();
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, isAdmin, revision]);
 
   // ---- New flight form ----
   const [newFlight, setNewFlight] = useState({
@@ -81,7 +129,7 @@ export default function AdminPage() {
     window.scrollTo({ top: 0 });
   }
 
-  function handleCreateFlight(event: React.FormEvent) {
+  async function handleCreateFlight(event: React.FormEvent) {
     event.preventDefault();
     const errors: Record<string, string> = {};
 
@@ -125,6 +173,22 @@ export default function AdminPage() {
       status: "scheduled",
     };
 
+    try {
+      const apiRes = await api.admin.createFlight(flight);
+      if (apiRes.ok) {
+        notify("success", `Flight ${number} was added to the schedule.`);
+        setNewFlight((current) => ({ ...current, flightNumber: "" }));
+        refresh();
+        return;
+      }
+      if (!apiRes.ok && apiRes.error) {
+        notify("error", apiRes.error);
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
     const result = createFlight(user, flight);
     if (!result.ok) {
       notify("error", result.error);
@@ -136,7 +200,18 @@ export default function AdminPage() {
     refresh();
   }
 
-  function handleStatusChange(flight: Flight, status: Flight["status"]) {
+  async function handleStatusChange(flight: Flight, status: Flight["status"]) {
+    try {
+      const apiRes = await api.admin.updateFlight(flight.id, { status });
+      if (apiRes.ok) {
+        notify("success", `${flight.flightNumber} is now ${status}.`);
+        refresh();
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
     const result = updateFlight(user, flight.id, { status });
     if (!result.ok) notify("error", result.error);
     else {
@@ -145,7 +220,18 @@ export default function AdminPage() {
     }
   }
 
-  function handleDeleteFlight(flight: Flight) {
+  async function handleDeleteFlight(flight: Flight) {
+    try {
+      const apiRes = await api.admin.deleteFlight(flight.id);
+      if (apiRes.ok) {
+        notify("success", `Flight ${flight.flightNumber} was deleted.`);
+        refresh();
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
     const result = deleteFlight(user, flight.id);
     if (!result.ok) notify("error", result.error);
     else {
@@ -154,8 +240,19 @@ export default function AdminPage() {
     }
   }
 
-  function handleCancelBooking(booking: Booking) {
+  async function handleCancelBooking(booking: Booking) {
     if (!user) return;
+    try {
+      const apiRes = await api.bookings.cancel(booking.pnr);
+      if (apiRes.ok && apiRes.data.booking) {
+        notify("success", `Booking ${booking.pnr} cancelled. Refund: ${formatMoney(apiRes.data.refund)}.`);
+        refresh();
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
     const result = cancelBooking(booking.pnr, { kind: "account", user });
     if (!result.ok) notify("error", result.error);
     else {
@@ -169,6 +266,7 @@ export default function AdminPage() {
     notify("success", "All data was cleared and the schedule regenerated. You have been signed out.");
     refresh();
   }
+
 
   if (!ready) {
     return (
@@ -294,23 +392,26 @@ export default function AdminPage() {
                 <p className="mt-3 text-footnote text-ink-3">No bookings have been made yet.</p>
               ) : (
                 <ul className="mt-3 space-y-2">
-                  {stats.topRoutes.map((route) => {
-                    const max = stats.topRoutes[0].bookings || 1;
+                  {stats.topRoutes.map((route: any) => {
+                    const label = route.route || `${route.originCode} → ${route.destinationCode}`;
+                    const count = route.bookings ?? route.count ?? 0;
+                    const max = stats.topRoutes[0]?.bookings ?? stats.topRoutes[0]?.count ?? 1;
                     return (
-                      <li key={route.route}>
+                      <li key={label}>
                         <div className="flex justify-between text-footnote">
-                          <span className="text-ink-2">{route.route}</span>
-                          <span className="font-semibold text-ink">{route.bookings}</span>
+                          <span className="text-ink-2">{label}</span>
+                          <span className="font-semibold text-ink">{count}</span>
                         </div>
                         <div className="mt-1 h-1.5 w-full rounded-full bg-fill">
                           <div
                             className="h-1.5 rounded-full bg-accent"
-                            style={{ width: `${(route.bookings / max) * 100}%` }}
+                            style={{ width: `${max > 0 ? (count / max) * 100 : 0}%` }}
                           />
                         </div>
                       </li>
                     );
                   })}
+
                 </ul>
               )}
             </div>

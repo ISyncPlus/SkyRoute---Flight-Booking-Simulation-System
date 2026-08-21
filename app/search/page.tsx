@@ -8,7 +8,9 @@ import { FlightCard } from "@/components/FlightCard";
 import { SearchForm } from "@/components/SearchForm";
 import { Alert, EmptyState, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { api } from "@/lib/api";
 import { datesWithFlights, searchFlights } from "@/lib/repository";
+
 import { CABIN_NAMES, formatDate, formatDateShort } from "@/lib/format";
 import { validateSearch } from "@/lib/validation";
 import { useRouter } from "next/navigation";
@@ -113,15 +115,47 @@ function SearchResults() {
     return () => clearTimeout(timer);
   }, [searchKey]);
 
+  const [loadingResults, setLoadingResults] = useState(false);
+
   useEffect(() => {
     if (!ready || !validation.valid) return;
-    setResults(searchFlights(criteria));
-    setAlternativeDates(
-      datesWithFlights(criteria.originCode, criteria.destinationCode).filter(
-        (date) => date !== criteria.departureDate,
-      ),
-    );
+    let cancelled = false;
+
+    async function fetchSearch() {
+      setLoadingResults(true);
+      try {
+        const apiRes = await api.flights.search(criteria);
+        if (!cancelled && apiRes.ok && apiRes.data.legs?.[0]?.results) {
+          setResults(apiRes.data.legs[0].results);
+          setAlternativeDates(
+            datesWithFlights(criteria.originCode, criteria.destinationCode).filter(
+              (date) => date !== criteria.departureDate,
+            ),
+          );
+          setLoadingResults(false);
+          return;
+        }
+      } catch {
+        // Fall back to local search
+      }
+
+      if (!cancelled) {
+        setResults(searchFlights(criteria));
+        setAlternativeDates(
+          datesWithFlights(criteria.originCode, criteria.destinationCode).filter(
+            (date) => date !== criteria.departureDate,
+          ),
+        );
+        setLoadingResults(false);
+      }
+    }
+
+    void fetchSearch();
+    return () => {
+      cancelled = true;
+    };
   }, [ready, criteria, validation.valid, revision]);
+
 
   // Reset the picks whenever the journey itself changes, so a new search never
   // inherits a flight chosen for a different route.

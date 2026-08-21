@@ -6,6 +6,7 @@ import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, EmptyState, Segmented, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { api } from "@/lib/api";
 import { cancelBooking, getFlight, listAirports, listBookingsForUser, listFlights } from "@/lib/repository";
 import { calculateRefund, formatMoney, refundRate } from "@/lib/pricing";
 import { formatDate } from "@/lib/format";
@@ -21,7 +22,30 @@ export default function BookingsPage() {
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    if (ready && user) setBookings(listBookingsForUser(user.id));
+    if (!ready || !user) return;
+    let cancelled = false;
+
+    async function loadBookings() {
+      try {
+        const apiRes = await api.bookings.listMine();
+        if (!cancelled && apiRes.ok) {
+          setBookings(apiRes.data.bookings);
+          return;
+        }
+      } catch {
+        // Fallback
+      }
+
+      if (!cancelled && user) {
+        setBookings(listBookingsForUser(user.id));
+      }
+    }
+
+
+    void loadBookings();
+    return () => {
+      cancelled = true;
+    };
   }, [ready, user, revision]);
 
   const airports = useStored(listAirports, [] as Airport[]);
@@ -54,10 +78,28 @@ export default function BookingsPage() {
     }
   }, [enriched, filter]);
 
-  function handleCancel(pnr: string) {
+  async function handleCancel(pnr: string) {
     if (!user) return;
-    const result = cancelBooking(pnr, { kind: "account", user });
 
+    try {
+      const apiRes = await api.bookings.cancel(pnr);
+      if (apiRes.ok && apiRes.data.booking) {
+        setMessage({
+          tone: "success",
+          text: `Booking ${pnr} was cancelled. A refund of ${formatMoney(apiRes.data.refund)} will be returned to the original payment method.`,
+        });
+        const listRes = await api.bookings.listMine();
+        if (listRes.ok) setBookings(listRes.data.bookings);
+        refresh();
+        setConfirming(null);
+        window.scrollTo({ top: 0 });
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
+    const result = cancelBooking(pnr, { kind: "account", user });
     if (!result.ok) {
       setMessage({ tone: "error", text: result.error });
     } else {
@@ -70,9 +112,9 @@ export default function BookingsPage() {
     }
 
     setConfirming(null);
-    // The CSS decides whether this glides or jumps, so reduced motion is honoured.
     window.scrollTo({ top: 0 });
   }
+
 
   if (!ready) {
     return (

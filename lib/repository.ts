@@ -17,6 +17,7 @@
 
 import { createUserRecord, DEMO_ADMIN, DEMO_CUSTOMER, toSessionUser, verifyPassword } from "./auth";
 import { generateId, generateTransactionReference, generateUniquePnr, isValidPnr } from "./ids";
+import { api } from "./api";
 import {
   calculateFare,
   calculateRefund,
@@ -94,6 +95,17 @@ export async function ensureSeeded(): Promise<PersistedState> {
   const state = loadState();
   let changed = false;
 
+  // Try fetching authoritative airports from backend
+  try {
+    const airportsRes = await api.flights.listAirports();
+    if (airportsRes.ok && airportsRes.data.airports.length > 0) {
+      state.airports = airportsRes.data.airports;
+      changed = true;
+    }
+  } catch {
+    // Fallback to local airports
+  }
+
   const upcoming = state.flights.filter((flight) => new Date(flight.departureTime).getTime() > Date.now());
   const horizonEnd = new Date();
   horizonEnd.setDate(horizonEnd.getDate() + SCHEDULE_HORIZON_DAYS - 3);
@@ -122,6 +134,7 @@ export async function ensureSeeded(): Promise<PersistedState> {
   if (changed) saveState(state);
   return state;
 }
+
 
 /** Wipe all application data and rebuild from seed. Used by the admin panel. */
 export async function resetSystem(): Promise<PersistedState> {

@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
 import { Alert, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { api } from "@/lib/api";
 import { findBookingByPnr, getFlight, listAirports, listFlights } from "@/lib/repository";
 import type { Airport, Booking, Flight } from "@/lib/types";
 
@@ -41,7 +43,35 @@ export default function ConfirmationPage() {
   const { ready } = useApp();
   const pnr = (params.pnr ?? "").toUpperCase();
 
-  const booking = useStored(() => findBookingByPnr(pnr), undefined as Booking | undefined, [pnr]);
+  const [booking, setBooking] = useState<Booking | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!ready || !pnr) return;
+    let cancelled = false;
+
+    async function loadBooking() {
+      try {
+        const apiRes = await api.bookings.getByPnr(pnr);
+        if (!cancelled && apiRes.ok && apiRes.data.booking) {
+          setBooking(apiRes.data.booking);
+          return;
+        }
+      } catch {
+        // Fallback
+      }
+
+      if (!cancelled) {
+        const local = findBookingByPnr(pnr);
+        setBooking(local ?? null);
+      }
+    }
+
+    void loadBooking();
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, pnr]);
+
   const flight = useStored(
     () => (booking ? getFlight(booking.flightId) : undefined),
     undefined as Flight | undefined,
@@ -51,13 +81,14 @@ export default function ConfirmationPage() {
   // The whole schedule, so a multi-leg booking can resolve every one of its flights.
   const allFlights = useStored(listFlights, [] as Flight[]);
 
-  if (!ready) {
+  if (!ready || booking === undefined) {
     return (
       <div className="container-page">
         <Spinner label="Retrieving your booking" />
       </div>
     );
   }
+
 
   if (!booking) {
     return (

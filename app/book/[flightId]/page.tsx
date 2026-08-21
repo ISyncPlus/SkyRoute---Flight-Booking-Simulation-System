@@ -24,6 +24,7 @@ import { Icon } from "@/components/icons";
 import { airportLabel, CABIN_NAMES, formatDate, formatTime, isInternational } from "@/lib/format";
 import { calculateFare, combineFares, daysUntil, formatMoney, type FareContext } from "@/lib/pricing";
 import { buildSeatMap, loadFactor, seatsInCabin } from "@/lib/seats";
+import { api } from "@/lib/api";
 import {
   availableCabins,
   createBooking,
@@ -33,6 +34,7 @@ import {
 } from "@/lib/repository";
 import { isValidEmail, isValidPhone, validatePassenger, validatePayment } from "@/lib/validation";
 import type { Airport, CabinClass, Flight, Passenger, Seat, TripType } from "@/lib/types";
+
 
 const STEPS = ["Select seats", "Passenger details", "Payment", "Confirmation"];
 
@@ -154,15 +156,37 @@ function BookingWizard() {
     }
   }, [user]);
 
-  // Recompute every leg's seat map whenever storage changes (including from
-  // another tab). One booking pass covers all legs.
+  // Load live seat maps from backend API (falling back to buildSeatMap)
   useEffect(() => {
     if (!ready || flights.length === 0) return;
-    const all = listAllBookings();
-    setSeatsByLeg(flights.map((entry) => buildSeatMap(entry, all)));
-    setSelectedByLeg((current) =>
-      flights.map((_, index) => current[index] ?? []),
-    );
+    let cancelled = false;
+
+    async function loadSeats() {
+      try {
+        const maps = await Promise.all(
+          flights.map(async (entry) => {
+            const res = await api.flights.getSeats(entry.id);
+            if (res.ok && res.data.seats) return res.data.seats;
+            return buildSeatMap(entry, listAllBookings());
+          }),
+        );
+        if (!cancelled) {
+          setSeatsByLeg(maps);
+          setSelectedByLeg((current) => flights.map((_, index) => current[index] ?? []));
+        }
+      } catch {
+        if (!cancelled) {
+          const all = listAllBookings();
+          setSeatsByLeg(flights.map((entry) => buildSeatMap(entry, all)));
+          setSelectedByLeg((current) => flights.map((_, index) => current[index] ?? []));
+        }
+      }
+    }
+
+    void loadSeats();
+    return () => {
+      cancelled = true;
+    };
   }, [ready, flights, revision]);
 
   const seats = seatsByLeg[activeLeg] ?? [];
@@ -280,7 +304,7 @@ function BookingWizard() {
     window.scrollTo({ top: 0 });
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!flight) return;
 
     const paymentCheck = validatePayment(payment);
@@ -313,11 +337,55 @@ function BookingWizard() {
     // Kept for the passenger records themselves; seats live on the legs.
     const withSeats = passengers.map((passenger) => ({ ...passenger, seatId: null }));
 
+    try {
+      const apiRes = await api.bookings.create({
+        legs,
+        tripType,
+        passengers: withSeats,
+        contactEmail,
+        contactPhone,
+        payment: {
+          method: payment.method,
+          cardHolder: payment.cardHolder || user?.fullName || contactEmail,
+          cardNumber: payment.cardNumber,
+          expiry: payment.expiry,
+          cvv: payment.cvv,
+          senderName: payment.senderName,
+          forceFailure: payment.simulateFailure,
+        },
+      });
+
+      if (apiRes.ok && apiRes.data.booking) {
+        setSubmitting(false);
+        router.push(`/confirmation/${apiRes.data.booking.pnr}`);
+        return;
+      }
+
+      if (!apiRes.ok) {
+        setSubmitting(false);
+        setSubmitError(apiRes.error);
+        if (apiRes.error.toLowerCase().includes("no longer available") || apiRes.status === 409) {
+          const maps = await Promise.all(
+            flights.map(async (f) => {
+              const res = await api.flights.getSeats(f.id);
+              return res.ok ? res.data.seats : buildSeatMap(f, listAllBookings());
+            }),
+          );
+          setSeatsByLeg(maps);
+          setSelectedByLeg(flights.map(() => []));
+          setActiveLeg(0);
+          setGoingBack(true);
+          setStep(0);
+        }
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
     const result = createBooking({
       legs,
       tripType,
-      // No account behind the booking when it was made as a guest; it will be
-      // reachable only by its reference and surname.
       userId: user?.id ?? null,
       contactEmail,
       contactPhone,
@@ -335,10 +403,7 @@ function BookingWizard() {
 
     if (!result.ok) {
       setSubmitError(result.error);
-      // A seat clash means the map is stale - refresh it so the user can reselect.
       if (result.error.includes("no longer available")) {
-        // A seat clash means every leg's map is stale, not just the one that
-        // lost the race — rebuild them all and start the seat step over.
         const all = listAllBookings();
         setSeatsByLeg(flights.map((entry) => buildSeatMap(entry, all)));
         setSelectedByLeg(flights.map(() => []));
@@ -351,6 +416,7 @@ function BookingWizard() {
 
     router.push(`/confirmation/${result.data.pnr}`);
   }
+
 
   if (!ready) {
     return (

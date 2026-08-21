@@ -137,7 +137,7 @@ export const DEMO_ADMIN = {
   fullName: "System Administrator",
   email: "admin@skyroute.test",
   phone: "08030000000",
-  password: "Admin@123",
+  password: "passw0rd",
 } as const;
 
 /** Demo customer credentials, seeded on first run. */
@@ -145,5 +145,6 @@ export const DEMO_CUSTOMER = {
   fullName: "Ada Okonkwo",
   email: "customer@skyroute.test",
   phone: "08031234567",
-  password: "Passw0rd",
+  password: "p@ssword",
 } as const;
+
