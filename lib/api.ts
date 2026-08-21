@@ -21,7 +21,10 @@ import type {
 } from "./types";
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://skyroute-server.onrender.com/api";
+  typeof window !== "undefined"
+    ? "/api"
+    : (process.env.NEXT_PUBLIC_API_URL || "https://skyroute-server.onrender.com/api");
+
 
 export type ApiResult<T> =
   | { ok: true; data: T }
