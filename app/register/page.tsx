@@ -48,6 +48,18 @@ function RegisterForm() {
     if (oauthStatus === "success") {
       setOauthChecking(true);
       (async () => {
+        const token = searchParams.get("token");
+        if (token) {
+          try {
+            await fetch("/api/auth/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ token }),
+            });
+          } catch {
+            // Ignore error
+          }
+        }
         const currentUser = await syncSession();
         setOauthChecking(false);
         if (currentUser) {
@@ -57,6 +69,7 @@ function RegisterForm() {
         }
       })();
     } else if (oauthStatus === "error") {
+
       setError(reason || "Google sign in failed. Please try again.");
     }
   }, [searchParams, syncSession, router]);
