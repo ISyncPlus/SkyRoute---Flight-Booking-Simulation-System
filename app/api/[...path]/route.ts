@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL =
-  process.env.BACKEND_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://skyroute-server.onrender.com/api";
+function getBackendUrl() {
+  if (process.env.BACKEND_API_URL) return process.env.BACKEND_API_URL;
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:4000/api";
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "https://skyroute-server.onrender.com/api";
+}
+
 
 async function handleProxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const subPath = path ? path.join("/") : "";
   const search = request.nextUrl.search || "";
-  const targetUrl = `${BACKEND_URL.replace(/\/+$/, "")}/${subPath}${search}`;
+  const backendBase = getBackendUrl();
+  const targetUrl = `${backendBase.replace(/\/+$/, "")}/${subPath}${search}`;
+
 
   const headers = new Headers();
   request.headers.forEach((value, key) => {
@@ -33,8 +39,23 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
 
     const responseHeaders = new Headers();
     backendRes.headers.forEach((value, key) => {
-      responseHeaders.set(key, value);
+      if (key.toLowerCase() !== "set-cookie") {
+        responseHeaders.set(key, value);
+      }
     });
+
+    // Forward all Set-Cookie headers from backend
+    if (backendRes.headers.getSetCookie) {
+      const setCookies = backendRes.headers.getSetCookie();
+      setCookies.forEach((cookieStr) => {
+        responseHeaders.append("set-cookie", cookieStr);
+      });
+    } else {
+      const cookie = backendRes.headers.get("set-cookie");
+      if (cookie) {
+        responseHeaders.set("set-cookie", cookie);
+      }
+    }
 
     return new NextResponse(backendRes.body, {
       status: backendRes.status,
@@ -49,6 +70,7 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
     );
   }
 }
+
 
 export const GET = handleProxy;
 export const POST = handleProxy;

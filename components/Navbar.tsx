@@ -15,7 +15,44 @@ import { ThemeToggle } from "./ui/theme-toggle";
 /* How far the page scrolls while the bar gathers itself in. Short enough that
    it is fully a pill by the time the first section clears the top, long enough
    that the change reads as motion rather than a snap. */
+import type { SessionUser } from "@/lib/types";
+
+function UserAvatar({ user, size = "md" }: { user: SessionUser; size?: "sm" | "md" | "lg" }) {
+  const [imgError, setImgError] = useState(false);
+  const avatarUrl = user.avatarUrl || user.avatar || user.picture || user.image;
+
+  const sizeClass =
+    size === "sm"
+      ? "h-6 w-6 text-[10px]"
+      : size === "lg"
+        ? "h-9 w-9 text-caption font-semibold"
+        : "h-7 w-7 text-micro font-semibold";
+
+  if (avatarUrl && !imgError) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={user.fullName}
+        onError={() => setImgError(true)}
+        referrerPolicy="no-referrer"
+        className={`${sizeClass} shrink-0 rounded-full object-cover ring-1.5 ring-accent/30 shadow-xs`}
+      />
+    );
+  }
+
+  const initial = (user.fullName.trim().charAt(0) || "U").toUpperCase();
+  return (
+    <span
+      className={`${sizeClass} shrink-0 flex items-center justify-center rounded-full bg-accent text-white font-semibold shadow-xs`}
+      aria-hidden="true"
+    >
+      {initial}
+    </span>
+  );
+}
+
 const TRAVEL = 120;
+
 
 const LINKS: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Search flights", icon: "search" },
@@ -24,6 +61,7 @@ const LINKS: { href: string; label: string; icon: IconName }[] = [
 ];
 
 export function Navbar() {
+
   const { user, isGuest, isAdmin, signOut, exitGuest, ready } = useApp();
   const pathname = usePathname();
   const router = useRouter();
@@ -144,9 +182,9 @@ export function Navbar() {
             <ThemeToggle />
             {!ready ? null : user ? (
               <>
-                <span className="on-material flex items-center gap-1.5 text-footnote whitespace-nowrap">
-                  <Icon name="user" className="h-4 w-4 text-ink-3" />
-                  <span className="font-medium text-ink">{user.fullName.split(" ")[0]}</span>
+                <span className="on-material flex items-center gap-2 text-footnote whitespace-nowrap">
+                  <UserAvatar user={user} size="sm" />
+                  <span className="font-semibold text-ink">{user.fullName.split(" ")[0]}</span>
                   {isAdmin && (
                     <span className="badge gap-1 bg-warn-soft px-2 py-0.5 text-warn-ink text-micro">
                       <Icon name="shield" className="h-3 w-3" />
@@ -164,6 +202,7 @@ export function Navbar() {
                 </button>
               </>
             ) : isGuest ? (
+
               <>
                 <span className="on-material flex items-center gap-1.5 rounded-full border border-line bg-surface/70 px-2.5 py-1 text-footnote font-medium text-ink whitespace-nowrap shadow-sm">
                   <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-white font-semibold text-micro">
@@ -246,11 +285,25 @@ export function Navbar() {
 
           <div className="mt-3 flex gap-2 border-t border-line pt-3">
             {user ? (
-              <button type="button" onClick={handleSignOut} className="btn-secondary w-full">
-                <Icon name="signOut" className="h-4 w-4" />
-                Sign out
-              </button>
+              <div className="flex w-full flex-col gap-2.5">
+                <div className="flex items-center justify-between px-1 text-footnote font-medium text-ink">
+                  <span className="flex items-center gap-2.5">
+                    <UserAvatar user={user} size="md" />
+                    <span className="font-semibold text-ink">{user.fullName}</span>
+                  </span>
+                  {isAdmin ? (
+                    <span className="badge bg-warn-soft text-warn-ink text-micro">Admin</span>
+                  ) : (
+                    <span className="badge bg-accent-soft text-accent-ink text-micro">Member</span>
+                  )}
+                </div>
+                <button type="button" onClick={handleSignOut} className="btn-secondary w-full">
+                  <Icon name="signOut" className="h-4 w-4" />
+                  Sign out
+                </button>
+              </div>
             ) : isGuest ? (
+
               <div className="flex w-full flex-col gap-2.5">
                 <div className="flex items-center justify-between px-1 text-footnote font-medium text-ink">
                   <span className="flex items-center gap-2">

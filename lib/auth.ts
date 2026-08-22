@@ -129,8 +129,18 @@ export async function createUserRecord(input: {
 
 /** Strip the credential fields before a user object touches React state. */
 export function toSessionUser(user: User): SessionUser {
-  return { id: user.id, fullName: user.fullName, email: user.email, role: user.role };
+  return {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    avatarUrl: user.avatarUrl,
+    avatar: user.avatar,
+    picture: user.picture,
+    image: user.image,
+  };
 }
+
 
 /** Demo administrator credentials, seeded on first run. */
 export const DEMO_ADMIN = {

@@ -34,8 +34,10 @@ const POPULAR_ROUTES: { from: string; to: string; label: string }[] = [
 ];
 
 function routeHref(from: string, to: string) {
-  return `/search?from=${from}&to=${to}&cabin=economy&adults=1`;
+  return `/search?route=${from}-${to}`;
 }
+
+
 
 const CONTACT: { icon: IconName; label: string; value: string }[] = [
   { icon: "mail", label: "Email", value: "support@skyroute.sim" },

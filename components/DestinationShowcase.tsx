@@ -168,10 +168,11 @@ export function DestinationShowcase() {
                     </span>
                   </div>
                   <Link
-                    href={`/search?from=${dest.originCode}&to=${dest.destCode}&date=${tomorrow}&cabin=economy&adults=1`}
+                    href={`/search?route=${dest.originCode}-${dest.destCode}&date=${tomorrow}`}
                     className="btn-primary shrink-0 px-3.5 py-2 text-caption shadow-none inline-flex items-center gap-1.5"
                     aria-label={`Search flights from ${dest.originCity} to ${dest.destCity}`}
                   >
+
                     <span>Fly route</span>
                     <Icon name="arrowRight" className="h-3.5 w-3.5" />
                   </Link>

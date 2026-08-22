@@ -167,19 +167,32 @@ export default function BookingsPage() {
 
   return (
     <div className="container-page max-w-4xl">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="overline">Your reservations</p>
-          <h1 className="text-display font-semibold text-ink">My bookings</h1>
-          <p className="mt-1 text-callout text-ink-2">
-            View itineraries, download boarding passes and manage cancellations.
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.fullName}
+              className="h-12 w-12 rounded-full object-cover ring-2 ring-accent/30 shadow-sm"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white font-semibold text-title-3 shadow-sm">
+              {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+            </div>
+          )}
+          <div>
+            <p className="overline text-accent">Welcome back, {user.fullName.split(" ")[0]}</p>
+            <h1 className="text-display font-semibold text-ink">My bookings</h1>
+            <p className="mt-0.5 text-caption text-ink-3 font-mono">{user.email}</p>
+          </div>
         </div>
         <Link href="/" className="btn-primary shrink-0 w-full sm:w-auto text-center justify-center">
           <Icon name="search" className="h-4 w-4" />
           Book another flight
         </Link>
       </div>
+
 
       {message && (
         <div className="mt-6">

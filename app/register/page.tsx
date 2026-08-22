@@ -62,10 +62,15 @@ function RegisterForm() {
   }, [searchParams, syncSession, router]);
 
   function handleGoogleLogin() {
+    const isLocal =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
     const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "https://skyroute-server.onrender.com/api";
+      process.env.NEXT_PUBLIC_API_URL ||
+      (isLocal ? "http://localhost:4000/api" : "https://skyroute-server.onrender.com/api");
     window.location.href = `${apiUrl.replace(/\/+$/, "")}/auth/oauth/google`;
   }
+
 
   function update(key: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [key]: value }));

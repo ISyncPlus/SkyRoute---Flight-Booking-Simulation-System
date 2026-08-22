@@ -28,13 +28,14 @@ export function FlightCard({
     : "economy";
   const totalPassengers = criteria.adults + criteria.children + criteria.infants;
   const isLowAvailability = seatsAvailable <= 8;
+  const params = new URLSearchParams();
+  if (cabin !== "economy") params.set("cabin", cabin);
+  if (criteria.adults > 1) params.set("adults", String(criteria.adults));
+  if (criteria.children > 0) params.set("children", String(criteria.children));
+  if (criteria.infants > 0) params.set("infants", String(criteria.infants));
+  const queryString = params.toString() ? `?${params.toString()}` : "";
 
-  const params = new URLSearchParams({
-    cabin,
-    adults: String(criteria.adults),
-    children: String(criteria.children),
-    infants: String(criteria.infants),
-  });
+
 
   return (
     <article className="card-lg hover-lift overflow-hidden p-0">
@@ -131,11 +132,12 @@ export function FlightCard({
             </button>
           ) : (
             <Link
-              href={`/book/${encodeURIComponent(flight.id)}?${params.toString()}`}
+              href={`/book/${encodeURIComponent(flight.id)}${queryString}`}
               className="btn-primary mt-3 w-full text-center justify-center"
             >
               {ctaLabel}
             </Link>
+
           )}
         </div>
       </div>

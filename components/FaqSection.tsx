@@ -38,8 +38,9 @@ const FAQS: FaqItem[] = [
   {
     question: "How do I test with pre-seeded demonstration accounts?",
     answer:
-      "SkyRoute ships with both a Customer account (customer@skyroute.sim / customer123) and an Administrator account (admin@skyroute.sim / admin123) provisioned on the server. You can sign in with either one instantly from the sign-in page, on any device, without registering.",
+      "SkyRoute ships with both a Customer account (customer@skyroute.test / p@ssword) and an Administrator account (admin@skyroute.test / passw0rd) provisioned on the server. You can sign in with either one instantly from the sign-in page, on any device, without registering.",
   },
+
 ];
 
 export function FaqSection() {

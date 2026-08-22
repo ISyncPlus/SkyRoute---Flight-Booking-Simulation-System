@@ -195,6 +195,10 @@ export interface User {
   passwordSalt: string;
   phone: string;
   role: UserRole;
+  avatarUrl?: string;
+  avatar?: string;
+  picture?: string;
+  image?: string;
   createdAt: string;
 }
 
@@ -204,7 +208,12 @@ export interface SessionUser {
   fullName: string;
   email: string;
   role: UserRole;
+  avatarUrl?: string;
+  avatar?: string;
+  picture?: string;
+  image?: string;
 }
+
 
 /** One origin/destination/date row of a search. */
 export interface SearchLeg {

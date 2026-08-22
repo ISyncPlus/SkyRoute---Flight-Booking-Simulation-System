@@ -20,11 +20,24 @@ import type {
   User,
 } from "./types";
 
-export const API_BASE_URL =
-  typeof window !== "undefined"
-    ? "/api"
-    : (process.env.NEXT_PUBLIC_API_URL || "https://skyroute-server.onrender.com/api");
+export function getApiBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:4000/api";
+    }
+    return "/api";
+  }
+  return (
+    process.env.BACKEND_API_URL ||
+    (process.env.NODE_ENV === "development"
+      ? "http://localhost:4000/api"
+      : "https://skyroute-server.onrender.com/api")
+  );
+}
 
+export const API_BASE_URL = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? "http://localhost:4000/api"
+  : "/api";
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -69,7 +82,9 @@ async function request<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<ApiResult<T>> {
-  const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+
 
   const headers = new Headers(options.headers || {});
   if (!headers.has("Content-Type") && options.body && typeof options.body === "string") {

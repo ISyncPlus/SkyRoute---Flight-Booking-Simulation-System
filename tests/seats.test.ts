@@ -11,9 +11,11 @@ import {
   getOccupiedSeatIds,
   groupByRow,
   loadFactor,
+  randomlyAssignSeats,
   seatsInCabin,
   validateSeatSelection,
 } from "@/lib/seats";
+
 import { AIRCRAFT_LAYOUTS } from "@/lib/seed";
 import { makeBooking, makeFlight } from "./helpers";
 
@@ -198,3 +200,30 @@ describe("validateSeatSelection", () => {
     expect(validateSeatSelection(flight, [], [], "economy").valid).toBe(true);
   });
 });
+
+describe("randomlyAssignSeats", () => {
+  const flight = makeFlight();
+  const seats = buildSeatMap(flight, []);
+
+  it("returns an empty array when 0 seats requested", () => {
+    expect(randomlyAssignSeats(seats, "economy", 0)).toEqual([]);
+  });
+
+  it("returns exactly the requested number of valid available seats", () => {
+    const assigned = randomlyAssignSeats(seats, "economy", 3);
+    expect(assigned).toHaveLength(3);
+    assigned.forEach((id) => {
+      const match = seats.find((s) => s.id === id);
+      expect(match).toBeDefined();
+      expect(match?.cabin).toBe("economy");
+      expect(match?.status).toBe("available");
+    });
+  });
+
+  it("does not select duplicate seats", () => {
+    const assigned = randomlyAssignSeats(seats, "economy", 4);
+    const unique = new Set(assigned);
+    expect(unique.size).toBe(4);
+  });
+});
+

@@ -35,7 +35,13 @@ function SearchResults() {
   const router = useRouter();
   const { ready, revision } = useApp();
 
-  const tripType = (params.get("trip") as TripType | null) ?? "one-way";
+  const tripType = useMemo<TripType>(() => {
+    const tripParam = params.get("trip") as TripType | null;
+    if (tripParam) return tripParam;
+    if (params.get("return") || params.get("ret")) return "round-trip";
+    if (params.get("legs")) return "multi-city";
+    return "one-way";
+  }, [params]);
 
   /**
    * The journey flattened into the legs the traveller has to fill, whatever
@@ -43,18 +49,22 @@ function SearchResults() {
    * selection machinery below has no special case for it.
    */
   const legs = useMemo<SearchLeg[]>(() => {
-    const from = (params.get("from") ?? "").toUpperCase();
-    const to = (params.get("to") ?? "").toUpperCase();
-    /* A route link that carries no date — the footer's popular routes, a
-       shared URL that lost its query — should still land on results rather
-       than an empty state, so it falls to the first bookable day. */
-    const date = params.get("date") || dateInputValue(1);
+    let from = (params.get("from") ?? "").toUpperCase();
+    let to = (params.get("to") ?? "").toUpperCase();
+
+    // Support compact `route=LOS-ABV` or `r=LOS-ABV`
+    const route = params.get("route") || params.get("r");
+    if (route && route.includes("-")) {
+      const [rFrom, rTo] = route.split("-");
+      if (rFrom) from = rFrom.toUpperCase();
+      if (rTo) to = rTo.toUpperCase();
+    }
+
+    const date = params.get("date") || params.get("d") || dateInputValue(1);
     const first: SearchLeg = { originCode: from, destinationCode: to, departureDate: date };
 
     if (tripType === "round-trip") {
-      const back = params.get("return") ?? "";
-      // Without a return date there is no second leg to choose, so it stays a
-      // one-leg journey rather than rendering an unfillable step.
+      const back = params.get("return") || params.get("ret") || "";
       return back
         ? [first, { originCode: to, destinationCode: from, departureDate: back }]
         : [first];
@@ -89,13 +99,14 @@ function SearchResults() {
       originCode: legs[activeLeg]?.originCode ?? "",
       destinationCode: legs[activeLeg]?.destinationCode ?? "",
       departureDate: legs[activeLeg]?.departureDate ?? "",
-      cabin: (params.get("cabin") ?? "economy") as CabinClass,
-      adults: Math.max(1, Number(params.get("adults") ?? 1) || 1),
-      children: Math.max(0, Number(params.get("children") ?? 0) || 0),
-      infants: Math.max(0, Number(params.get("infants") ?? 0) || 0),
+      cabin: (params.get("cabin") || params.get("c") || "economy") as CabinClass,
+      adults: Math.max(1, Number(params.get("adults") || params.get("a") || 1) || 1),
+      children: Math.max(0, Number(params.get("children") || params.get("ch") || 0) || 0),
+      infants: Math.max(0, Number(params.get("infants") || params.get("inf") || 0) || 0),
     }),
     [params, legs, activeLeg],
   );
+
 
   const [results, setResults] = useState<FlightSearchResult[]>([]);
   const [alternativeDates, setAlternativeDates] = useState<string[]>([]);
@@ -185,16 +196,18 @@ function SearchResults() {
       return;
     }
 
-    const forward = new URLSearchParams({
-      trip: tripType,
-      cabin: criteria.cabin,
-      adults: String(criteria.adults),
-      children: String(criteria.children),
-      infants: String(criteria.infants),
-    });
+    const forward = new URLSearchParams();
+    if (tripType !== "one-way") forward.set("trip", tripType);
+    if (criteria.cabin !== "economy") forward.set("cabin", criteria.cabin);
+    if (criteria.adults > 1) forward.set("adults", String(criteria.adults));
+    if (criteria.children > 0) forward.set("children", String(criteria.children));
+    if (criteria.infants > 0) forward.set("infants", String(criteria.infants));
+
     const path = next.map((id) => encodeURIComponent(id as string)).join(",");
-    router.push(`/book/${path}?${forward.toString()}`);
+    const forwardQuery = forward.toString() ? `?${forward.toString()}` : "";
+    router.push(`/book/${path}${forwardQuery}`);
   }
+
 
   const airlines = useMemo(
     () => [...new Set(results.map((result) => result.flight.airline))].sort(),
@@ -366,21 +379,21 @@ function SearchResults() {
             alternativeDates.length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2">
                 {alternativeDates.slice(0, 6).map((date) => {
-                  const next = new URLSearchParams({
-                    from: criteria.originCode,
-                    to: criteria.destinationCode,
-                    date,
-                    cabin: criteria.cabin,
-                    adults: String(criteria.adults),
-                    children: String(criteria.children),
-                    infants: String(criteria.infants),
-                  });
+                  const next = new URLSearchParams();
+                  next.set("route", `${criteria.originCode}-${criteria.destinationCode}`);
+                  next.set("date", date);
+                  if (tripType !== "one-way") next.set("trip", tripType);
+                  if (criteria.cabin !== "economy") next.set("cabin", criteria.cabin);
+                  if (criteria.adults > 1) next.set("adults", String(criteria.adults));
+                  if (criteria.children > 0) next.set("children", String(criteria.children));
+                  if (criteria.infants > 0) next.set("infants", String(criteria.infants));
                   return (
                     <Link key={date} href={`/search?${next.toString()}`} className="btn-secondary">
                       {formatDateShort(`${date}T00:00:00`)}
                     </Link>
                   );
                 })}
+
               </div>
             ) : (
               <Link href="/" className="btn-primary">

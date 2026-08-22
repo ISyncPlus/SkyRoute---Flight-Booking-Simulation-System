@@ -12,81 +12,66 @@
 :root {
   color-scheme: light;
 
-  /* Neutrals carry a trace of the accent's hue rather than sitting on pure
-     grey. It is below the threshold anyone would name as "green", but it is
-     what stops the chrome reading as stock iOS. */
-  --canvas: #e8edeb;
-  /* Not pure white. The canvas already carries a trace of the accent's hue,
-     and a #ffffff card sitting on it read as a different, colder material —
-     the tint is what makes surface and canvas look like one family. */
-  --surface: #f5f8f7;
-  /* Channel form of --surface, purely for Tailwind's bg-surface/NN opacity
-     modifiers — see the comment on `surface` in tailwind.config.ts. Keep this
-     in step with --surface by hand; it can't be derived from it in plain CSS. */
-  --surface-rgb: 245 248 247;
-  /* Raised sits above surface, so it stays the lightest thing on the page —
-     but still tinted, so nothing in the stack is flat white. */
-  --raised: #fafcfb;
-  --fill: #dfe6e4;
-  --fill-strong: #cfd9d6;
-  --line: rgba(38, 60, 57, 0.13);
-  --line-strong: rgba(38, 60, 57, 0.26);
+  /* Crisp, clean, warm-mint tinted canvas and pure white surfaces */
+  --canvas: #edf2f0;
+  --surface: #ffffff;
+  --surface-rgb: 255 255 255;
+  --raised: #ffffff;
+  --fill: #e6eeee;
+  --fill-strong: #d2dedb;
+  --line: rgba(20, 36, 33, 0.12);
+  --line-strong: rgba(20, 36, 33, 0.24);
 
-  --ink: #131a19;
-  --ink-2: #4d5a57;
-  --ink-3: #838d8b;
+  /* High contrast, WCAG AAA compliant text typography */
+  --ink: #0d1514;
+  --ink-2: #2d3b38;
+  --ink-3: #4e5f5c;
 
-  /* Deep teal. Dark enough at #0d6b5e to clear 4.5:1 on white, so the same
-     value works for a link and for a filled button's background. */
-  --accent: #0d6b5e;
-  --accent-rgb: 13 107 94;
-  --accent-hover: #0a564d;
-  --accent-soft: #e2f2ef;
-  --accent-ink: #095349;
+  /* Deep rich teal with 4.8:1+ contrast on white */
+  --accent: #0a6e60;
+  --accent-rgb: 10 110 96;
+  --accent-hover: #07564b;
+  --accent-soft: #e2f4f1;
+  --accent-ink: #064b41;
   --on-accent: #ffffff;
-  --dot-grid-base: rgba(13, 107, 94, 0.25);
-  --dot-grid-active: #0d6b5e;
+  --dot-grid-base: rgba(10, 110, 96, 0.22);
+  --dot-grid-active: #0a6e60;
 
-  /* Success sits at a distinctly warmer, yellower green than the accent —
-     hue 128 against the accent's 172. Teal and green next to each other is
-     the one real hazard in a teal palette, and a confirmed badge has to be
-     unmistakable beside a teal button. It also never ships without a tick. */
-  --positive: #3d7a24;
-  --positive-rgb: 61 122 36;
-  --positive-soft: #eaf4e1;
-  --positive-ink: #2c5a19;
+  /* Semantic status colors with high-contrast inks */
+  --positive: #2c751a;
+  --positive-rgb: 44 117 26;
+  --positive-soft: #e9f7df;
+  --positive-ink: #1f5612;
 
-  --warn: #a86a12;
-  --warn-soft: #fbf0dd;
-  --warn-ink: #82500b;
+  --warn: #9e600a;
+  --warn-soft: #fef2dc;
+  --warn-ink: #754201;
 
-  --danger: #c62f34;
-  --danger-soft: #fceceb;
-  --danger-ink: #9d2125;
+  --danger: #bf262b;
+  --danger-soft: #fdeced;
+  --danger-ink: #8f171b;
 
-  /* Translucent chrome. A floating layer, not an opaque strip. */
-  --material: rgba(245, 248, 247, 0.78);
-  --material-edge: rgba(255, 255, 255, 0.7);
+  /* Translucent chrome and cards */
+  --material: rgba(255, 255, 255, 0.88);
+  --material-edge: rgba(255, 255, 255, 0.95);
 
-  /* Ambient light behind the landing hero. Static, never looping: a slowly
-     oscillating full-viewport background is a known discomfort trigger. */
-  --glow-1: rgba(13, 107, 94, 0.16);
-  --glow-2: rgba(25, 173, 156, 0.14);
-  --glow-3: rgba(96, 150, 120, 0.1);
+  /* Ambient light behind the landing hero */
+  --glow-1: rgba(10, 110, 96, 0.14);
+  --glow-2: rgba(25, 173, 156, 0.12);
+  --glow-3: rgba(96, 150, 120, 0.08);
 
   --shadow-1: 0 1px 2px rgba(17, 24, 39, 0.05), 0 1px 1px rgba(17, 24, 39, 0.03);
-  --shadow-2: 0 1px 2px rgba(17, 24, 39, 0.04), 0 8px 20px -8px rgba(17, 24, 39, 0.14);
-  --shadow-3: 0 2px 4px rgba(17, 24, 39, 0.04), 0 24px 48px -16px rgba(17, 24, 39, 0.2);
+  --shadow-2: 0 1px 3px rgba(17, 24, 39, 0.04), 0 8px 20px -8px rgba(17, 24, 39, 0.12);
+  --shadow-3: 0 2px 4px rgba(17, 24, 39, 0.04), 0 24px 48px -16px rgba(17, 24, 39, 0.18);
   --shadow-press: inset 0 1px 2px rgba(17, 24, 39, 0.1);
 
   /* Seat map */
-  --seat-free: #f5f8f7;
-  --seat-free-line: rgba(38, 60, 57, 0.28);
-  --seat-taken: #cfd9d6;
-  --seat-taken-ink: #99a3a1;
+  --seat-free: #ffffff;
+  --seat-free-line: rgba(20, 36, 33, 0.25);
+  --seat-taken: #d5e1de;
+  --seat-taken-ink: #657572;
 
-  /* Motion. Not durations for gestures — this app has none — but the curves
-     and beats every transition below is tuned against. */
+  /* Motion */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -95,6 +80,7 @@
   --dur-panel: 240ms;
   --dur-sheet: 300ms;
 }
+
 
 /*
  * Driven by the `.dark` class next-themes puts on <html> (see ThemeProvider

@@ -186,21 +186,13 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
       return;
     }
 
-    const params = new URLSearchParams({
-      from: criteria.originCode,
-      to: criteria.destinationCode,
-      date: criteria.departureDate,
-      trip: tripType,
-      cabin: criteria.cabin,
-      adults: String(criteria.adults),
-      children: String(criteria.children),
-      infants: String(criteria.infants),
-    });
+    const params = new URLSearchParams();
+    params.set("route", `${criteria.originCode}-${criteria.destinationCode}`);
+    if (criteria.departureDate) params.set("date", criteria.departureDate);
+
     if (tripType === "round-trip" && criteria.returnDate) {
       params.set("return", criteria.returnDate);
-    }
-    if (tripType === "multi-city" && extraLegs.length > 0) {
-      // `LOS-ABV-2026-08-20` per leg, comma separated — readable in a shared URL.
+    } else if (tripType === "multi-city" && extraLegs.length > 0) {
       params.set(
         "legs",
         extraLegs
@@ -208,7 +200,21 @@ export function SearchForm({ initial }: { initial?: Partial<SearchCriteria> }) {
           .join(","),
       );
     }
+
+    if (criteria.cabin !== "economy") {
+      params.set("cabin", criteria.cabin);
+    }
+    if (criteria.adults > 1) {
+      params.set("adults", String(criteria.adults));
+    }
+    if (criteria.children > 0) {
+      params.set("children", String(criteria.children));
+    }
+    if (criteria.infants > 0) {
+      params.set("infants", String(criteria.infants));
+    }
     router.push(`/search?${params.toString()}`);
+
   }
 
   return (

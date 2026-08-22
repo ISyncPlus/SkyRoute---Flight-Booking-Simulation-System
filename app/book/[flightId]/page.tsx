@@ -24,7 +24,8 @@ import { Alert, ButtonSpinner, Field, ProcessingModal, SeatMapSkeleton, Spinner,
 import { Icon } from "@/components/icons";
 import { airportLabel, CABIN_NAMES, formatDate, formatTime, isInternational } from "@/lib/format";
 import { calculateFare, combineFares, daysUntil, formatMoney, type FareContext } from "@/lib/pricing";
-import { buildSeatMap, loadFactor, seatsInCabin } from "@/lib/seats";
+import { buildSeatMap, loadFactor, randomlyAssignSeats, seatsInCabin } from "@/lib/seats";
+
 import { api } from "@/lib/api";
 import {
   availableCabins,
@@ -251,19 +252,17 @@ function BookingWizard() {
     });
   }
 
-  /** Assign the first available seats automatically, keeping the party together. */
+  /** Assign available seats randomly and smartly, keeping parties together in the same row. */
   /** Fills every leg at once — nobody wants to press this per flight. */
   function autoAssignSeats() {
     setSelectedByLeg(
       flights.map((entry, legIndex) => {
         const legCabin = availableCabins(entry).includes(requestedCabin) ? requestedCabin : "economy";
-        return seatsInCabin(seatsByLeg[legIndex] ?? [], legCabin)
-          .filter((seat) => seat.status === "available")
-          .slice(0, seatsNeeded)
-          .map((seat) => seat.id);
+        return randomlyAssignSeats(seatsByLeg[legIndex] ?? [], legCabin, seatsNeeded);
       }),
     );
   }
+
 
   function validatePassengerStep(): boolean {
     if (!flight) return false;

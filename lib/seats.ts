@@ -161,3 +161,47 @@ export function validateSeatSelection(
 
   return { valid: true, conflicts: [] };
 }
+
+/**
+ * Automatically assign seats in a cabin randomly and smartly.
+ * If multiple seats are requested, attempts to keep the party seated in the same row
+ * before falling back to randomly distributed seats across the cabin.
+ */
+export function randomlyAssignSeats(
+  seats: Seat[],
+  cabin: CabinClass,
+  count: number,
+): string[] {
+  if (count <= 0) return [];
+  const available = seatsInCabin(seats, cabin).filter((seat) => seat.status === "available");
+  if (available.length === 0) return [];
+  if (available.length <= count) return available.map((s) => s.id);
+
+  // For 1 seat: pick a random seat from anywhere in the available pool
+  if (count === 1) {
+    const randomIndex = Math.floor(Math.random() * available.length);
+    return [available[randomIndex].id];
+  }
+
+  // For multiple seats: group by row to find contiguous/nearby seats
+  const rows = groupByRow(available);
+  const candidateRowGroups: string[][] = [];
+
+  for (const { seats: rowSeats } of rows) {
+    if (rowSeats.length >= count) {
+      const maxOffset = rowSeats.length - count;
+      const offset = Math.floor(Math.random() * (maxOffset + 1));
+      candidateRowGroups.push(rowSeats.slice(offset, offset + count).map((s) => s.id));
+    }
+  }
+
+  if (candidateRowGroups.length > 0) {
+    const randomRowIdx = Math.floor(Math.random() * candidateRowGroups.length);
+    return candidateRowGroups[randomRowIdx];
+  }
+
+  // Fallback: shuffle available seats and pick count
+  const shuffled = [...available].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map((s) => s.id);
+}
+
