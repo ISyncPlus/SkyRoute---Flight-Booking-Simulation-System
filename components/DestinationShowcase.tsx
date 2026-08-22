@@ -85,7 +85,7 @@ export function DestinationShowcase() {
   const tomorrow = dateInputValue(1);
 
   return (
-    <section aria-labelledby="destinations-heading" className="container-wide section">
+    <section id="destinations" aria-labelledby="destinations-heading" className="container-wide section scroll-mt-24">
       <div className="flex flex-col items-center text-center justify-between gap-6 md:flex-row md:items-end md:text-left">
         <Reveal>
           <div>

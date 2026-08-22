@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
-import { Alert, EmptyState, Segmented, Spinner } from "@/components/ui";
+import { Alert, BookingCardSkeleton, ButtonSpinner, EmptyState, Segmented, Spinner } from "@/components/ui";
+
 import { Icon } from "@/components/icons";
 import { api } from "@/lib/api";
 import { cancelBooking, getFlight, listAirports, listBookingsForUser, listFlights } from "@/lib/repository";
@@ -19,17 +20,22 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filter, setFilter] = useState<Filter>("upcoming");
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [cancellingPnr, setCancellingPnr] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+
 
   useEffect(() => {
     if (!ready || !user) return;
     let cancelled = false;
 
     async function loadBookings() {
+      setLoading(true);
       try {
         const apiRes = await api.bookings.listMine();
         if (!cancelled && apiRes.ok) {
           setBookings(apiRes.data.bookings);
+          setLoading(false);
           return;
         }
       } catch {
@@ -38,15 +44,16 @@ export default function BookingsPage() {
 
       if (!cancelled && user) {
         setBookings(listBookingsForUser(user.id));
+        setLoading(false);
       }
     }
-
 
     void loadBookings();
     return () => {
       cancelled = true;
     };
   }, [ready, user, revision]);
+
 
   const airports = useStored(listAirports, [] as Airport[]);
   // The whole schedule, so a multi-leg booking can resolve every one of its flights.
@@ -80,6 +87,7 @@ export default function BookingsPage() {
 
   async function handleCancel(pnr: string) {
     if (!user) return;
+    setCancellingPnr(pnr);
 
     try {
       const apiRes = await api.bookings.cancel(pnr);
@@ -97,6 +105,8 @@ export default function BookingsPage() {
       }
     } catch {
       // Fallback
+    } finally {
+      setCancellingPnr(null);
     }
 
     const result = cancelBooking(pnr, { kind: "account", user });
@@ -115,33 +125,35 @@ export default function BookingsPage() {
     window.scrollTo({ top: 0 });
   }
 
-
   if (!ready) {
     return (
-      <div className="container-page">
-        <Spinner label="Loading your bookings" />
+      <div className="container-page max-w-4xl space-y-6">
+        <BookingCardSkeleton />
+        <BookingCardSkeleton />
       </div>
     );
   }
 
-  if (!user) {
+  if (isGuest || !user) {
     return (
-      <div className="container-page max-w-xl">
-        <Alert tone="info" title={isGuest ? "You are browsing in Guest Mode" : "This page needs an account"}>
-          {isGuest
-            ? "Bookings made as a guest are not attached to an account. You can look up and manage your guest trip anytime on the Manage Booking page using your booking reference (PNR) and passenger surname."
-            : "Bookings are listed here once they are attached to an account. Booked as a guest, or with a different account? Retrieve that trip from the manage booking page using its reference and the passenger surname."}
-        </Alert>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/manage" className="btn-primary">
-            <Icon name="search" className="h-4 w-4" />
-            Find guest booking
+      <div className="container-page max-w-lg">
+        <EmptyState
+          icon="ticket"
+          title="Sign in to view your bookings"
+          description="Your reservations are tied to your SkyRoute account. Sign in to view your itinerary, change seats or cancel."
+          action={
+            <Link href="/login" className="btn-primary">
+              <Icon name="signIn" className="h-4 w-4" />
+              Sign in to your account
+            </Link>
+          }
+        />
+        <p className="mt-6 text-center text-callout text-ink-2">
+          Booked as a guest?{" "}
+          <Link href="/manage" className="font-semibold text-accent-ink hover:underline">
+            Manage a reservation with your reference and surname
           </Link>
-          <Link href="/register" className="btn-secondary">
-            <Icon name="plus" className="h-4 w-4" />
-            Create permanent account
-          </Link>
-        </div>
+        </p>
       </div>
     );
   }
@@ -154,11 +166,20 @@ export default function BookingsPage() {
   };
 
   return (
-    <div className="container-page">
-      <h1 className="text-display font-semibold text-ink">My bookings</h1>
-      <p className="mt-3 text-callout text-ink-2">
-        Signed in as {user.fullName} ({user.email})
-      </p>
+    <div className="container-page max-w-4xl">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="overline">Your reservations</p>
+          <h1 className="text-display font-semibold text-ink">My bookings</h1>
+          <p className="mt-1 text-callout text-ink-2">
+            View itineraries, download boarding passes and manage cancellations.
+          </p>
+        </div>
+        <Link href="/" className="btn-primary shrink-0 w-full sm:w-auto text-center justify-center">
+          <Icon name="search" className="h-4 w-4" />
+          Book another flight
+        </Link>
+      </div>
 
       {message && (
         <div className="mt-6">
@@ -166,7 +187,7 @@ export default function BookingsPage() {
         </div>
       )}
 
-      <div className="mt-8">
+      <div className="mb-6 mt-8">
         <Segmented
           label="Filter bookings"
           value={filter}
@@ -181,7 +202,16 @@ export default function BookingsPage() {
       </div>
 
       <div className="mt-8">
-        {visible.length === 0 ? (
+        {loading ? (
+          <div className="space-y-6" role="status" aria-label="Loading your bookings">
+            <div className="flex items-center gap-2 text-footnote text-ink-2 mb-2">
+              <Icon name="spinner" className="h-4 w-4 animate-spin text-accent" />
+              <span>Loading reservations from your account…</span>
+            </div>
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+          </div>
+        ) : visible.length === 0 ? (
           <EmptyState
             icon="ticket"
             title={`No ${filter === "all" ? "" : filter} bookings`}
@@ -223,9 +253,6 @@ export default function BookingsPage() {
 
                     {canCancel &&
                       (confirming === booking.pnr ? (
-                        // Confirming a cancellation states the cost before it
-                        // asks — a confirmation that carries no new information
-                        // is just a speed bump.
                         <div className="enter flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 rounded-xl border border-line bg-danger-soft px-5 py-4 w-full">
                           <p className="text-footnote text-danger-ink w-full">
                             Cancel {booking.pnr}? You would be refunded{" "}
@@ -237,13 +264,22 @@ export default function BookingsPage() {
                           <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
                             <button
                               type="button"
+                              disabled={cancellingPnr === booking.pnr}
                               onClick={() => handleCancel(booking.pnr)}
                               className="btn-danger w-full sm:w-auto text-center justify-center"
                             >
-                              Yes, cancel it
+                              {cancellingPnr === booking.pnr ? (
+                                <>
+                                  <ButtonSpinner />
+                                  <span>Cancelling…</span>
+                                </>
+                              ) : (
+                                "Yes, cancel it"
+                              )}
                             </button>
                             <button
                               type="button"
+                              disabled={cancellingPnr === booking.pnr}
                               onClick={() => setConfirming(null)}
                               className="btn-secondary w-full sm:w-auto text-center justify-center"
                             >
@@ -258,7 +294,7 @@ export default function BookingsPage() {
                           className="btn-danger w-full sm:w-auto text-center justify-center"
                         >
                           <Icon name="ban" className="h-4 w-4" />
-                          Cancel booking
+                          Cancel reservation
                         </button>
                       ))}
 

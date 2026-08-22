@@ -12,7 +12,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useApp, useStored } from "@/components/AppProvider";
-import { Alert, Field, Segmented, Spinner, StatusBadge } from "@/components/ui";
+import { Alert, ButtonSpinner, Field, Segmented, Skeleton, Spinner, StatsCardSkeleton, StatusBadge, TableSkeleton } from "@/components/ui";
+
 import { Icon, type IconName } from "@/components/icons";
 import { api, type AdminStats } from "@/lib/api";
 import {
@@ -56,11 +57,14 @@ export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [airports, setAirports] = useState<Airport[]>([]);
 
+  const [loadingData, setLoadingData] = useState(true);
+
   useEffect(() => {
     if (!ready || !isAdmin) return;
     let cancelled = false;
 
     async function loadAdminData() {
+      setLoadingData(true);
       try {
         const [statsRes, flightsRes, bookingsRes, usersRes, airportsRes] = await Promise.all([
           api.admin.getStats(),
@@ -85,6 +89,7 @@ export default function AdminPage() {
 
           if (airportsRes.ok && airportsRes.data.airports) setAirports(airportsRes.data.airports);
           else setAirports(listAirports());
+          setLoadingData(false);
         }
       } catch {
         if (!cancelled) {
@@ -93,6 +98,7 @@ export default function AdminPage() {
           setBookings(listAllBookings());
           setUsers(listUsers());
           setAirports(listAirports());
+          setLoadingData(false);
         }
       }
     }
@@ -102,6 +108,7 @@ export default function AdminPage() {
       cancelled = true;
     };
   }, [ready, isAdmin, revision]);
+
 
   // ---- New flight form ----
   const [newFlight, setNewFlight] = useState({
@@ -263,7 +270,7 @@ export default function AdminPage() {
 
   async function handleReset() {
     await resetSystem();
-    notify("success", "All data was cleared and the schedule regenerated. You have been signed out.");
+    notify("success", "The local cache was cleared and the schedule regenerated. You have been signed out.");
     refresh();
   }
 
@@ -334,90 +341,119 @@ export default function AdminPage() {
       </div>
 
       {/* ---------------- Overview ---------------- */}
-      {tab === "overview" && stats && (
-        <section className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {([
-              { label: "Flights scheduled", value: stats.scheduledFlights.toLocaleString(), icon: "plane" },
-              { label: "Confirmed bookings", value: stats.confirmedBookings.toLocaleString(), icon: "ticket" },
-              { label: "Passengers carried", value: stats.totalPassengers.toLocaleString(), icon: "users" },
-              { label: "Registered users", value: stats.registeredUsers.toLocaleString(), icon: "user" },
-            ] as const satisfies readonly { label: string; value: string; icon: IconName }[]).map((item) => (
-              <div key={item.label} className="card">
-                <p className="overline flex items-center gap-1.5">
-                  <Icon name={item.icon} className="h-3.5 w-3.5" />
-                  {item.label}
-                </p>
-                <p className="mt-1.5 text-numeral font-semibold text-ink">{item.value}</p>
+      {tab === "overview" && (
+        loadingData && !stats ? (
+          <section className="space-y-6" role="status" aria-label="Loading admin metrics">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="card space-y-4 p-6">
+                <Skeleton className="h-6 w-28" />
+                <div className="space-y-2.5">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
+                </div>
               </div>
-            ))}
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="card">
-              <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
-                <Icon name="banknote" className="h-5 w-5 text-ink-3" />
-                Revenue
-              </h2>
-              <dl className="mt-3 space-y-2 text-footnote">
-                <div className="flex justify-between">
-                  <dt className="text-ink-2">Gross revenue (confirmed)</dt>
-                  <dd className="font-semibold text-ink">{formatMoney(stats.grossRevenue)}</dd>
+              <div className="card space-y-4 p-6">
+                <Skeleton className="h-6 w-32" />
+                <div className="space-y-2.5">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-ink-2">Refunds issued</dt>
-                  <dd className="font-semibold text-danger">−{formatMoney(stats.refunded)}</dd>
+              </div>
+            </div>
+          </section>
+        ) : stats ? (
+          <section className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {([
+                { label: "Flights scheduled", value: stats.scheduledFlights.toLocaleString(), icon: "plane" },
+                { label: "Confirmed bookings", value: stats.confirmedBookings.toLocaleString(), icon: "ticket" },
+                { label: "Passengers carried", value: stats.totalPassengers.toLocaleString(), icon: "users" },
+                { label: "Registered users", value: stats.registeredUsers.toLocaleString(), icon: "user" },
+              ] as const satisfies readonly { label: string; value: string; icon: IconName }[]).map((item) => (
+                <div key={item.label} className="card">
+                  <p className="overline flex items-center gap-1.5">
+                    <Icon name={item.icon} className="h-3.5 w-3.5" />
+                    {item.label}
+                  </p>
+                  <p className="mt-1.5 text-numeral font-semibold text-ink">{item.value}</p>
                 </div>
-                <div className="flex justify-between border-t border-line pt-2">
-                  <dt className="font-semibold text-ink">Net revenue</dt>
-                  <dd className="font-bold text-positive-ink">{formatMoney(stats.netRevenue)}</dd>
-                </div>
-                <div className="flex justify-between pt-1">
-                  <dt className="text-ink-2">Cancellation rate</dt>
-                  <dd className="text-ink">
-                    {stats.totalBookings === 0
-                      ? "0%"
-                      : `${Math.round((stats.cancelledBookings / stats.totalBookings) * 100)}%`}
-                  </dd>
-                </div>
-              </dl>
+              ))}
             </div>
 
-            <div className="card">
-              <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
-                <Icon name="chart" className="h-5 w-5 text-ink-3" />
-                Busiest routes
-              </h2>
-              {stats.topRoutes.length === 0 ? (
-                <p className="mt-3 text-footnote text-ink-3">No bookings have been made yet.</p>
-              ) : (
-                <ul className="mt-3 space-y-2">
-                  {stats.topRoutes.map((route: any) => {
-                    const label = route.route || `${route.originCode} → ${route.destinationCode}`;
-                    const count = route.bookings ?? route.count ?? 0;
-                    const max = stats.topRoutes[0]?.bookings ?? stats.topRoutes[0]?.count ?? 1;
-                    return (
-                      <li key={label}>
-                        <div className="flex justify-between text-footnote">
-                          <span className="text-ink-2">{label}</span>
-                          <span className="font-semibold text-ink">{count}</span>
-                        </div>
-                        <div className="mt-1 h-1.5 w-full rounded-full bg-fill">
-                          <div
-                            className="h-1.5 rounded-full bg-accent"
-                            style={{ width: `${max > 0 ? (count / max) * 100 : 0}%` }}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="card">
+                <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
+                  <Icon name="banknote" className="h-5 w-5 text-ink-3" />
+                  Revenue
+                </h2>
+                <dl className="mt-3 space-y-2 text-footnote">
+                  <div className="flex justify-between">
+                    <dt className="text-ink-2">Gross revenue (confirmed)</dt>
+                    <dd className="font-semibold text-ink">{formatMoney(stats.grossRevenue)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-ink-2">Refunds issued</dt>
+                    <dd className="font-semibold text-danger">−{formatMoney(stats.refunded)}</dd>
+                  </div>
+                  <div className="flex justify-between border-t border-line pt-2">
+                    <dt className="font-semibold text-ink">Net revenue</dt>
+                    <dd className="font-bold text-positive-ink">{formatMoney(stats.netRevenue)}</dd>
+                  </div>
+                  <div className="flex justify-between pt-1">
+                    <dt className="text-ink-2">Cancellation rate</dt>
+                    <dd className="text-ink">
+                      {stats.totalBookings === 0
+                        ? "0%"
+                        : `${Math.round((stats.cancelledBookings / stats.totalBookings) * 100)}%`}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
 
-                </ul>
-              )}
+              <div className="card">
+                <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
+                  <Icon name="chart" className="h-5 w-5 text-ink-3" />
+                  Busiest routes
+                </h2>
+                {stats.topRoutes.length === 0 ? (
+                  <p className="mt-3 text-footnote text-ink-3">No bookings have been made yet.</p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {stats.topRoutes.map((route: any) => {
+                      const label = route.route || `${route.originCode} → ${route.destinationCode}`;
+                      const count = route.bookings ?? route.count ?? 0;
+                      const max = stats.topRoutes[0]?.bookings ?? stats.topRoutes[0]?.count ?? 1;
+                      return (
+                        <li key={label}>
+                          <div className="flex justify-between text-footnote">
+                            <span className="text-ink-2">{label}</span>
+                            <span className="font-semibold text-ink">{count}</span>
+                          </div>
+                          <div className="mt-1 h-1.5 w-full rounded-full bg-fill">
+                            <div
+                              className="h-1.5 rounded-full bg-accent"
+                              style={{ width: `${max > 0 ? (count / max) * 100 : 0}%` }}
+                            />
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null
       )}
+
 
       {/* ---------------- Flights ---------------- */}
       {tab === "flights" && (
@@ -573,61 +609,65 @@ export default function AdminPage() {
             </div>
 
             <div className="max-h-[32rem] overflow-auto">
-              <table className="table-base">
-                <thead className="sticky top-0">
-                  <tr>
-                    <th scope="col">Flight</th>
-                    <th scope="col">Route</th>
-                    <th scope="col">Departs</th>
-                    <th scope="col">Aircraft</th>
-                    <th scope="col">Base fare</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleFlights.slice(0, 250).map((flight) => (
-                    <tr key={flight.id}>
-                      <td className="font-medium text-ink">{flight.flightNumber}</td>
-                      <td>
-                        {flight.originCode} → {flight.destinationCode}
-                      </td>
-                      <td className="whitespace-nowrap">
-                        {formatDateShort(flight.departureTime)} {formatTime(flight.departureTime)}
-                      </td>
-                      <td className="text-caption">{flight.aircraft}</td>
-                      <td className="whitespace-nowrap">{formatMoney(flight.baseFare)}</td>
-                      <td>
-                        <StatusBadge status={flight.status} />
-                      </td>
-                      <td>
-                        <div className="flex flex-wrap gap-1.5">
-                          <select
-                            aria-label={`Change status of ${flight.flightNumber}`}
-                            className="pressable rounded border border-line-strong bg-surface px-2 py-1.5 text-caption text-ink"
-                            value={flight.status}
-                            onChange={(event) =>
-                              handleStatusChange(flight, event.target.value as Flight["status"])
-                            }
-                          >
-                            <option value="scheduled">Scheduled</option>
-                            <option value="delayed">Delayed</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteFlight(flight)}
-                            className="pressable inline-flex items-center gap-1 rounded border border-danger px-2 py-1.5 text-caption font-medium text-danger"
-                          >
-                            <Icon name="trash" className="h-3.5 w-3.5" />
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+              {loadingData && flights.length === 0 ? (
+                <TableSkeleton rows={8} cols={7} />
+              ) : (
+                <table className="table-base">
+                  <thead className="sticky top-0">
+                    <tr>
+                      <th scope="col">Flight</th>
+                      <th scope="col">Route</th>
+                      <th scope="col">Departs</th>
+                      <th scope="col">Aircraft</th>
+                      <th scope="col">Base fare</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {visibleFlights.slice(0, 250).map((flight) => (
+                      <tr key={flight.id}>
+                        <td className="font-medium text-ink">{flight.flightNumber}</td>
+                        <td>
+                          {flight.originCode} → {flight.destinationCode}
+                        </td>
+                        <td className="whitespace-nowrap">
+                          {formatDateShort(flight.departureTime)} {formatTime(flight.departureTime)}
+                        </td>
+                        <td className="text-caption">{flight.aircraft}</td>
+                        <td className="whitespace-nowrap">{formatMoney(flight.baseFare)}</td>
+                        <td>
+                          <StatusBadge status={flight.status} />
+                        </td>
+                        <td>
+                          <div className="flex flex-wrap gap-1.5">
+                            <select
+                              aria-label={`Change status of ${flight.flightNumber}`}
+                              className="pressable rounded border border-line-strong bg-surface px-2 py-1.5 text-caption text-ink"
+                              value={flight.status}
+                              onChange={(event) =>
+                                handleStatusChange(flight, event.target.value as Flight["status"])
+                              }
+                            >
+                              <option value="scheduled">Scheduled</option>
+                              <option value="delayed">Delayed</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteFlight(flight)}
+                              className="pressable inline-flex items-center gap-1 rounded border border-danger px-2 py-1.5 text-caption font-medium text-danger"
+                            >
+                              <Icon name="trash" className="h-3.5 w-3.5" />
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
               {visibleFlights.length > 250 && (
                 <p className="mt-3 text-caption text-ink-3">
                   Showing the first 250 of {visibleFlights.length} matching flights. Narrow the filter
@@ -656,7 +696,9 @@ export default function AdminPage() {
             />
           </div>
 
-          {visibleBookings.length === 0 ? (
+          {loadingData && bookings.length === 0 ? (
+            <TableSkeleton rows={8} cols={8} />
+          ) : visibleBookings.length === 0 ? (
             <p className="py-8 text-center text-footnote text-ink-3">No bookings match that search.</p>
           ) : (
             <div className="overflow-x-auto">
@@ -737,42 +779,47 @@ export default function AdminPage() {
             <Icon name="users" className="h-5 w-5 text-ink-3" />
             Registered users ({users.length})
           </h2>
-          <div className="overflow-x-auto">
-            <table className="table-base">
-              <thead>
-                <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Email</th>
-                  <th scope="col">Phone</th>
-                  <th scope="col">Role</th>
-                  <th scope="col">Registered</th>
-                  <th scope="col">Bookings</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((account) => (
-                  <tr key={account.id}>
-                    <td className="font-medium text-ink">{account.fullName}</td>
-                    <td>{account.email}</td>
-                    <td>{account.phone}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          account.role === "admin"
-                            ? "bg-warn-soft text-warn-ink"
-                            : "bg-fill text-ink-2"
-                        }`}
-                      >
-                        {account.role}
-                      </span>
-                    </td>
-                    <td className="text-caption">{formatDate(account.createdAt)}</td>
-                    <td>{bookings.filter((booking) => booking.userId === account.id).length}</td>
+          {loadingData && users.length === 0 ? (
+            <TableSkeleton rows={6} cols={6} />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="table-base">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Registered</th>
+                    <th scope="col">Bookings</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {users.map((account) => (
+                    <tr key={account.id}>
+                      <td className="font-medium text-ink">{account.fullName}</td>
+                      <td>{account.email}</td>
+                      <td>{account.phone}</td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            account.role === "admin"
+                              ? "bg-warn-soft text-warn-ink"
+                              : "bg-fill text-ink-2"
+                          }`}
+                        >
+                          {account.role}
+                        </span>
+                      </td>
+                      <td className="text-caption">{formatDate(account.createdAt)}</td>
+                      <td>{bookings.filter((booking) => booking.userId === account.id).length}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           <p className="mt-4 text-caption text-ink-3">
             Password hashes and salts are stored but never displayed. No plain-text password exists
             anywhere in the system.
@@ -786,11 +833,15 @@ export default function AdminPage() {
           <div className="card">
             <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
               <Icon name="database" className="h-5 w-5 text-ink-3" />
-              Storage
+              Local cache
             </h2>
+            <p className="mt-2 text-footnote text-ink-2">
+              The SkyRoute API is the system of record. This browser keeps a local copy so the app
+              stays usable while the backend is unreachable.
+            </p>
             <dl className="mt-3 space-y-2 text-footnote">
               <div className="flex justify-between">
-                <dt className="text-ink-2">Approximate size of stored data</dt>
+                <dt className="text-ink-2">Approximate size of cached data</dt>
                 <dd className="font-medium text-ink">{(usedBytes() / 1024).toFixed(1)} KB</dd>
               </div>
               <div className="flex justify-between">
@@ -798,7 +849,7 @@ export default function AdminPage() {
                 <dd className="text-ink">≈ 5,120 KB</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-ink-2">Records held</dt>
+                <dt className="text-ink-2">Records cached</dt>
                 <dd className="text-ink">
                   {flights.length} flights, {bookings.length} bookings, {users.length} users
                 </dd>
@@ -815,15 +866,16 @@ export default function AdminPage() {
           <div className="card">
             <h2 className="flex items-center gap-2 text-title-3 font-semibold text-ink">
               <Icon name="alertTriangle" className="h-5 w-5 text-warn" />
-              Reset the system
+              Reset this browser
             </h2>
             <p className="mt-2 text-footnote text-ink-2">
-              Deletes every user, booking and flight from this browser and regenerates the seed
-              schedule. Useful before a demonstration. This cannot be undone.
+              Clears the cached users, bookings and flights held in this browser, signs you out and
+              regenerates the local seed schedule. Data on the SkyRoute server is left untouched.
+              Useful before a demonstration. This cannot be undone.
             </p>
             <button type="button" onClick={handleReset} className="btn-danger mt-4 w-full sm:w-auto text-center justify-center">
               <Icon name="refresh" className="h-4 w-4" />
-              Clear all data and reseed
+              Clear local cache and reseed
             </button>
           </div>
         </section>

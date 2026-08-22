@@ -9,7 +9,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
-import { Alert, Field, Spinner } from "@/components/ui";
+import { Alert, BookingCardSkeleton, ButtonSpinner, Field, Spinner } from "@/components/ui";
+
 import { Icon } from "@/components/icons";
 import { api } from "@/lib/api";
 import { cancelBooking, findBookingByPnrAndSurname, getFlight, listAirports, listFlights } from "@/lib/repository";
@@ -164,13 +165,36 @@ export default function ManageBookingPage() {
           </Field>
         </div>
 
-        <button type="submit" className="btn-primary mt-6 w-full sm:w-auto text-center justify-center">
-          <Icon name="search" className="h-4 w-4" />
-          Find booking
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary mt-6 w-full sm:w-auto text-center justify-center"
+        >
+          {loading ? (
+            <>
+              <ButtonSpinner />
+              <span>Looking up booking…</span>
+            </>
+          ) : (
+            <>
+              <Icon name="search" className="h-4 w-4" />
+              <span>Find booking</span>
+            </>
+          )}
         </button>
       </form>
 
-      {notFound && (
+      {loading && (
+        <div className="mt-8 space-y-4" role="status" aria-label="Looking up booking">
+          <div className="flex items-center gap-2 text-footnote text-ink-2">
+            <Icon name="spinner" className="h-4 w-4 animate-spin text-accent" />
+            <span>Verifying reservation reference {pnr} with the SkyRoute backend…</span>
+          </div>
+          <BookingCardSkeleton />
+        </div>
+      )}
+
+      {notFound && !loading && (
         <div className="mt-6">
           <Alert tone="error" title="No matching booking">
             We could not find a booking with that reference and surname. Check both and try again.
@@ -179,7 +203,7 @@ export default function ManageBookingPage() {
         </div>
       )}
 
-      {booking && (
+      {booking && !loading && (
         <div className="mt-8">
           <ItineraryCard
             booking={booking}
@@ -205,8 +229,6 @@ export default function ManageBookingPage() {
 
             {canCancel &&
               (confirming ? (
-                /* States the cost before it asks — a confirmation that carries
-                   no new information is just a speed bump. */
                 <div className="enter flex w-full flex-col flex-wrap items-start gap-4 rounded-xl border border-line bg-danger-soft px-5 py-4 sm:flex-row sm:items-center">
                   <p className="w-full text-footnote text-danger-ink">
                     Cancel {booking.pnr}? You would be refunded{" "}
@@ -216,6 +238,7 @@ export default function ManageBookingPage() {
                   <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
                     <button
                       type="button"
+                      disabled={loading}
                       onClick={handleCancel}
                       className="btn-danger w-full justify-center text-center sm:w-auto"
                     >
@@ -223,6 +246,7 @@ export default function ManageBookingPage() {
                     </button>
                     <button
                       type="button"
+                      disabled={loading}
                       onClick={() => setConfirming(false)}
                       className="btn-secondary w-full justify-center text-center sm:w-auto"
                     >
@@ -241,6 +265,7 @@ export default function ManageBookingPage() {
                 </button>
               ))}
           </div>
+
 
           {booking.status === "confirmed" && !canCancel && flight && (
             <p className="mt-3 text-caption text-ink-3">

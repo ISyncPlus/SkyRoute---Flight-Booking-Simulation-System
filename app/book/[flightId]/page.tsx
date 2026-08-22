@@ -19,7 +19,8 @@ import { FareSummary } from "@/components/FareSummary";
 import { PassengerForm } from "@/components/PassengerForm";
 import { PaymentForm, type PaymentDetails } from "@/components/PaymentForm";
 import { SeatMap } from "@/components/SeatMap";
-import { Alert, Field, Spinner, StepIndicator } from "@/components/ui";
+import { Alert, ButtonSpinner, Field, ProcessingModal, SeatMapSkeleton, Spinner, StepIndicator } from "@/components/ui";
+
 import { Icon } from "@/components/icons";
 import { airportLabel, CABIN_NAMES, formatDate, formatTime, isInternational } from "@/lib/format";
 import { calculateFare, combineFares, daysUntil, formatMoney, type FareContext } from "@/lib/pricing";
@@ -156,12 +157,15 @@ function BookingWizard() {
     }
   }, [user]);
 
+  const [seatsLoading, setSeatsLoading] = useState(true);
+
   // Load live seat maps from backend API (falling back to buildSeatMap)
   useEffect(() => {
     if (!ready || flights.length === 0) return;
     let cancelled = false;
 
     async function loadSeats() {
+      setSeatsLoading(true);
       try {
         const maps = await Promise.all(
           flights.map(async (entry) => {
@@ -173,12 +177,14 @@ function BookingWizard() {
         if (!cancelled) {
           setSeatsByLeg(maps);
           setSelectedByLeg((current) => flights.map((_, index) => current[index] ?? []));
+          setSeatsLoading(false);
         }
       } catch {
         if (!cancelled) {
           const all = listAllBookings();
           setSeatsByLeg(flights.map((entry) => buildSeatMap(entry, all)));
           setSelectedByLeg((current) => flights.map((_, index) => current[index] ?? []));
+          setSeatsLoading(false);
         }
       }
     }
@@ -188,6 +194,7 @@ function BookingWizard() {
       cancelled = true;
     };
   }, [ready, flights, revision]);
+
 
   const seats = seatsByLeg[activeLeg] ?? [];
   const selectedSeats = selectedByLeg[activeLeg] ?? [];
@@ -641,21 +648,34 @@ function BookingWizard() {
                   </button>
                 </div>
 
-                <SeatMap
-                  seats={seats}
-                  cabin={cabin}
-                  selected={selectedSeats}
-                  maxSelectable={seatsNeeded}
-                  onToggle={toggleSeat}
-                />
+                {seatsLoading && seats.length === 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-footnote text-ink-2">
+                      <ButtonSpinner className="text-accent" />
+                      <span>Loading interactive cabin seat map…</span>
+                    </div>
+                    <SeatMapSkeleton />
+                  </div>
+                ) : (
+                  <>
+                    <SeatMap
+                      seats={seats}
+                      cabin={cabin}
+                      selected={selectedSeats}
+                      maxSelectable={seatsNeeded}
+                      onToggle={toggleSeat}
+                    />
 
-                {selectedSeats.length > 0 && (
-                  <p className="mt-4 text-callout text-ink-2">
-                    Selected:{" "}
-                    <span className="font-semibold text-ink">{selectedSeats.join(", ")}</span>
-                  </p>
+                    {selectedSeats.length > 0 && (
+                      <p className="mt-4 text-callout text-ink-2">
+                        Selected:{" "}
+                        <span className="font-semibold text-ink">{selectedSeats.join(", ")}</span>
+                      </p>
+                    )}
+                  </>
                 )}
               </section>
+
             )}
 
             {step === 1 && (
@@ -841,9 +861,17 @@ function BookingWizard() {
           passengerCount={passengers.length}
         />
       </div>
+
+      {submitting && (
+        <ProcessingModal
+          title="Securing your reservation"
+          message="Allocating seats and authorizing payment with the SkyRoute backend…"
+        />
+      )}
     </div>
   );
 }
+
 
 export default function BookPage() {
   return (

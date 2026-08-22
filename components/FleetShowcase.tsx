@@ -77,7 +77,7 @@ export function FleetShowcase() {
   const plane = FLEET.find((f) => f.id === activeAircraft) ?? FLEET[0];
 
   return (
-    <section aria-labelledby="fleet-heading" className="container-wide section">
+    <section id="fleet" aria-labelledby="fleet-heading" className="container-wide section scroll-mt-24">
       <Reveal>
         <div className="flex flex-col items-center text-center justify-between gap-6 md:flex-row md:items-end md:text-left">
           <div>

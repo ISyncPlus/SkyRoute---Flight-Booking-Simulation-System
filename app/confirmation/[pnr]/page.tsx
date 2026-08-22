@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useApp, useStored } from "@/components/AppProvider";
 import { ItineraryCard } from "@/components/ItineraryCard";
-import { Alert, Spinner } from "@/components/ui";
+import { Alert, BookingCardSkeleton, Spinner } from "@/components/ui";
+
 import { Icon } from "@/components/icons";
 import { api } from "@/lib/api";
 import { findBookingByPnr, getFlight, listAirports, listFlights } from "@/lib/repository";
@@ -83,11 +84,15 @@ export default function ConfirmationPage() {
 
   if (!ready || booking === undefined) {
     return (
-      <div className="container-page">
-        <Spinner label="Retrieving your booking" />
+      <div className="container-page max-w-3xl space-y-6">
+        <div className="flex items-center gap-2 text-footnote text-ink-2 mb-2">
+          <Spinner label={`Retrieving e-ticket and itinerary for ${pnr}…`} />
+        </div>
+        <BookingCardSkeleton />
       </div>
     );
   }
+
 
 
   if (!booking) {
@@ -139,7 +144,8 @@ export default function ConfirmationPage() {
       </div>
 
       <p className="no-print mt-8 text-caption text-ink-3">
-        This reservation is saved locally in your browser storage.
+        This reservation is saved to the SkyRoute server. You can retrieve it from any device with
+        your PNR and surname.
       </p>
     </div>
   );

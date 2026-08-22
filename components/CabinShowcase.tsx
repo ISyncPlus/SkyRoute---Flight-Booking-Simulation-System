@@ -94,7 +94,7 @@ export function CabinShowcase() {
   const current = CABIN_TIERS.find((c) => c.id === selectedCabin) ?? CABIN_TIERS[1];
 
   return (
-    <section aria-labelledby="cabin-heading" className="container-wide section">
+    <section id="cabins" aria-labelledby="cabin-heading" className="container-wide section scroll-mt-24">
       <Reveal>
         <div className="text-center">
           <p className="overline text-accent">Elevated Onboard Comfort</p>

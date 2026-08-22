@@ -1,6 +1,8 @@
 # SkyRoute — Flight Booking System
 
-A modern, full-featured flight booking system built with **Next.js 15**, **React 19**, **TypeScript** and **Tailwind CSS**. It operates as a self-contained system with **zero backend dependencies**: all schedules, user accounts, reservations, and seat mappings persist directly in the browser's `localStorage`.
+A modern, full-featured flight booking system built with **Next.js 15**, **React 19**, **TypeScript** and **Tailwind CSS**, backed by a hosted **Express + Prisma** API. Schedules, user accounts, reservations, and seat mappings live server-side and are reached through `lib/api.ts`; the browser's `localStorage` remains as a session and offline cache so the app degrades gracefully when the backend is unreachable.
+
+The API base URL is configured with `NEXT_PUBLIC_API_URL` (default `https://skyroute-server.onrender.com/api`). Browser requests go to the same-origin `/api/*` path, which is proxied to the backend by [app/api/[...path]/route.ts](app/api/[...path]/route.ts) and the rewrite in [next.config.mjs](next.config.mjs).
 
 ---
 
@@ -49,7 +51,7 @@ npm run lint          # run ESLint checks
 - **Flight Operations**: Create new flights, adjust departure/arrival timings, update base pricing, and set status flags (Scheduled / Delayed / Cancelled).
 - **Integrity Constraints**: Prevents deletion of flights with confirmed passenger bookings to avoid orphaned records.
 - **Global Manifests**: Search all passenger bookings by PNR, customer name, or email with administrative cancellation capabilities.
-- **System Storage & Reset**: Monitor `localStorage` storage utilization and trigger full schedule reseeding.
+- **Local Cache & Reset**: Monitor the browser cache's utilization and clear it, reseeding the local schedule without touching server data.
 
 ---
 

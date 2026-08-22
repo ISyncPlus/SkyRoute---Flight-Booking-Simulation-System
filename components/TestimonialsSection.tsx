@@ -38,7 +38,7 @@ const TESTIMONIALS: Testimonial[] = [
     aircraftBadge: "Airbus A330-300",
     highlight: "Textbook revenue management in action",
     quote:
-      "The advance-purchase pricing curve and load factor multiplier provide a masterclass in airline revenue management. It is truly remarkable that the entire 21-day schedule engine runs client-side with full persistence.",
+      "The advance-purchase pricing curve and load factor multiplier provide a masterclass in airline revenue management. It is truly remarkable that the entire 21-day schedule engine runs live against a real API, with seat inventory held consistently across every session.",
     rating: 5,
   },
   {

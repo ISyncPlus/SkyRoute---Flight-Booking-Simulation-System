@@ -73,7 +73,8 @@ export function PaymentForm({
   return (
     <div className="space-y-5">
       <Alert tone="info" title="No real money moves">
-        This is a demonstration checkout. Nothing is charged and no details leave your browser.
+        This is a demonstration checkout. Nothing is charged, no payment gateway is contacted, and
+        your card details are never stored.
       </Alert>
 
       <div className="card-lg">

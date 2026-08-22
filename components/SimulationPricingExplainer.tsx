@@ -37,7 +37,7 @@ export function SimulationPricingExplainer() {
   const totalFare = taxable + taxes + SERVICE_CHARGE;
 
   return (
-    <section aria-labelledby="pricing-engine-heading" className="container-wide section">
+    <section id="pricing" aria-labelledby="pricing-engine-heading" className="container-wide section scroll-mt-24">
       <Reveal>
         <div className="text-center">
           <p className="overline text-accent">Algorithmic Transparency</p>

@@ -308,9 +308,10 @@ export default function HomePage() {
           {!storageAvailable && (
             <div className="mb-8">
               <Alert tone="error" title="Browser storage is unavailable">
-                This application stores its data in your browser&apos;s localStorage. It appears to be
-                disabled or full. This often happens in private browsing mode. Please open the site in
-                a normal window to continue.
+                Your bookings live on the SkyRoute server, but this browser still needs local storage
+                to keep your session and cached schedule. It appears to be disabled or full, which
+                often happens in private browsing mode. Please open the site in a normal window to
+                continue.
               </Alert>
             </div>
           )}
@@ -346,7 +347,7 @@ export default function HomePage() {
         <SimulationPricingExplainer />
 
         {/* ---------------- Architecture & Capabilities ---------------- */}
-        <section aria-labelledby="features-heading" className="container-wide section">
+        <section id="features" aria-labelledby="features-heading" className="container-wide section scroll-mt-24">
           <Reveal>
             <div className="text-center">
               <p className="overline text-accent">Airline Capabilities</p>
@@ -391,8 +392,9 @@ export default function HomePage() {
                   Prefer not to sign up? Borrow an account.
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-callout text-ink-2">
-                  Both demo roles are pre-seeded into your browser on first launch. The administrator can
-                  manage the global schedule, modify timings, and inspect passenger manifests.
+                  Both demo roles ship with the SkyRoute API, so they work on any device you sign in
+                  from. The administrator can manage the global schedule, modify timings, and inspect
+                  passenger manifests.
                 </p>
               </div>
             </Reveal>
@@ -432,7 +434,7 @@ export default function HomePage() {
                   <p className="mx-auto lg:mx-0 mt-2.5 max-w-lg text-callout text-ink-2">
                     {isGuest
                       ? "You are currently browsing as a guest. You can search live availability, select seats, and complete your reservation directly. To keep all your itineraries in one place, create a permanent account anytime."
-                      : "You can book as a guest without an account at all. Setting one up takes a single form, keeps every trip in one place, and never leaves your browser."}
+                      : "You can book as a guest without an account at all. Setting one up takes a single form and keeps every trip in one place, ready to pick up from any device you sign in from."}
                   </p>
                 </div>
                 <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row justify-center">

@@ -96,12 +96,250 @@ export function Alert({
 
 export function Spinner({ label = "Loading" }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-20 text-callout text-ink-2" role="status">
+    <div className="flex items-center justify-center gap-3 py-16 text-callout text-ink-2" role="status">
       <Icon name="spinner" className="h-5 w-5 animate-spin text-accent" />
-      {label}
+      <span>{label}</span>
     </div>
   );
 }
+
+export function ButtonSpinner({ className = "h-4 w-4" }: { className?: string }) {
+  return <Icon name="spinner" className={`animate-spin ${className}`} />;
+}
+
+/** Basic shimmering skeleton block */
+export function Skeleton({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return <div className={`skeleton rounded-md ${className}`} style={style} aria-hidden="true" />;
+}
+
+/** Skeleton for flight search result card */
+export function FlightCardSkeleton() {
+  return (
+    <div className="card space-y-4 p-5 sm:p-6" aria-hidden="true">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <Skeleton className="h-7 w-7 rounded-lg" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
+        <Skeleton className="h-6 w-24 rounded-full" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-12 sm:items-center">
+        <div className="sm:col-span-8 flex items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-3.5 w-24" />
+          </div>
+
+          <div className="flex flex-1 flex-col items-center px-3 space-y-1.5">
+            <Skeleton className="h-3 w-14" />
+            <div className="relative w-full flex items-center justify-center">
+              <Skeleton className="h-0.5 w-full" />
+              <div className="absolute h-2 w-2 rounded-full bg-fill-strong" />
+            </div>
+            <Skeleton className="h-3 w-12" />
+          </div>
+
+          <div className="space-y-1.5 text-right">
+            <Skeleton className="h-6 w-16 ml-auto" />
+            <Skeleton className="h-3.5 w-24 ml-auto" />
+          </div>
+        </div>
+
+        <div className="sm:col-span-4 flex sm:flex-col items-center sm:items-end justify-between gap-2 sm:border-l sm:border-line sm:pl-5">
+          <div className="space-y-1 sm:text-right">
+            <Skeleton className="h-3 w-12 sm:ml-auto" />
+            <Skeleton className="h-6 w-28 sm:ml-auto" />
+          </div>
+          <Skeleton className="h-10 w-28 sm:w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Multiple flight card skeletons for search loading */
+export function FlightSearchResultsSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div className="space-y-4" role="status" aria-label="Loading flight results">
+      {Array.from({ length: count }).map((_, index) => (
+        <FlightCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+}
+
+/** Skeleton for booking / itinerary card */
+export function BookingCardSkeleton() {
+  return (
+    <div className="card space-y-5 p-5 sm:p-6" aria-hidden="true">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-7 w-20 rounded-md" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+        <Skeleton className="h-4 w-32" />
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-6">
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-3.5 w-20" />
+          </div>
+          <Skeleton className="h-4 w-12" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-3.5 w-20" />
+          </div>
+        </div>
+        <Skeleton className="h-5 w-28" />
+      </div>
+
+      <div className="flex items-center justify-between border-t border-line pt-4">
+        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-9 w-24 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+/** Skeleton for aircraft seat map */
+export function SeatMapSkeleton() {
+  return (
+    <div className="card space-y-6 p-6" aria-hidden="true">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+        <div className="space-y-1.5">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-3.5 w-24" />
+        </div>
+        <div className="flex gap-4">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+      </div>
+
+      {/* Fuselage shape */}
+      <div className="mx-auto max-w-sm rounded-3xl border border-line bg-surface/50 p-6 space-y-6">
+        <div className="mx-auto h-12 w-28 rounded-t-full border-t border-x border-line bg-fill/30 flex items-center justify-center">
+          <Skeleton className="h-3 w-12" />
+        </div>
+
+        {/* Business class rows */}
+        <div className="space-y-3">
+          <Skeleton className="h-3 w-20 mx-auto" />
+          {Array.from({ length: 2 }).map((_, r) => (
+            <div key={r} className="flex justify-center gap-6">
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-8 rounded-lg" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
+              </div>
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-8 rounded-lg" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Aisle separator */}
+        <div className="border-t border-line my-4" />
+
+        {/* Economy class rows */}
+        <div className="space-y-3">
+          <Skeleton className="h-3 w-20 mx-auto" />
+          {Array.from({ length: 4 }).map((_, r) => (
+            <div key={r} className="flex justify-center gap-6">
+              <div className="flex gap-1.5">
+                <Skeleton className="h-7 w-7 rounded-md" />
+                <Skeleton className="h-7 w-7 rounded-md" />
+                <Skeleton className="h-7 w-7 rounded-md" />
+              </div>
+              <div className="flex gap-1.5">
+                <Skeleton className="h-7 w-7 rounded-md" />
+                <Skeleton className="h-7 w-7 rounded-md" />
+                <Skeleton className="h-7 w-7 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Skeleton for admin metrics card */
+export function StatsCardSkeleton() {
+  return (
+    <div className="card space-y-2 p-5" aria-hidden="true">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-4 w-4 rounded-full" />
+        <Skeleton className="h-3.5 w-24" />
+      </div>
+      <Skeleton className="h-7 w-20 mt-2" />
+    </div>
+  );
+}
+
+/** Table skeleton for admin panels */
+export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+  return (
+    <div className="card overflow-hidden" aria-hidden="true">
+      <div className="border-b border-line bg-fill/20 px-6 py-3.5 flex justify-between gap-4">
+        {Array.from({ length: cols }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-24" />
+        ))}
+      </div>
+      <div className="divide-y divide-line">
+        {Array.from({ length: rows }).map((_, r) => (
+          <div key={r} className="px-6 py-4 flex justify-between items-center gap-4">
+            {Array.from({ length: cols }).map((_, c) => (
+              <Skeleton key={c} className={`h-4 ${c === 0 ? "w-28" : "w-20"}`} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Full-screen or section processing overlay */
+export function ProcessingModal({
+  title = "Processing your reservation",
+  message = "Locking seats and authorizing payment with the SkyRoute backend…",
+}: {
+  title?: string;
+  message?: string;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="processing-title"
+    >
+      <div className="card-lg max-w-sm w-full space-y-4 p-8 text-center shadow-2xl animate-scale-in">
+        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+          <Icon name="spinner" className="h-8 w-8 animate-spin" />
+        </div>
+        <p id="processing-title" className="text-title-3 font-semibold text-ink">
+          {title}
+        </p>
+        <p className="text-callout text-ink-2">{message}</p>
+      </div>
+    </div>
+  );
+}
+
 
 export function EmptyState({
   icon,

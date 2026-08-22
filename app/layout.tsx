@@ -4,14 +4,14 @@ import { ThemeProvider } from "next-themes";
 import { AppProvider } from "@/components/AppProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { Navbar } from "@/components/Navbar";
-import { LogoMono } from "@/components/Brand";
+import { Footer } from "@/components/Footer";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const DESCRIPTION =
-  "A flight booking system built with Next.js, using browser localStorage for persistence.";
+  "A full-stack flight booking system: a Next.js front end backed by a hosted API for schedules, accounts and reservations.";
 
 /* The favicon, home-screen icon and social card are picked up by file
    convention from app/icon.svg, app/apple-icon.tsx and app/opengraph-image.tsx,
@@ -52,20 +52,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Skip to main content
               </a>
               <Navbar />
-              <main id="main" className="flex-1 pb-20">
+              {/* The footer brings its own generous top padding, so main only
+                  needs enough to keep the last section off the hairline. */}
+              <main id="main" className="flex-1 pb-8">
                 {children}
               </main>
-              <footer className="no-print border-t border-line py-8">
-                <div className="container-page text-center text-caption text-ink-3">
-                  <p className="flex items-center justify-center gap-2 font-medium text-ink-2">
-                    <LogoMono className="h-4 w-4" />
-                    SkyRoute Flight Booking System
-                  </p>
-                  <p className="mx-auto mt-1.5 max-w-lg">
-                    Powered by local browser storage persistence.
-                  </p>
-                </div>
-              </footer>
+              <Footer />
             </SmoothScroll>
           </AppProvider>
         </ThemeProvider>

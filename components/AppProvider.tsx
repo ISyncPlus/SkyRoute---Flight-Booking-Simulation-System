@@ -42,9 +42,11 @@ interface AppContextValue {
   }) => Promise<{ ok: boolean; error?: string; fieldErrors?: Record<string, string> }>;
   signOut: () => void;
   refresh: () => void;
+  syncSession: () => Promise<SessionUser | null>;
   /** Bumped whenever data changes, so pages can re-read state. */
   revision: number;
 }
+
 
 const AppContext = createContext<AppContextValue | null>(null);
 
@@ -214,6 +216,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setRevision((value) => value + 1);
   }, []);
 
+  const syncSession = useCallback(async () => {
+    try {
+      const meRes = await api.auth.getMe();
+      if (meRes.ok && meRes.data.user) {
+        setUser(meRes.data.user);
+        setSession(meRes.data.user);
+        setIsGuest(false);
+        setRevision((value) => value + 1);
+        return meRes.data.user;
+      }
+    } catch {
+      // Backend error
+    }
+    return null;
+  }, []);
+
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -228,10 +246,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signOut,
       refresh,
+      syncSession,
       revision,
     }),
-    [ready, storageAvailable, user, isGuest, continueAsGuest, exitGuest, signIn, signUp, signOut, refresh, revision],
+    [ready, storageAvailable, user, isGuest, continueAsGuest, exitGuest, signIn, signUp, signOut, refresh, syncSession, revision],
   );
+
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

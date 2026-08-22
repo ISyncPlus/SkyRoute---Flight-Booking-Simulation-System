@@ -712,6 +712,66 @@
   .scroll-edge::after {
     content: "";
     position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    pointer-events: none;
+    background: linear-gradient(to right, var(--surface), transparent);
+  }
+
+  /* ==========================================================================
+     Shimmer Skeletons & Modern Loaders
+     ========================================================================== */
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--fill) 0%,
+      var(--fill-strong) 50%,
+      var(--fill) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes flight-radar {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-flight-radar {
+    animation: flight-radar 4s linear infinite;
+  }
+
+  .scroll-edge::after {
+    content: "";
+    position: absolute;
     inset: 100% 0 auto 0;
     height: 1.25rem;
     pointer-events: none;

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { AuthShell } from "@/components/AuthShell";
-import { Alert, Field } from "@/components/ui";
-import { Icon } from "@/components/icons";
+import { Alert, Field, Spinner } from "@/components/ui";
+import { GoogleIcon, Icon } from "@/components/icons";
 import { DEMO_ADMIN, DEMO_CUSTOMER } from "@/lib/auth";
 
 const POINTS = [
@@ -19,18 +19,47 @@ const POINTS = [
     body: "Itineraries, e-tickets and refunds live under your account, ready to print or cancel.",
   },
   {
-    title: "Nothing leaves this browser",
-    body: "Credentials are salted and hashed into localStorage. There is no server to send them to.",
+    title: "Credentials are handled properly",
+    body: "Passwords are salted and hashed on the SkyRoute server, and your session is an HTTP-only cookie the page itself cannot read.",
   },
 ];
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const { signIn, user } = useApp();
+  const searchParams = useSearchParams();
+  const { signIn, user, syncSession } = useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [oauthChecking, setOauthChecking] = useState(false);
+
+  // Handle post-OAuth redirect
+  useEffect(() => {
+    const oauthStatus = searchParams.get("oauth");
+    const reason = searchParams.get("reason");
+
+    if (oauthStatus === "success") {
+      setOauthChecking(true);
+      (async () => {
+        const currentUser = await syncSession();
+        setOauthChecking(false);
+        if (currentUser) {
+          router.push("/bookings");
+        } else {
+          router.push("/");
+        }
+      })();
+    } else if (oauthStatus === "error") {
+      setError(reason || "Google sign in failed. Please try again.");
+    }
+  }, [searchParams, syncSession, router]);
+
+  function handleGoogleLogin() {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://skyroute-server.onrender.com/api";
+    window.location.href = `${apiUrl.replace(/\/+$/, "")}/auth/oauth/google`;
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -73,6 +102,95 @@ export default function LoginPage() {
     );
   }
 
+  if (oauthChecking) {
+    return (
+      <div className="card-lg flex flex-col items-center justify-center py-12 text-center">
+        <Spinner label="Completing Google sign in…" />
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="card-lg space-y-6">
+      {error && <Alert tone="error">{error}</Alert>}
+
+      {/* Google OAuth Button */}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-callout font-semibold text-ink shadow-sm transition hover:bg-fill active:scale-[0.99]"
+      >
+        <GoogleIcon className="h-5 w-5 shrink-0" />
+        <span>Continue with Google</span>
+      </button>
+
+      <div className="relative my-2 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-line" />
+        </div>
+        <span className="relative bg-surface px-3 text-micro font-medium uppercase tracking-wider text-ink-3">
+          Or continue with email
+        </span>
+      </div>
+
+      <Field label="Email address" htmlFor="email">
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          required
+          className="input"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+      </Field>
+
+      <Field label="Password" htmlFor="password">
+        <input
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          className="input"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
+      </Field>
+
+      <button type="submit" disabled={busy} className="btn-primary btn-lg w-full">
+        <Icon
+          name={busy ? "spinner" : "signIn"}
+          className={`h-5 w-5 ${busy ? "animate-spin" : ""}`}
+        />
+        {busy ? "Signing in…" : "Sign in"}
+      </button>
+
+      <div className="border-t border-line pt-6">
+        <p className="overline">Demonstration accounts</p>
+        <div className="mt-4 flex flex-col sm:flex-row gap-2.5">
+          <button
+            type="button"
+            onClick={() => fill(DEMO_CUSTOMER)}
+            className="btn-secondary w-full sm:w-auto text-center justify-center"
+          >
+            <Icon name="user" className="h-4 w-4" />
+            Use customer account
+          </button>
+          <button
+            type="button"
+            onClick={() => fill(DEMO_ADMIN)}
+            className="btn-secondary w-full sm:w-auto text-center justify-center"
+          >
+            <Icon name="shield" className="h-4 w-4" />
+            Use admin account
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+export default function LoginPage() {
   return (
     <AuthShell
       title="Welcome back."
@@ -87,55 +205,15 @@ export default function LoginPage() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} noValidate className="card-lg space-y-6">
-        {error && <Alert tone="error">{error}</Alert>}
-
-        <Field label="Email address" htmlFor="email">
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            className="input"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </Field>
-
-        <Field label="Password" htmlFor="password">
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            className="input"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </Field>
-
-        <button type="submit" disabled={busy} className="btn-primary btn-lg w-full">
-          <Icon
-            name={busy ? "spinner" : "signIn"}
-            className={`h-5 w-5 ${busy ? "animate-spin" : ""}`}
-          />
-          {busy ? "Signing in…" : "Sign in"}
-        </button>
-
-        <div className="border-t border-line pt-6">
-          <p className="overline">Demonstration accounts</p>
-          <div className="mt-4 flex flex-col sm:flex-row gap-2.5">
-            <button type="button" onClick={() => fill(DEMO_CUSTOMER)} className="btn-secondary w-full sm:w-auto text-center justify-center">
-              <Icon name="user" className="h-4 w-4" />
-              Use customer account
-            </button>
-            <button type="button" onClick={() => fill(DEMO_ADMIN)} className="btn-secondary w-full sm:w-auto text-center justify-center">
-              <Icon name="shield" className="h-4 w-4" />
-              Use admin account
-            </button>
+      <Suspense
+        fallback={
+          <div className="card-lg py-12">
+            <Spinner label="Loading sign in…" />
           </div>
-        </div>
-      </form>
+        }
+      >
+        <LoginForm />
+      </Suspense>
     </AuthShell>
   );
 }

@@ -6,12 +6,13 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { FlightCard } from "@/components/FlightCard";
 import { SearchForm } from "@/components/SearchForm";
-import { Alert, EmptyState, Spinner } from "@/components/ui";
+import { Alert, EmptyState, FlightSearchResultsSkeleton, Spinner } from "@/components/ui";
+
 import { Icon } from "@/components/icons";
 import { api } from "@/lib/api";
 import { datesWithFlights, searchFlights } from "@/lib/repository";
 
-import { CABIN_NAMES, formatDate, formatDateShort } from "@/lib/format";
+import { CABIN_NAMES, dateInputValue, formatDate, formatDateShort } from "@/lib/format";
 import { validateSearch } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import type { CabinClass, FlightSearchResult, SearchCriteria, SearchLeg, TripType } from "@/lib/types";
@@ -44,7 +45,10 @@ function SearchResults() {
   const legs = useMemo<SearchLeg[]>(() => {
     const from = (params.get("from") ?? "").toUpperCase();
     const to = (params.get("to") ?? "").toUpperCase();
-    const date = params.get("date") ?? "";
+    /* A route link that carries no date — the footer's popular routes, a
+       shared URL that lost its query — should still land on results rather
+       than an empty state, so it falls to the first bookable day. */
+    const date = params.get("date") || dateInputValue(1);
     const first: SearchLeg = { originCode: from, destinationCode: to, departureDate: date };
 
     if (tripType === "round-trip") {
@@ -340,8 +344,17 @@ function SearchResults() {
         </div>
       </div>
 
-      {results.length === 0 ? (
+      {loadingResults ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-footnote font-medium text-ink-2">
+            <Icon name="spinner" className="h-4 w-4 animate-spin text-accent" />
+            <span>Finding flights from {criteria.originCode} to {criteria.destinationCode}…</span>
+          </div>
+          <FlightSearchResultsSkeleton count={4} />
+        </div>
+      ) : results.length === 0 ? (
         <EmptyState
+
           icon="search"
           title="No flights match this search"
           description={

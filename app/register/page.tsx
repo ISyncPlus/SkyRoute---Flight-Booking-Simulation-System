@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { AuthShell } from "@/components/AuthShell";
-import { Alert, Field } from "@/components/ui";
-import { Icon } from "@/components/icons";
+import { Alert, Field, Spinner } from "@/components/ui";
+import { GoogleIcon, Icon } from "@/components/icons";
 import { validateRegistration } from "@/lib/validation";
 
 const POINTS = [
@@ -19,14 +19,15 @@ const POINTS = [
     body: "Bookings attach to your account, so an itinerary can be retrieved, printed and cancelled later.",
   },
   {
-    title: "Stored only in this browser",
-    body: "Your password is salted and hashed into localStorage. Nothing is transmitted anywhere.",
+    title: "Your password is never stored in the clear",
+    body: "It is salted and hashed on the SkyRoute server, and your session travels in an HTTP-only cookie.",
   },
 ];
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
-  const { signUp, user, continueAsGuest } = useApp();
+  const searchParams = useSearchParams();
+  const { signUp, user, continueAsGuest, syncSession } = useApp();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -37,6 +38,34 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [oauthChecking, setOauthChecking] = useState(false);
+
+  // Handle post-OAuth redirect if user lands on /register?oauth=success
+  useEffect(() => {
+    const oauthStatus = searchParams.get("oauth");
+    const reason = searchParams.get("reason");
+
+    if (oauthStatus === "success") {
+      setOauthChecking(true);
+      (async () => {
+        const currentUser = await syncSession();
+        setOauthChecking(false);
+        if (currentUser) {
+          router.push("/bookings");
+        } else {
+          router.push("/");
+        }
+      })();
+    } else if (oauthStatus === "error") {
+      setError(reason || "Google sign in failed. Please try again.");
+    }
+  }, [searchParams, syncSession, router]);
+
+  function handleGoogleLogin() {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://skyroute-server.onrender.com/api";
+    window.location.href = `${apiUrl.replace(/\/+$/, "")}/auth/oauth/google`;
+  }
 
   function update(key: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -88,10 +117,134 @@ export default function RegisterPage() {
     );
   }
 
+  if (oauthChecking) {
+    return (
+      <div className="card-lg flex flex-col items-center justify-center py-12 text-center">
+        <Spinner label="Completing Google sign in…" />
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="card-lg space-y-6">
+      {error && <Alert tone="error">{error}</Alert>}
+
+      {/* Google OAuth Button */}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-callout font-semibold text-ink shadow-sm transition hover:bg-fill active:scale-[0.99]"
+      >
+        <GoogleIcon className="h-5 w-5 shrink-0" />
+        <span>Continue with Google</span>
+      </button>
+
+      <div className="relative my-2 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-line" />
+        </div>
+        <span className="relative bg-surface px-3 text-micro font-medium uppercase tracking-wider text-ink-3">
+          Or register with email
+        </span>
+      </div>
+
+      <Field label="Full name" htmlFor="fullName" error={errors.fullName}>
+        <input
+          id="fullName"
+          type="text"
+          autoComplete="name"
+          className={`input ${errors.fullName ? "input-error" : ""}`}
+          value={form.fullName}
+          onChange={(event) => update("fullName", event.target.value)}
+        />
+      </Field>
+
+      <Field label="Email address" htmlFor="email" error={errors.email}>
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          className={`input ${errors.email ? "input-error" : ""}`}
+          value={form.email}
+          onChange={(event) => update("email", event.target.value)}
+        />
+      </Field>
+
+      <Field label="Phone number" htmlFor="phone" error={errors.phone} hint="e.g. 08031234567">
+        <input
+          id="phone"
+          type="tel"
+          autoComplete="tel"
+          className={`input ${errors.phone ? "input-error" : ""}`}
+          value={form.phone}
+          onChange={(event) => update("phone", event.target.value)}
+        />
+      </Field>
+
+      <Field
+        label="Password"
+        htmlFor="password"
+        error={errors.password}
+        hint="At least 8 characters, with an upper-case letter, a lower-case letter and a number"
+      >
+        <input
+          id="password"
+          type="password"
+          autoComplete="new-password"
+          className={`input ${errors.password ? "input-error" : ""}`}
+          value={form.password}
+          onChange={(event) => update("password", event.target.value)}
+        />
+      </Field>
+
+      <Field label="Confirm password" htmlFor="confirmPassword" error={errors.confirmPassword}>
+        <input
+          id="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+          className={`input ${errors.confirmPassword ? "input-error" : ""}`}
+          value={form.confirmPassword}
+          onChange={(event) => update("confirmPassword", event.target.value)}
+        />
+      </Field>
+
+      <button type="submit" disabled={busy} className="btn-primary btn-lg w-full">
+        <Icon
+          name={busy ? "spinner" : "plus"}
+          className={`h-5 w-5 ${busy ? "animate-spin" : ""}`}
+        />
+        {busy ? "Creating account…" : "Create account"}
+      </button>
+
+      <div className="relative my-2 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-line" />
+        </div>
+        <span className="relative bg-surface px-3 text-micro font-medium uppercase tracking-wider text-ink-3">
+          Or
+        </span>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          continueAsGuest();
+          router.push("/");
+        }}
+        className="btn-secondary btn-lg w-full justify-center text-center"
+      >
+        <Icon name="ticket" className="h-5 w-5 text-ink-2" />
+        Continue as guest
+      </button>
+    </form>
+  );
+}
+
+export default function RegisterPage() {
   return (
     <AuthShell
       title="Create your account."
-      subtitle="It takes one form, and your details never leave this browser."
+      subtitle="It takes one form, and your trips follow you to any device you sign in from."
       points={POINTS}
       footer={
         <p className="text-center text-callout text-ink-2">
@@ -102,98 +255,15 @@ export default function RegisterPage() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} noValidate className="card-lg space-y-6">
-        {error && <Alert tone="error">{error}</Alert>}
-
-        <Field label="Full name" htmlFor="fullName" error={errors.fullName}>
-          <input
-            id="fullName"
-            type="text"
-            autoComplete="name"
-            className={`input ${errors.fullName ? "input-error" : ""}`}
-            value={form.fullName}
-            onChange={(event) => update("fullName", event.target.value)}
-          />
-        </Field>
-
-        <Field label="Email address" htmlFor="email" error={errors.email}>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            className={`input ${errors.email ? "input-error" : ""}`}
-            value={form.email}
-            onChange={(event) => update("email", event.target.value)}
-          />
-        </Field>
-
-        <Field label="Phone number" htmlFor="phone" error={errors.phone} hint="e.g. 08031234567">
-          <input
-            id="phone"
-            type="tel"
-            autoComplete="tel"
-            className={`input ${errors.phone ? "input-error" : ""}`}
-            value={form.phone}
-            onChange={(event) => update("phone", event.target.value)}
-          />
-        </Field>
-
-        <Field
-          label="Password"
-          htmlFor="password"
-          error={errors.password}
-          hint="At least 8 characters, with an upper-case letter, a lower-case letter and a number"
-        >
-          <input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            className={`input ${errors.password ? "input-error" : ""}`}
-            value={form.password}
-            onChange={(event) => update("password", event.target.value)}
-          />
-        </Field>
-
-        <Field label="Confirm password" htmlFor="confirmPassword" error={errors.confirmPassword}>
-          <input
-            id="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            className={`input ${errors.confirmPassword ? "input-error" : ""}`}
-            value={form.confirmPassword}
-            onChange={(event) => update("confirmPassword", event.target.value)}
-          />
-        </Field>
-
-        <button type="submit" disabled={busy} className="btn-primary btn-lg w-full">
-          <Icon
-            name={busy ? "spinner" : "plus"}
-            className={`h-5 w-5 ${busy ? "animate-spin" : ""}`}
-          />
-          {busy ? "Creating account…" : "Create account"}
-        </button>
-
-        <div className="relative my-2 flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-line" />
+      <Suspense
+        fallback={
+          <div className="card-lg py-12">
+            <Spinner label="Loading account creation…" />
           </div>
-          <span className="relative bg-surface px-3 text-micro font-medium uppercase tracking-wider text-ink-3">
-            Or
-          </span>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            continueAsGuest();
-            router.push("/");
-          }}
-          className="btn-secondary btn-lg w-full justify-center text-center"
-        >
-          <Icon name="ticket" className="h-5 w-5 text-ink-2" />
-          Continue as guest
-        </button>
-      </form>
+        }
+      >
+        <RegisterForm />
+      </Suspense>
     </AuthShell>
   );
 }
